@@ -1,0 +1,10 @@
+# Repairs the system cryptography install (missing _cffi_backend), which
+# google-auth needs to sign service-account JWTs.
+cffi>=1.16
+google-auth>=2.30
+numpy>=1.26
+pandas
+pyarrow
+pytest>=8
+PyYAML>=6
+requests>=2.31

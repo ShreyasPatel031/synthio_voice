@@ -1,0 +1,174 @@
+# DOSE-R TTS systems.
+#
+# Adding a system that speaks an existing protocol is an entry here and nothing
+# else. `status: planned` entries document the intended shape for tiers we have
+# not got keys for yet; building one raises until its backend is registered.
+#
+# Every `pricing` block is dated and carries `verified`. Nothing here is
+# verified yet -- prices must be confirmed against the vendor's own page before
+# any cost number reaches a report. Usage counters are stored in the manifest
+# alongside cost, so correcting a price is a recomputation, not a re-run.
+
+defaults:
+  audio:
+    container: wav
+    encoding: pcm_s16le
+    sample_rate_hz: 24000
+    channels: 1
+  retry:
+    max_attempts: 3
+    initial_backoff_s: 0.5
+    max_backoff_s: 30.0
+    multiplier: 2.0
+    jitter: 0.25
+  concurrency: 4
+  timeout_s: 120.0
+
+systems:
+
+  # --- default: offline, deterministic, free -------------------------------
+  mock:
+    backend: mock
+    tier: mock
+    model: mock-v1
+    voice: mock-neutral
+    concurrency: 8
+    notes: >-
+      Deterministic offline backend. Default system; validates the harness
+      end to end without network or spend.
+    pricing:
+      id: mock/free
+      as_of: "2026-09-17"
+      source: n/a
+      verified: true
+    options:
+      seed: 20260917
+      chars_per_second: 14.5
+      base_latency_s: 0.0
+      per_char_latency_s: 0.0
+      ttfa_fraction: 0.35
+
+  # Same backend, tuned to behave like a slow streaming API. Used to exercise
+  # latency/TTFA accounting and concurrency without touching a vendor.
+  mock-slow:
+    backend: mock
+    tier: mock
+    model: mock-v1-slow
+    voice: mock-neutral
+    concurrency: 8
+    pricing:
+      id: mock/metered-demo
+      as_of: "2026-09-17"
+      source: n/a
+      verified: true
+      per_request_usd: 0.0001
+      per_million_characters_usd: 15.0
+    options:
+      seed: 20260917
+      base_latency_s: 0.2
+      per_char_latency_s: 0.004
+      ttfa_fraction: 0.3
+
+  # --- cheap iteration tier -------------------------------------------------
+  gemini-flash-tts:
+    backend: gemini_vertex
+    tier: iteration
+    model: gemini-2.5-flash-preview-tts
+    voice: Kore
+    concurrency: 4
+    notes: >-
+      Cheap tier for repeated full-set runs while the judge is being tuned.
+      Not the number we report.
+    pricing:
+      id: vertex/gemini-2.5-flash-preview-tts
+      as_of: "2026-09-17"
+      source: "UNVERIFIED - confirm against cloud.google.com/vertex-ai/generative-ai/pricing"
+      verified: false
+      per_million_input_tokens_usd: 0.50
+      per_million_output_tokens_usd: 10.00
+    options:
+      location: global
+      stream: true
+
+  # --- SOTA tier ------------------------------------------------------------
+  gemini-pro-tts:
+    backend: gemini_vertex
+    tier: sota
+    model: gemini-2.5-pro-preview-tts
+    voice: Kore
+    concurrency: 2
+    pricing:
+      id: vertex/gemini-2.5-pro-preview-tts
+      as_of: "2026-09-17"
+      source: "UNVERIFIED - confirm against cloud.google.com/vertex-ai/generative-ai/pricing"
+      verified: false
+      per_million_input_tokens_usd: 1.00
+      per_million_output_tokens_usd: 20.00
+    options:
+      location: global
+      stream: true
+
+  # --- planned: the DOSE-benchmarked systems we want keys for ---------------
+  # Shape only. Each needs a backend class registered in registry.py; none of
+  # them needs a change to base.py, the record schema or the runner.
+  cartesia-sonic:
+    backend: cartesia
+    tier: sota
+    status: planned
+    model: sonic-3
+    voice: null
+    notes: "Streaming websocket API; TTFA is the headline number for this vendor."
+    pricing: {id: cartesia/sonic, as_of: "2026-09-17", verified: false, per_million_characters_usd: 0.0}
+
+  elevenlabs-v3:
+    backend: elevenlabs
+    tier: sota
+    status: planned
+    model: eleven_v3
+    voice: null
+    pricing: {id: elevenlabs/v3, as_of: "2026-09-17", verified: false, per_million_characters_usd: 0.0}
+
+  openai-tts:
+    backend: openai
+    tier: sota
+    status: planned
+    model: gpt-4o-mini-tts
+    voice: alloy
+    pricing: {id: openai/gpt-4o-mini-tts, as_of: "2026-09-17", verified: false, per_million_characters_usd: 0.0}
+
+  grok-tts:
+    backend: xai
+    tier: sota
+    status: planned
+    model: grok-tts
+    voice: null
+    pricing: {id: xai/grok-tts, as_of: "2026-09-17", verified: false}
+
+  deepgram-aura:
+    backend: deepgram
+    tier: sota
+    status: planned
+    model: aura-2
+    voice: null
+    pricing: {id: deepgram/aura-2, as_of: "2026-09-17", verified: false, per_million_characters_usd: 0.0}
+
+  azure-neural:
+    backend: azure
+    tier: sota
+    status: planned
+    model: neural
+    voice: en-US-AvaMultilingualNeural
+    pricing: {id: azure/neural, as_of: "2026-09-17", verified: false, per_million_characters_usd: 0.0}
+
+  # --- planned: self-hosted open source on a GCP GPU VM ---------------------
+  # No per-call price: cost is VM-hours amortised over the run, so it is
+  # recorded as per_second_audio_usd derived from the VM rate at run time.
+  oss-selfhosted:
+    backend: openai_compatible_http
+    tier: open_source
+    status: planned
+    model: null
+    voice: null
+    concurrency: 1
+    notes: "Self-hosted endpoint; cost derived from GPU VM hourly rate, not per call."
+    pricing: {id: selfhost/gpu-vm, as_of: "2026-09-17", verified: false, per_second_audio_usd: 0.0}
