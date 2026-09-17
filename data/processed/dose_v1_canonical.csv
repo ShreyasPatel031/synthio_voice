@@ -1,0 +1,275 @@
+drug,drug_raw,name_type,sentence
+Abilify,Abilify,brand,We plan to start Abilify at ten milligrams daily to help manage the patient's schizophrenia symptoms effectively.
+Adquey,Adquey,brand,Adquey works as a topical phosphodiesterase-4 inhibitor to help clear lesions associated with mild to moderate atopic dermatitis.
+Advair,Advair,brand,We are starting the patient on Advair twice daily because combining an inhaled corticosteroid with a LABA will better control her asthma symptoms.
+Advil,Advil,brand,"I recommend taking Advil to help relieve the minor pain from your arthritis, but do not exceed six caplets daily."
+Alhemo,Alhemo,brand,We will initiate daily subcutaneous Alhemo to target Tissue Factor Pathway Inhibitor and improve clot formation in this hemophilia patient.
+Alyftrek,Alyftrek,brand,"Before starting Alyftrek, we need to confirm that the patient has at least one responsive CFTR gene variant."
+Ambelvist,Ambelvist,brand,"Before starting the scan, we will administer Ambelvist as an intravenous injection followed immediately by a normal saline flush."
+Ambien,Ambien,brand,"Because Ambien functions as a GABA A receptor positive modulator, it should effectively help manage your acute insomnia when taken at bedtime."
+Anktiva,Anktiva,brand,We are initiating Anktiva as an intravesical IL-15 receptor agonist alongside BCG for this patient with non-muscle invasive bladder cancer.
+Aspirin,Aspirin,brand,I recommend taking this coated Aspirin with plenty of water to help manage your minor aches and pains throughout the day.
+Attruby,Attruby,brand,We should start the patient on Attruby to manage their transthyretin-mediated amyloid cardiomyopathy and reduce the risk of cardiovascular hospitalization.
+Aucatzyl,Aucatzyl,brand,"Before we administer the intravenous infusion of Aucatzyl, let's verify that the patient has completed their lymphodepleting chemotherapy regimen."
+Avlayah,Avlayah,brand,We should start the pediatric patient on weekly Avlayah infusions to manage Hunter syndrome following the recommended dose escalation schedule.
+Awiqli,Awiqli,brand,"By activating the insulin receptor, Awiqli effectively stimulates peripheral glucose uptake across the full seven-day dosing interval."
+Baxfendy,Baxfendy,brand,We can add Baxfendy to your current blood pressure regimen to target aldosterone synthase and better manage your hypertension.
+Benadryl,Benadryl,brand,You can administer Benadryl to help relieve your child's sneezing and runny nose caused by upper respiratory allergies.
+Beqalzi,Beqalzi,brand,Starting the patient on Beqalzi should help trigger apoptosis by selectively targeting the overexpressed BCL-2 protein.
+Biktarvy,Biktarvy,brand,We can initiate Biktarvy once daily as a complete antiretroviral regimen to effectively manage the patient's HIV-1 infection.
+Bizengri,Bizengri,brand,"Because the biopsy confirmed an NRG1 fusion, we will initiate Bizengri, which functions as a bispecific antibody targeting HER2 and HER3."
+Blujepa,Blujepa,brand,Make sure the patient takes Blujepa with food to treat her uncomplicated urinary tract infection while minimizing gastrointestinal intolerance.
+Byetta,Byetta,brand,We will start Byetta before your two main meals because this GLP-1 receptor agonist helps manage your type 2 diabetes.
+Bysanti,Bysanti,brand,We should gradually titrate Bysanti twice daily to help control your manic episodes while minimizing any risk of orthostatic hypotension.
+Casgevy,Casgevy,brand,"Before we administer the Casgevy infusion, we must complete the patient's full myeloablative conditioning regimen and ensure seizure prophylaxis is in place."
+Chantix,Chantix,brand,We can initiate Chantix as a partial agonist to help curb withdrawal symptoms and support your smoking cessation attempt.
+Claritin,Claritin,brand,You can take Claritin chewable tablets daily to help relieve your sneezing and itchy eyes from seasonal hay fever.
+Cobenfy,Cobenfy,brand,"Before starting Cobenfy for schizophrenia, let's check baseline liver enzymes and ensure the patient takes it on an empty stomach."
+Cosentyx,Cosentyx,brand,We should start the patient on Cosentyx to selectively inhibit interleukin-17A and manage their active plaque psoriasis.
+Crestor,Crestor,brand,We will start you on Crestor today to inhibit HMG-CoA reductase and significantly lower your LDL-C levels.
+Cymbalta,Cymbalta,brand,We can start the patient on Cymbalta at thirty milligrams daily to help manage her generalized anxiety disorder.
+Cypsedo,Cypsedo,brand,We selected Cypsedo for the induction of general anesthesia because of its positive modulation at GABAA receptors.
+Datroway,Datroway,brand,"Because Datroway functions as a Trop-2-directed antibody-drug conjugate, we will administer it via intravenous infusion every three weeks."
+Decnupaz,Decnupaz,brand,We will administer Decnupaz as an intravenous infusion every three weeks to target CD123 in this patient with BPDCN.
+Dupixent,Dupixent,brand,We should start Dupixent by subcutaneous injection to target the IL-4Rα subunit and better control your severe asthma.
+Ebglyss,Ebglyss,brand,We can initiate Ebglyss via subcutaneous injection to specifically target interleukin-13 signaling for this patient with moderate-to-severe atopic dermatitis.
+Eliquis,Eliquis,brand,We should start the patient on Eliquis twice daily to reduce their risk of stroke from nonvalvular atrial fibrillation.
+Elrexfio,Elrexfio,brand,"Before administering Elrexfio for multiple myeloma, ensure the patient receives premedications to mitigate the risk of cytokine release syndrome."
+Enbrel,Enbrel,brand,We can initiate Enbrel as a weekly subcutaneous injection to help reduce joint inflammation from your rheumatoid arthritis.
+Ensacove,Ensacove,brand,"Before starting Ensacove for your metastatic NSCLC, we need to check your baseline liver function tests and fasting blood glucose."
+Entresto,Entresto,brand,Let's initiate Entresto today to manage the patient's heart failure by combining a neprilysin inhibitor with an angiotensin receptor blocker.
+Farxiga,Farxiga,brand,"As an SGLT2 inhibitor, Farxiga works by promoting urinary glucose excretion to help improve glycemic control in type 2 diabetes."
+Flonase,Flonase,brand,Start using two sprays of Flonase in each nostril daily to effectively manage your persistent nasal congestion.
+Foundayo,Foundayo,brand,Foundayo is an oral GLP-1 receptor agonist that we will gradually titrate monthly to help regulate your appetite and support weight loss.
+acetaminophen,acetaminophen (generic),generic,You can take acetaminophen every six hours to help reduce your fever and relieve minor muscular aches.
+acoltremon,acoltremon (generic),generic,We prescribed TRYPTYR because acoltremon targets ocular TRPM8 thermoreceptors to help stimulate natural basal tear production.
+acoramidis,acoramidis (generic),generic,We should initiate acoramidis for this patient since it functions as a selective stabilizer of transthyretin tetramers.
+adalimumab,adalimumab (generic),generic,Adalimumab works by binding specifically to TNF-alpha to help reduce systemic inflammation and control your rheumatoid arthritis symptoms.
+alprazolam,alprazolam (generic),generic,We can start alprazolam at a low dose to manage your generalized anxiety disorder and slowly titrate if needed.
+apixaban,apixaban (generic),generic,We are starting the patient on oral apixaban to reduce their risk of stroke associated with nonvalvular atrial fibrillation.
+apremilast,apremilast (generic),generic,"Let's begin oral apremilast today, as its targeted inhibition of phosphodiesterase 4 should help manage your chronic symptoms."
+aripiprazole,aripiprazole (generic),generic,"Because aripiprazole acts as a partial agonist at D2 receptors, we should start this patient with schizophrenia at ten milligrams daily."
+atacicept-vymj,atacicept-vymj (generic),generic,"By dual-targeting BAFF and APRIL, atacicept-vymj effectively lowers pathogenic galactose-deficient IgA1 levels in patients with IgAN."
+atogepant,atogepant (generic),generic,Starting the patient on atogepant is appropriate because this calcitonin gene-related peptide receptor antagonist effectively reduces migraine frequency.
+atorvastatin,atorvastatin (generic),generic,We should start the patient on daily oral atorvastatin to inhibit HMG-CoA reductase and effectively lower their elevated LDL-C levels.
+baloxavir marboxil,baloxavir marboxil (generic),generic,We chose baloxavir marboxil for this patient because it halts influenza virus replication by targeting the viral endonuclease activity.
+baxdrostat,baxdrostat (generic),generic,We are initiating baxdrostat to selectively target aldosterone synthase and achieve better blood pressure control.
+bevacizumab-vikg,bevacizumab-vikg (generic),generic,We are initiating bevacizumab-vikg therapy today to inhibit retinal neovascularization and help stabilize the patient's visual acuity.
+"bictegravir, emtricitabine, and tenofovir alafenamide","bictegravir, emtricitabine, and tenofovir alafenamide (generic)",generic,"Your doctor has prescribed bictegravir, emtricitabine, and tenofovir alafenamide for your condition."
+budesonide and formoterol fumarate dihydrate,budesonide and formoterol fumarate dihydrate (generic),generic,I recommend starting budesonide and formoterol fumarate dihydrate twice daily to provide both anti-inflammatory control and bronchodilation for your asthma.
+bulevirtide-gmod,bulevirtide-gmod (generic),generic,"We plan to start the patient on bulevirtide-gmod today, as this antiviral drug will help target their viral infection."
+canakinumab,canakinumab (generic),generic,We are starting the patient on canakinumab to selectively neutralize IL-1β and suppress their systemic inflammatory response.
+cariprazine,cariprazine (generic),generic,We chose cariprazine for this patient because its partial agonist activity at dopamine D2 receptors helps manage psychiatric symptoms effectively.
+cefepime and zidebactam,cefepime and zidebactam (generic),generic,Let's initiate cefepime and zidebactam because the addition of a beta-lactamase inhibitor will help overcome this resistant Gram-negative infection.
+centanafadine,centanafadine (generic),generic,"We can trial centanafadine for this adult's ADHD since its mechanism involves inhibiting norepinephrine, dopamine, and serotonin reuptake transporters."
+cetirizine,cetirizine (generic),generic,You can take cetirizine once daily to help control your runny nose and sneezing caused by seasonal hay fever.
+cipepofol,cipepofol (generic),generic,We selected Cypsedo for general anesthesia induction because cipepofol enhances inhibitory signaling at GABAA receptors.
+clopidogrel,clopidogrel (generic),generic,We should start clopidogrel immediately with a loading dose to inhibit platelet aggregation in this acute coronary syndrome patient.
+concizumab,concizumab (generic),generic,We are starting the patient on concizumab because targeting tissue factor pathway inhibitor helps manage their hemophilia despite existing inhibitors.
+copper histidinate,copper histidinate (generic),generic,We should initiate daily subcutaneous copper histidinate injections to bypass impaired absorption and treat the infant with Menkes disease.
+dapagliflozin,dapagliflozin (generic),generic,We can start dapagliflozin at five milligrams daily to improve glycemic control by blocking glucose reabsorption in the proximal renal tubules.
+datopotamab deruxtecan,datopotamab deruxtecan (generic),generic,We plan to start datopotamab deruxtecan today since this novel antibody-drug conjugate effectively delivers a potent topoisomerase I inhibitor to tumors.
+diazepam,diazepam (generic),generic,We should start oral diazepam to help manage this patient's acute alcohol withdrawal symptoms and reduce the risk of delirium tremens.
+difamilast,difamilast (generic),generic,"Applying difamilast works by inhibiting phosphodiesterase-4, which elevates intracellular cyclic AMP levels to suppress inflammatory signaling."
+dimethyl fumarate,dimethyl fumarate (generic),generic,We plan to start oral dimethyl fumarate to help reduce relapses and manage your multiple sclerosis symptoms.
+diphenhydramine,diphenhydramine (generic),generic,Let's administer fifty milligrams of diphenhydramine intravenously as an adjunct to epinephrine following the patient's acute anaphylaxis.
+doravirine and islatravir,doravirine and islatravir (generic),generic,We can switch the patient to doravirine and islatravir to effectively suppress HIV-1 replication with this novel antiretroviral combination regimen.
+dulaglutide,dulaglutide (generic),generic,"Because dulaglutide acts as a GLP-1 receptor agonist, it effectively stimulates glucose-dependent insulin release from pancreatic beta cells."
+duloxetine,duloxetine (generic),generic,We can initiate oral duloxetine at thirty milligrams daily to help manage your chronic musculoskeletal pain while minimizing potential side effects.
+dupilumab,dupilumab (generic),generic,We are starting dupilumab to target the IL-4Rα subunit and reduce the patient's recurring airway inflammation.
+durvalumab,durvalumab (generic),generic,"We are starting the patient on durvalumab, a monoclonal antibody that targets PD-L1 to restore cytotoxic T-cell activity against the tumor."
+efgartigimod alfa,efgartigimod alfa (generic),generic,"Because efgartigimod alfa targets the neonatal Fc receptor, we should monitor the patient for a significant reduction in circulating IgG levels."
+"elexacaftor, tezacaftor, and ivacaftor","elexacaftor, tezacaftor, and ivacaftor (generic)",generic,"Starting elexacaftor, tezacaftor, and ivacaftor will help facilitate CFTR protein trafficking and restore essential chloride transport."
+elranatamab-bcmm,elranatamab-bcmm (generic),generic,We are starting elranatamab-bcmm today to target BCMA and induce T-cell mediated lysis of refractory multiple myeloma cells.
+empagliflozin,empagliflozin (generic),generic,"Starting empagliflozin will selectively block SGLT2 transporters in the kidneys, which directly promotes urinary glucose excretion."
+enlicitide decanoate,enlicitide decanoate (generic),generic,We can initiate enlicitide decanoate to target PCSK9 and help lower your circulating low-density lipoprotein levels effectively.
+ensartinib,ensartinib (generic),generic,We should consider ensartinib for this patient because it effectively targets anaplastic lymphoma kinase and blocks downstream tumor proliferation.
+ensitrelvir,ensitrelvir (generic),generic,We are starting ensitrelvir to target the SARS-CoV-2 main protease and stop active viral replication in this patient.
+esomeprazole,esomeprazole (generic),generic,We will start esomeprazole once daily to inhibit the H+/K+ ATPase enzyme system and relieve your symptomatic GERD.
+etanercept,etanercept (generic),generic,We should start the patient on etanercept today to help block TNF and reduce the severe joint inflammation.
+exagamglogene autotemcel,exagamglogene autotemcel (generic),generic,We plan to administer exagamglogene autotemcel to suppress BCL11A expression and prevent painful vaso-occlusive crises in our sickle cell patient.
+exenatide,exenatide (generic),generic,"As a GLP-1 receptor agonist, exenatide enhances glucose-dependent insulin secretion to improve blood sugar levels in type 2 diabetes."
+famotidine,famotidine (generic),generic,We can start you on oral famotidine at bedtime to competitively inhibit histamine-2 receptors and reduce gastric acid secretion.
+faricimab-svoa,faricimab-svoa (generic),generic,We chose faricimab-svoa because this bispecific antibody simultaneously targets VEGF-A and Ang-2 to help reduce vascular permeability.
+fezolinetant,fezolinetant (generic),generic,We can initiate fezolinetant today because this neurokinin 3 receptor antagonist effectively targets neuronal activity in the thermoregulatory center.
+fluoxetine,fluoxetine (generic),generic,We will start the patient on oral fluoxetine every morning to effectively manage their ongoing major depressive disorder.
+fluticasone propionate,fluticasone propionate (generic),generic,You can use fluticasone propionate once daily in each nostril to relieve stubborn nasal congestion caused by your allergies.
+fluticasone propionate and salmeterol,fluticasone propionate and salmeterol (generic),generic,We are starting fluticasone propionate and salmeterol twice daily to control persistent airway inflammation and relax bronchial smooth muscle.
+gadoquatrane,gadoquatrane (generic),generic,Administering gadoquatrane enhances tissue signal intensity during the scan by effectively altering the relaxation rates of local water protons.
+gedatolisib,gedatolisib (generic),generic,Adding gedatolisib helps target both PI3K and mTOR complexes to slow tumor growth in ER-positive breast cancer.
+gepotidacin,gepotidacin (generic),generic,We can initiate gepotidacin for this patient once we confirm the bacterial source of the infection.
+ibuprofen,ibuprofen (generic),generic,You can take ibuprofen every four to six hours to help relieve the pain caused by your menstrual cramps.
+icotrokinra,icotrokinra (generic),generic,We are considering icotrokinra for this patient because it selectively targets the IL-23 receptor to dampen chronic inflammatory signaling.
+insulin glargine,insulin glargine (generic),generic,Let's initiate insulin glargine subcutaneously once daily to help improve glycemic control in our patient with type 2 diabetes.
+insulin icodec-abae,insulin icodec-abae (generic),generic,"By activating the insulin receptor, insulin icodec-abae effectively stimulates peripheral glucose uptake to maintain steady glucose levels throughout the week."
+lebrikizumab-lbkz,lebrikizumab-lbkz (generic),generic,Starting the patient on lebrikizumab-lbkz should effectively reduce the Type 2 inflammation driving their moderate-to-severe atopic dermatitis.
+lecanemab,lecanemab (generic),generic,"Before initiating lecanemab for Alzheimer's disease, we must obtain a baseline brain MRI to monitor for potential amyloid-related imaging abnormalities."
+levothyroxine,levothyroxine (generic),generic,Take your levothyroxine on an empty stomach before breakfast to effectively manage your hypothyroidism and optimize hormone absorption.
+linerixibat,linerixibat (generic),generic,Starting linerixibat should help relieve your cholestatic pruritus by preventing bile acid reabsorption in the terminal ileum.
+lisdexamfetamine,lisdexamfetamine (generic),generic,"Because lisdexamfetamine functions as a CNS stimulant, we recommend taking your morning dose early to help manage your ADHD symptoms without causing insomnia."
+loratadine,loratadine (generic),generic,You can take loratadine once daily to help manage your sneezing and itchy eyes caused by hay fever.
+lurasidone,lurasidone (generic),generic,Make sure the patient takes their lurasidone with a meal of at least 350 calories to ensure proper absorption for bipolar depression.
+milsaperidone,milsaperidone (generic),generic,We can initiate milsaperidone to help control the patient's acute manic symptoms associated with bipolar I disorder.
+navepegritide,navepegritide (generic),generic,Navepegritide acts on natriuretic peptide receptor-B to help counteract downstream FGFR3 signaling in children with achondroplasia.
+nipocalimab-aahu,nipocalimab-aahu (generic),generic,We are initiating nipocalimab-aahu today to block the neonatal Fc receptor and rapidly reduce circulating IgG levels in this patient.
+nogapendekin alfa inbakicept-pmln,nogapendekin alfa inbakicept-pmln (generic),generic,We are starting nogapendekin alfa inbakicept-pmln because this IL-15 receptor agonist effectively boosts antitumor CD8+ and NK cell activity.
+obecabtagene autoleucel,obecabtagene autoleucel (generic),generic,"We are preparing to administer obecabtagene autoleucel, an autologous T cell immunotherapy that specifically targets CD19-expressing malignant cells."
+olezarsen,olezarsen (generic),generic,Starting olezarsen should significantly reduce your patient's plasma TG levels by promoting the targeted degradation of apoC-III mRNA.
+omalizumab,omalizumab (generic),generic,We are starting the patient on omalizumab to prevent IgE from binding to the FcεRI receptor on mast cells.
+omeprazole,omeprazole (generic),generic,Take your omeprazole each morning before breakfast for two weeks to effectively manage your frequent heartburn symptoms.
+orforglipron,orforglipron (generic),generic,Your doctor has prescribed orforglipron for your condition.
+osimertinib,osimertinib (generic),generic,We recommend starting daily osimertinib therapy for this patient given their confirmed EGFR T790M resistance mutation.
+oveporexton,oveporexton (generic),generic,Starting oveporexton should help manage your narcolepsy type 1 by directly stimulating orexin receptor 2 pathways.
+pegvaliase-pqpz,pegvaliase-pqpz (generic),generic,We are initiating pegvaliase-pqpz to lower blood phenylalanine concentrations in our adult patient diagnosed with uncontrolled PKU.
+pegzilarginase-nbln,pegzilarginase-nbln (generic),generic,We are starting pegzilarginase-nbln to replace deficient arginase 1 enzyme activity and help lower the patient's elevated plasma arginine.
+perfluorohexyloctane,perfluorohexyloctane (generic),generic,"As a semifluorinated alkane, perfluorohexyloctane works by creating a monolayer across the tear film to help prevent evaporation."
+pitolisant,pitolisant (generic),generic,"We should consider starting pitolisant to help manage the patient's narcolepsy, as it acts as an antagonist at histamine-3 receptors."
+pivekimab sunirine-pvzy,pivekimab sunirine-pvzy (generic),generic,"We are preparing to administer pivekimab sunirine-pvzy, a novel antibody-drug conjugate designed to target CD123-expressing blast cells."
+prademagene zamikeracel,prademagene zamikeracel (generic),generic,We are preparing prademagene zamikeracel cellular sheets for topical application to help restore anchoring fibrils in this patient with recessive dystrophic epidermolysis bullosa.
+pregabalin,pregabalin (generic),generic,Let us start the patient on oral pregabalin twice daily to help manage her persistent postherpetic neuralgia.
+quetiapine,quetiapine (generic),generic,We will slowly titrate quetiapine at bedtime to target the patient's bipolar depression while monitoring for tolerability.
+relacorilant,relacorilant (generic),generic,"As a selective glucocorticoid receptor antagonist, relacorilant helps block cortisol-mediated immunosuppression to potentially enhance the patient's antitumor response."
+remibrutinib,remibrutinib (generic),generic,Your doctor has prescribed remibrutinib for your condition.
+resmetirom,resmetirom (generic),generic,We chose resmetirom for this patient because it selectively targets the thyroid hormone receptor-beta to reduce intrahepatic triglycerides.
+revumenib,revumenib (generic),generic,We should consider initiating revumenib for this patient since it functions as a targeted menin inhibitor for acute myeloid leukemia.
+ribociclib,ribociclib (generic),generic,We are initiating therapy with ribociclib to inhibit cyclin-dependent kinases 4 and 6 in her estrogen receptor-positive breast cancer.
+rilzabrutinib,rilzabrutinib (generic),generic,Your doctor has prescribed rilzabrutinib for your condition.
+rimegepant,rimegepant (generic),generic,We should consider starting rimegepant since it works directly as a calcitonin gene-related peptide receptor antagonist.
+risankizumab-rzaa,risankizumab-rzaa (generic),generic,We are starting the patient on risankizumab-rzaa because it selectively targets the p19 subunit of interleukin 23 to reduce inflammation.
+rivaroxaban,rivaroxaban (generic),generic,We will start the patient on rivaroxaban alongside aspirin to decrease thrombin generation and manage their peripheral artery disease.
+rosuvastatin,rosuvastatin (generic),generic,We should start the patient on oral rosuvastatin once daily to inhibit HMG-CoA reductase and lower their LDL-C levels.
+sacubitril and valsartan,sacubitril and valsartan (generic),generic,Let's initiate sacubitril and valsartan for this heart failure patient to provide dual neprilysin and angiotensin receptor blockade.
+secukinumab,secukinumab (generic),generic,"Because secukinumab selectively targets the interleukin-17A cytokine, we can effectively suppress the patient's downstream inflammatory pathway."
+semaglutide,semaglutide (generic),generic,We chose semaglutide because this GLP-1 receptor agonist enhances glucose-dependent insulin secretion and helps delay gastric emptying.
+sertraline,sertraline (generic),generic,"Given its twenty-four-hour elimination half-life, we will wait at least one full week before increasing your daily sertraline dose for major depressive disorder."
+sitagliptin,sitagliptin (generic),generic,We can start sitagliptin as a daily DPP-4 inhibitor to improve glycemic control for your type 2 diabetes.
+sonrotoclax,sonrotoclax (generic),generic,Starting sonrotoclax will help selectively target the BCL-2 protein to trigger tumor cell apoptosis in this patient.
+sotagliflozin,sotagliflozin (generic),generic,"Because sotagliflozin acts as a dual inhibitor of SGLT1 and SGLT2, monitor the patient closely for potential gastrointestinal issues like diarrhea."
+sotatercept-csrk,sotatercept-csrk (generic),generic,We are starting the patient on sotatercept-csrk because this activin signaling inhibitor can help rebalance vascular proliferation.
+suzetrigine,suzetrigine (generic),generic,Your doctor has prescribed suzetrigine for your condition.
+talquetamab,talquetamab (generic),generic,"Since talquetamab targets GPRC5D on multiple myeloma cells, it offers a promising bispecific approach for refractory patients."
+tebipenem pivoxil,tebipenem pivoxil (generic),generic,Remember that tebipenem pivoxil is an oral prodrug that binds to penicillin-binding proteins to disrupt bacterial cell wall biosynthesis.
+tenecteplase,tenecteplase (generic),generic,We are administering tenecteplase because its high affinity for fibrin allows targeted conversion of plasminogen to plasmin.
+teplizumab-mzwv,teplizumab-mzwv (generic),generic,We are starting teplizumab-mzwv in this pediatric patient to bind CD3 and delay the onset of Stage 3 diabetes.
+testosterone undecanoate,testosterone undecanoate (generic),generic,We should initiate testosterone undecanoate to help treat the patient's male hypogonadism and improve his secondary sex characteristics.
+tiotropium bromide,tiotropium bromide (generic),generic,We are starting you on tiotropium bromide once daily to provide sustained bronchodilation and help manage your chronic obstructive pulmonary disease.
+tirzepatide,tirzepatide (generic),generic,"Because tirzepatide acts as a dual GIP and GLP-1 receptor agonist, it effectively enhances glucose-dependent insulin secretion."
+tividenofusp alfa-eknm,tividenofusp alfa-eknm (generic),generic,Starting tividenofusp alfa-eknm will provide an exogenous source of iduronate-2-sulfatase to treat the patient's Hunter syndrome.
+tofacitinib,tofacitinib (generic),generic,"Because tofacitinib acts as a Janus kinase inhibitor, we need to monitor the patient's complete blood count during therapy."
+tovorafenib,tovorafenib (generic),generic,We should consider initiating tovorafenib for this patient because it acts as an effective RAF kinase inhibitor against these specific BRAF alterations.
+troriluzole,troriluzole (generic),generic,We are evaluating whether troriluzole can effectively reduce excitotoxicity in adult patients diagnosed with spinocerebellar ataxia.
+ubrogepant,ubrogepant (generic),generic,I recommend prescribing ubrogepant since this calcitonin gene-related peptide receptor antagonist offers a targeted mechanism for managing your symptoms.
+upadacitinib,upadacitinib (generic),generic,We are starting the patient on upadacitinib because this Janus kinase inhibitor effectively blocks downstream STAT phosphorylation.
+valbenazine,valbenazine (generic),generic,Starting valbenazine should help manage the patient's involuntary movements by targeting vesicular monoamine transporter 2.
+"vanzacaftor, tezacaftor, and deutivacaftor","vanzacaftor, tezacaftor, and deutivacaftor (generic)",generic,"We are starting the patient on vanzacaftor, tezacaftor, and deutivacaftor to improve CFTR protein trafficking and channel gating at the cell surface."
+varenicline,varenicline (generic),generic,We will start you on varenicline one week prior to your target quit date to support your smoking cessation efforts.
+veligrotug-vvze,veligrotug-vvze (generic),generic,We are initiating veligrotug-vvze today because targeting the IGF-1R pathway is crucial for managing his progressive thyroid eye disease.
+vepdegestrant,vepdegestrant (generic),generic,We are starting the patient on vepdegestrant because it effectively targets the estrogen receptor for proteasome-mediated degradation in advanced breast cancer.
+vorasidenib,vorasidenib (generic),generic,Let's initiate vorasidenib therapy for this patient to target the mutant IDH1 and IDH2 enzymes in the tumor.
+xanomeline and trospium chloride,xanomeline and trospium chloride (generic),generic,We are initiating xanomeline and trospium chloride to manage the patient's acute schizophrenia symptoms through targeted central muscarinic receptor activation.
+zenocutuzumab,zenocutuzumab (generic),generic,"We are initiating therapy with zenocutuzumab, a bispecific antibody designed to target both HER2 and HER3 receptors."
+zidesamtinib,zidesamtinib (generic),generic,We should consider zidesamtinib for this patient because it effectively targets several key ROS1 resistance mutations.
+zolbetuximab,zolbetuximab (generic),generic,"Because the biopsy confirmed CLDN18.2 expression, adding zolbetuximab to the regimen should trigger targeted antibody-dependent cellular cytotoxicity."
+zoliflodacin,zoliflodacin (generic),generic,Zoliflodacin functions as a spiropyrimidinetrione inhibitor that targets bacterial DNA gyrase to halt essential DNA replication.
+zolpidem,zolpidem (generic),generic,"Because zolpidem functions as a GABA A receptor positive modulator, take it immediately before bed when you have eight hours to sleep."
+Hepcludex,Hepcludex,brand,We should initiate daily subcutaneous Hepcludex for this adult patient to effectively manage their chronic hepatitis delta virus infection.
+Humira,Humira,brand,We can initiate subcutaneous Humira every other week to specifically block TNF-alpha and help relieve your joint inflammation.
+Icotyde,Icotyde,brand,Take Icotyde orally every morning on an empty stomach to help control your moderate-to-severe plaque psoriasis.
+Idvynso,Idvynso,brand,We can switch your virologically-suppressed patient to Idvynso once daily as a complete two-drug antiretroviral regimen.
+Ilaris,Ilaris,brand,We are initiating Ilaris subcutaneously to neutralize interleukin-1 beta and control systemic inflammation in this patient with Still's disease.
+Imaavy,Imaavy,brand,"Before starting Imaavy for generalized myasthenia gravis, we need to verify the patient's vaccination status and calculate their weight-based infusion dose."
+Imfinzi,Imfinzi,brand,We will administer Imfinzi as an intravenous infusion to block PD-L1 signaling in this patient with unresectable NSCLC.
+Ingrezza,Ingrezza,brand,"We plan to start Ingrezza at forty milligrams daily, as this VMAT2 inhibitor should significantly improve her tardive dyskinesia."
+Inpefa,Inpefa,brand,We can initiate Inpefa once the patient is hemodynamically stable to help reduce their risk of heart failure hospitalization.
+Januvia,Januvia,brand,We can initiate Januvia once daily to improve glycemic control by functioning as an effective DPP-4 inhibitor for type 2 diabetes.
+Jardiance,Jardiance,brand,We should initiate Jardiance today since this SGLT2 inhibitor can effectively lower blood sugar and reduce cardiovascular mortality.
+Jideytro,Jideytro,brand,"Before starting Jideytro for metastatic ROS1-positive non-small cell lung cancer, we need to check baseline electrolytes and an ECG."
+Journavx,Journavx,brand,We are initiating Journavx today as a selective sodium channel blocker to help manage your moderate to severe acute pain.
+Kisqali,Kisqali,brand,We are initiating oral Kisqali today to inhibit cyclin-dependent kinases 4 and 6 for this patient's advanced breast cancer.
+Kyzatrex,Kyzatrex,brand,"Before initiating Kyzatrex for primary hypogonadism, make sure to confirm low morning testosterone levels on two separate days."
+Latuda,Latuda,brand,Please instruct the patient to take Latuda with a meal so we can properly manage their bipolar depression symptoms.
+Leqembi,Leqembi,brand,We plan to start Leqembi as an intravenous infusion to help clear amyloid beta plaques in this Alzheimer's patient.
+Lifyorli,Lifyorli,brand,"Remember to take Lifyorli with food starting the day before your infusion, since this glucocorticoid receptor antagonist works alongside nab-paclitaxel."
+Lipfendra,Lipfendra,brand,We are starting you on Lipfendra once daily because this oral PCSK9 inhibitor effectively lowers elevated LDL cholesterol levels.
+Lipitor,Lipitor,brand,We are initiating Lipitor today to inhibit hepatic HMG-CoA reductase and help bring your elevated LDL cholesterol levels down.
+Loargys,Loargys,brand,Let us initiate weekly Loargys therapy to replace the deficient arginase 1 enzyme and reduce this patient's elevated plasma arginine.
+Lumvoa,Lumvoa,brand,We will start the patient on Lumvoa via intravenous infusion every three weeks to treat their active thyroid eye disease.
+Lynavoy,Lynavoy,brand,We are starting the patient on Lynavoy to help manage their cholestatic pruritus associated with primary biliary cholangitis.
+Lyrica,Lyrica,brand,We can start Lyrica at a low dose to help manage her postherpetic neuralgia and titrate upward if needed.
+Lytenava,Lytenava,brand,We plan to initiate monthly intravitreal injections of Lytenava to manage the patient's neovascular age-related macular degeneration.
+Meibo,Meibo,brand,You should instill one or two drops of Meibo into each affected eye as needed to relieve burning and irritation.
+Metformin,Metformin,brand,We will initiate Metformin with meals to help improve glycemic control in this adult patient diagnosed with type 2 diabetes mellitus.
+Motrin,Motrin,brand,You can administer Motrin every six to eight hours using the enclosed dosing cup to help reduce your child's fever.
+Mounjaro,Mounjaro,brand,We can initiate Mounjaro subcutaneously once weekly to activate both GIP and GLP-1 receptors for better glycemic control.
+Nexium,Nexium,brand,You should take Nexium once daily before breakfast for two weeks to effectively manage your frequent heartburn.
+Nurtec,Nurtec,brand,We can start you on Nurtec every other day as a calcitonin gene-related peptide receptor antagonist to help prevent your episodic migraines.
+Nuzolvence,Nuzolvence,brand,Make sure to obtain a pregnancy test before administering Nuzolvence for the patient's uncomplicated urogenital gonorrhea.
+Obicetrapib,Obicetrapib,brand,We are considering enrolling the patient in a clinical trial evaluating obicetrapib as a novel CETP inhibitor for lowering LDL cholesterol.
+Ojemda,Ojemda,brand,"Before initiating therapy with Ojemda, we need molecular testing to confirm the patient has a documented BRAF fusion or mutation."
+Orzeyful,Orzeyful,brand,We are initiating Orzeyful to help manage your narcolepsy type 1 by directly stimulating your orexin receptor 2 pathway.
+Otezla,Otezla,brand,We are going to start titrating Otezla over the first five days to manage your plaque psoriasis with fewer gastrointestinal symptoms.
+Ozempic,Ozempic,brand,"We are starting you on Ozempic, a weekly GLP-1 receptor agonist, to help manage your type 2 diabetes."
+Palynziq,Palynziq,brand,"Before initiating Palynziq subcutaneously for PKU management, let us obtain a baseline blood phenylalanine concentration."
+Plavix,Plavix,brand,Let's initiate Plavix with a three-hundred milligram loading dose to inhibit platelet aggregation in this patient with acute coronary syndrome.
+Plozasiran,Plozasiran,brand,We are initiating Plozasiran because its siRNA mechanism effectively degrades apoC-III mRNA to help lower your stubborn serum triglycerides.
+Prilosec,Prilosec,brand,You should take Prilosec each morning before breakfast for a full fourteen-day course to manage your frequent heartburn.
+Prozac,Prozac,brand,We can initiate Prozac at twenty milligrams daily in the morning to help manage your obsessive compulsive disorder symptoms.
+Qulipta,Qulipta,brand,We are initiating Qulipta once daily as an oral CGRP receptor antagonist for the preventive treatment of your chronic migraines.
+Retatrutide,Retatrutide,brand,Retatrutide is an investigational triple hormone receptor agonist showing promising weight reduction results in clinical trials for obesity.
+Revtorpyk,Revtorpyk,brand,"Before starting the patient on Revtorpyk for metastatic breast cancer, make sure to prescribe a steroid mouthwash for stomatitis prophylaxis."
+Revuforj,Revuforj,brand,We should initiate oral Revuforj for this patient since their relapsed acute myeloid leukemia carries a confirmed NPM1 mutation.
+Rezdiffra,Rezdiffra,brand,We can initiate Rezdiffra because this thyroid hormone receptor-beta agonist helps treat noncirrhotic metabolic dysfunction-associated steatohepatitis with liver fibrosis.
+Rhapsido,Rhapsido,brand,We are initiating Rhapsido for this patient's chronic spontaneous urticaria because antihistamines alone have not adequately controlled her symptoms.
+Rinvoq,Rinvoq,brand,"Since Rinvoq is a Janus kinase inhibitor, we need to verify your complete blood count and tuberculosis screening before starting treatment."
+Rybelsus,Rybelsus,brand,"We can start the patient on Rybelsus, an oral GLP-1 receptor agonist that helps stimulate glucose-dependent insulin secretion."
+Seroquel,Seroquel,brand,We plan to initiate Seroquel at bedtime to help safely manage the patient's acute symptoms of bipolar depression.
+Simtriyo,Simtriyo,brand,"Before starting Simtriyo for ADHD, we should evaluate your baseline vitals since this medication acts as a central nervous system stimulant."
+Skyrizi,Skyrizi,brand,We are initiating Skyrizi because selectively targeting the p19 subunit of IL-23 effectively manages her moderate-to-severe plaque psoriasis.
+Spiriva,Spiriva,brand,We are starting Spiriva once daily as an anticholinergic bronchodilator for long-term maintenance of your COPD symptoms.
+Symbicort,Symbicort,brand,Symbicort combines a synthetic corticosteroid with a long-acting bronchodilator to provide comprehensive maintenance therapy for patients with moderate COPD.
+Synthroid,Synthroid,brand,Please take your Synthroid on an empty stomach before breakfast to effectively manage your hypothyroidism and normalize TSH levels.
+Tagrisso,Tagrisso,brand,We are going to start you on oral Tagrisso once daily since your metastatic NSCLC tested positive for an EGFR mutation.
+Talvey,Talvey,brand,"Because Talvey targets GPRC5D on multiple myeloma cells, we must closely monitor the patient for cytokine release syndrome during step-up dosing."
+Tecfidera,Tecfidera,brand,We plan to start the patient on oral Tecfidera to help manage relapsing multiple sclerosis by activating the protective Nrf2 pathway.
+TNKase,TNKase,brand,Administer weight-based TNKase as a single intravenous bolus immediately to reduce mortality in this patient presenting with an acute STEMI.
+Toujeo,Toujeo,brand,Remember to rotate your injection sites each time you administer Toujeo subcutaneously to help prevent lipodystrophy.
+Trikafta,Trikafta,brand,We can start the patient on Trikafta to improve mutant CFTR protein trafficking and enhance overall chloride transport.
+Trulicity,Trulicity,brand,"Because Trulicity acts as a GLP-1 receptor agonist, it effectively improves glycemic control by stimulating glucose-dependent insulin release."
+Trutakna,Trutakna,brand,We should start weekly subcutaneous Trutakna injections to help reduce proteinuria in this patient with progressive immunoglobulin A nephropathy.
+Tryngolza,Tryngolza,brand,We are initiating subcutaneous Tryngolza monthly to target apoC-III mRNA and lower triglycerides in this patient with severe hypertriglyceridemia.
+Tryptyr,Tryptyr,brand,We will prescribe Tryptyr drops twice daily because targeting TRPM8 thermoreceptors helps stimulate your eyes to produce natural tears.
+Tylenol,Tylenol,brand,You can take Tylenol every six hours as needed to help reduce your fever and relieve mild muscular aches.
+Tzield,Tzield,brand,We should consider starting Tzield to target CD3 receptors and help preserve pancreatic beta cell function in this patient.
+Ubrelvy,Ubrelvy,brand,We can prescribe Ubrelvy as a calcitonin gene-related peptide receptor antagonist for the acute treatment of your migraine attacks.
+Utebzi,Utebzi,brand,We should consider prescribing Utebzi for this infection because this carbapenem effectively binds essential penicillin-binding proteins.
+Vabysmo,Vabysmo,brand,We plan to administer Vabysmo by intravitreal injection every four weeks to manage the patient's diabetic macular edema.
+Valium,Valium,brand,I recommend starting a low dose of Valium to provide symptomatic relief for this patient's acute alcohol withdrawal.
+Veozah,Veozah,brand,"Before initiating Veozah for her vasomotor symptoms, let's make sure to check her baseline hepatic laboratory tests."
+Veppanu,Veppanu,brand,We can initiate oral Veppanu now that plasma testing confirmed an ESR1 mutation in her metastatic breast cancer.
+Voranigo,Voranigo,brand,We can start the patient on Voranigo once pathology confirms the presence of an IDH1 mutation in their Grade 2 astrocytoma.
+Vraylar,Vraylar,brand,"Because Vraylar acts as a dopamine D2 partial agonist, it should help manage the patient's schizophrenia symptoms effectively."
+Vyglxia,Vyglxia,brand,We are evaluating Vyglxia as an investigational glutamate modulator to help manage symptoms in patients diagnosed with spinocerebellar ataxia.
+Vyloy,Vyloy,brand,We will start Vyloy by intravenous infusion today to treat this patient's advanced CLDN18.2-positive gastric adenocarcinoma.
+Vyvanse,Vyvanse,brand,We can initiate Vyvanse at thirty milligrams every morning as a CNS stimulant to help control your ADHD symptoms.
+Vyvgart,Vyvgart,brand,"Because Vyvgart targets the neonatal Fc receptor to reduce circulating IgG levels, we should make sure the patient's routine immunizations are up to date."
+Wakix,Wakix,brand,We will start you on Wakix to act on histamine-3 receptors and help manage your narcolepsy and cataplexy symptoms.
+Wayrilz,Wayrilz,brand,We will start the patient on Wayrilz to manage their chronic immune thrombocytopenia by selectively targeting Bruton's tyrosine kinase.
+Wegovy,Wegovy,brand,"Because Wegovy acts as a GLP-1 receptor agonist to regulate appetite, we will titrate your weekly dose slowly to avoid stomach upset."
+Winrevair,Winrevair,brand,We will start Winrevair as an activin signaling inhibitor via subcutaneous injection every three weeks while monitoring their platelet counts.
+Xanax,Xanax,brand,We can prescribe a low oral dose of Xanax to quickly manage acute episodes of panic disorder.
+Xarelto,Xarelto,brand,We are starting the patient on Xarelto today to reduce the risk of stroke associated with nonvalvular atrial fibrillation.
+Xeljanz,Xeljanz,brand,"Because Xeljanz functions as a Janus kinase inhibitor, we should check a complete blood count before initiating treatment."
+Xocova,Xocova,brand,We should start oral Xocova within seventy-two hours of contact to provide post-exposure prophylaxis against COVID-19.
+Xofluza,Xofluza,brand,We should start Xofluza today since this antiviral works best when given within forty-eight hours of influenza symptom onset.
+Xolair,Xolair,brand,We are starting Xolair to bind circulating IgE and reduce mast cell activation in your chronic spontaneous urticaria.
+Yuviwel,Yuviwel,brand,We can initiate once-weekly subcutaneous injections of Yuviwel to help promote skeletal bone growth in this child with achondroplasia.
+Zaiidra,Zaiidra,brand,We can prescribe Zaiidra to help block LFA-1 interactions and decrease ocular surface inflammation in this patient.
+Zantac,Zantac,brand,You can take Zantac with a glass of water before meals to help prevent symptoms of acid indigestion.
+Zaynich,Zaynich,brand,"Because the patient has moderate renal impairment, we should adjust the Zaynich dose and administer the intravenous infusion every twelve hours."
+Zepbound,Zepbound,brand,Zepbound functions as a dual GIP and GLP-1 receptor agonist to help decrease appetite and promote long-term weight reduction.
+Zevaskyn,Zevaskyn,brand,We plan to surgically apply Zevaskyn onto the chronic wounds to help restore functional anchoring fibrils in this patient with RDEB.
+Zipalertinib,Zipalertinib,brand,We are considering enrolling the patient in a clinical trial evaluating Zipalertinib for metastatic non-small cell lung cancer with EGFR exon 20 insertion mutations.
+Zoloft,Zoloft,brand,"Because Zoloft is an effective SSRI, we can start at fifty milligrams daily to help manage her major depressive disorder."
+Zorevunersen,Zorevunersen,brand,We are evaluating Zorevunersen as an investigational antisense oligonucleotide for patients with refractory seizures caused by Dravet syndrome.
+Zycubo,Zycubo,brand,"Before starting Zycubo for Menkes disease, make sure we check the infant's baseline serum copper and ceruloplasmin levels."
+Zyrtec,Zyrtec,brand,"You can take Zyrtec once daily to effectively manage your hay fever symptoms, including sneezing and itchy, watery eyes."

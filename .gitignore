@@ -1,4 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Credentials — never commit. The service-account key is read from the
+# GOOGLE_APPLICATION_CREDENTIALS_JSON env var and decoded in memory only.
 .secrets/
-*.json
 .env
 .env.*
+*service-account*.json
+*credentials*.json
+sa.json
+*.pem
+*.key
+
+# Benchmark run artifacts: generated audio is hundreds of MB per sweep and is
+# reproducible from the harness. Reports and manifests are kept (see !rules).
+runs/*/audio/

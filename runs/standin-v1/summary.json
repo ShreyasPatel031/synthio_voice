@@ -1,0 +1,98 @@
+{
+  "gtts-chirp3hd-achernar": {
+    "system_id": "gtts-chirp3hd-achernar",
+    "n_items": 274,
+    "n_ok": 266,
+    "n_failed": 8,
+    "pass_rate": 97.1,
+    "n_scored": 274,
+    "score_mean": 4.854,
+    "score_median": 5.0,
+    "score_p10": 5.0,
+    "pass_rate_by_stratum": {
+      "brand": 94.4,
+      "generic": 100.0
+    },
+    "latency_mean_ms": 1388.2,
+    "latency_p50_ms": 1367.4,
+    "latency_p90_ms": 1636.6,
+    "latency_p99_ms": 2000.0,
+    "total_cost_usd": 1.03182,
+    "cost_per_utterance_usd": 0.00387902,
+    "cost_estimated": true,
+    "price_verified": false,
+    "retry_rate": 5.8
+  },
+  "gtts-neural2-c": {
+    "system_id": "gtts-neural2-c",
+    "n_items": 274,
+    "n_ok": 274,
+    "n_failed": 0,
+    "pass_rate": 100.0,
+    "n_scored": 274,
+    "score_mean": 5.0,
+    "score_median": 5.0,
+    "score_p10": 5.0,
+    "pass_rate_by_stratum": {
+      "brand": 100.0,
+      "generic": 100.0
+    },
+    "latency_mean_ms": 446.4,
+    "latency_p50_ms": 417.6,
+    "latency_p90_ms": 533.9,
+    "latency_p99_ms": 1033.0,
+    "total_cost_usd": 0.565984,
+    "cost_per_utterance_usd": 0.00206564,
+    "cost_estimated": true,
+    "price_verified": false,
+    "retry_rate": 0.0
+  },
+  "gtts-standard-c": {
+    "system_id": "gtts-standard-c",
+    "n_items": 274,
+    "n_ok": 274,
+    "n_failed": 0,
+    "pass_rate": 100.0,
+    "n_scored": 274,
+    "score_mean": 5.0,
+    "score_median": 5.0,
+    "score_p10": 5.0,
+    "pass_rate_by_stratum": {
+      "brand": 100.0,
+      "generic": 100.0
+    },
+    "latency_mean_ms": 529.3,
+    "latency_p50_ms": 490.6,
+    "latency_p90_ms": 633.1,
+    "latency_p99_ms": 1568.7,
+    "total_cost_usd": 0.141496,
+    "cost_per_utterance_usd": 0.00051641,
+    "cost_estimated": true,
+    "price_verified": false,
+    "retry_rate": 0.0
+  },
+  "gtts-wavenet-c": {
+    "system_id": "gtts-wavenet-c",
+    "n_items": 274,
+    "n_ok": 274,
+    "n_failed": 0,
+    "pass_rate": 100.0,
+    "n_scored": 274,
+    "score_mean": 5.0,
+    "score_median": 5.0,
+    "score_p10": 5.0,
+    "pass_rate_by_stratum": {
+      "brand": 100.0,
+      "generic": 100.0
+    },
+    "latency_mean_ms": 534.3,
+    "latency_p50_ms": 490.5,
+    "latency_p90_ms": 675.4,
+    "latency_p99_ms": 1272.9,
+    "total_cost_usd": 0.565984,
+    "cost_per_utterance_usd": 0.00206564,
+    "cost_estimated": true,
+    "price_verified": false,
+    "retry_rate": 0.0
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "run_id": "standin-v1",
+  "created_utc": "2026-09-17T20:21:34.988275+00:00",
+  "dose_r_version": "0.1.0",
+  "systems": [
+    "gtts-standard-c",
+    "gtts-wavenet-c",
+    "gtts-neural2-c",
+    "gtts-chirp3hd-achernar"
+  ],
+  "scorer": "standin-audio-plausibility-v1",
+  "scorer_measures_pronunciation": false,
+  "n_items": 274,
+  "concurrency": 6,
+  "max_attempts": 3,
+  "gcp_project": "project-amer-scs-sandbox",
+  "platform": "Linux-6.18.44-fc-v33-x86_64-with-glibc2.39",
+  "notes": "Stand-in harness validation: cheap Cloud TTS tier, full 274 items, stand-in audio-plausibility scorer (NOT pronunciation).",
+  "status": "complete",
+  "wall_clock_s": 145.58,
+  "per_system": {
+    "gtts-standard-c": {
+      "ok": 274,
+      "failed": 0,
+      "cost_usd": 0.141496
+    },
+    "gtts-wavenet-c": {
+      "ok": 274,
+      "failed": 0,
+      "cost_usd": 0.565984
+    },
+    "gtts-neural2-c": {
+      "ok": 274,
+      "failed": 0,
+      "cost_usd": 0.565984
+    },
+    "gtts-chirp3hd-achernar": {
+      "ok": 266,
+      "failed": 8,
+      "cost_usd": 1.03182
+    }
+  }
+}

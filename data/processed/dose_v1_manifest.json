@@ -1,0 +1,19 @@
+{
+  "source": "SynthioLabs/dose-benchmark (CC-BY-4.0)",
+  "source_parquet_sha256": "7c292cc20af1528b3a9feec3c8f2f2f42433396534ae8c967fec47fd66512386",
+  "canonical_csv": "data/processed/dose_v1_canonical.csv",
+  "canonical_csv_sha256": "91368e5a84d560397b866d57542febc13e6608266e256d094ec965e1abc067b9",
+  "integrity": {
+    "rows": 274,
+    "strata": {
+      "brand": 143,
+      "generic": 131
+    },
+    "label_suffix_stripped": 131,
+    "duplicate_drugs": 0,
+    "sentences_missing_drug": 0,
+    "sentences_missing_drug_examples": [],
+    "problems": [],
+    "ok": true
+  }
+}

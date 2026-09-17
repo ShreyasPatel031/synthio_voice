@@ -1,0 +1,25 @@
+====================================================================================================
+DOSE-R run standin-v1   scorer=standin-audio-plausibility-v1
+====================================================================================================
+
+  !! STAND-IN SCORER -- NOT A PRONUNCIATION JUDGEMENT !!
+  These pass rates measure audio deliverability, not whether the drug name
+  was pronounced correctly. They are NOT comparable to DOSE's leaderboard.
+  Latency and cost figures below ARE real measurements.
+
+system                        ok  fail   pass%  brand%   gen%    p50ms    p90ms       $/utt    $total
+-----------------------------------------------------------------------------------------------------
+gtts-chirp3hd-achernar       266     8    97.1    94.4  100.0     1367     1637  0.00387902    1.0318
+gtts-neural2-c               274     0   100.0   100.0  100.0      418      534  0.00206564    0.5660
+gtts-standard-c              274     0   100.0   100.0  100.0      491      633  0.00051641    0.1415
+gtts-wavenet-c               274     0   100.0   100.0  100.0      490      675  0.00206564    0.5660
+
+Score distribution (retained, not collapsed to pass/fail):
+  system                        mean  median     p10     n
+  gtts-chirp3hd-achernar        4.85    5.00    5.00   274
+  gtts-neural2-c                5.00    5.00    5.00   274
+  gtts-standard-c               5.00    5.00    5.00   274
+  gtts-wavenet-c                5.00    5.00    5.00   274
+
+Cost note: figures are list-price estimates, not billing-export
+verified (see config.Pricing.verified).
