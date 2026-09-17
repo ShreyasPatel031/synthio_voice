@@ -14,15 +14,23 @@ answer is a nearest neighbour and a margin, never a bare boolean.
 
 It reuses the reference IPA/ARPABET layer and the same weighted distance as the
 primary scorer, so it needs no additional model and no additional annotation.
+
+One deliberate difference from the primary score: the neighbour search uses the
+SEGMENTAL cost only, with no stress term. Stress is not what turns one drug name
+into another -- valsartan and sacubitril are not separated by where the emphasis
+falls -- and including it would let a stress difference decide which drug a
+rendering is nearest to. Distances reported here are therefore slightly smaller
+than the corresponding `PhoneticScore.normalized_error`, and are not
+interchangeable with it.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .distance import DELETE_CONSONANT, INSERT_CONSONANT, align
+from .distance import DELETE_CONSONANT, INSERT_CONSONANT, bounded_cost, encode
 from .phonemes import parse
-from .phonetic_scorer import length_scale, normalize
+from .phonetic_scorer import length_scale
 from .references import Reference, ReferenceSet
 
 MIN_INDEL_COST = min(DELETE_CONSONANT, INSERT_CONSONANT)
@@ -105,24 +113,47 @@ class ConfusabilityIndex:
         )
         self.references = references
         self._pool: dict[str, Reference] = {r.key: r for r in pool}
+        self._encoded: dict[str, tuple[tuple[tuple[int, ...], int, float], ...]] = {
+            r.key: tuple(
+                (encode(v.arpabet), v.index, length_scale(len(v.arpabet)))
+                for v in r.variants
+            )
+            for r in pool
+        }
 
     @property
     def size(self) -> int:
         return len(self._pool)
 
-    def _distance_to(self, reference: Reference, hyp: list[str], ceiling: float) -> tuple[float, int]:
+    def _encode_reference(self, reference: Reference):
+        cached = self._encoded.get(reference.key)
+        if cached is None:
+            cached = tuple(
+                (encode(v.arpabet), v.index, length_scale(len(v.arpabet)))
+                for v in reference.variants
+            )
+            self._encoded[reference.key] = cached
+        return cached
+
+    def _distance_to(
+        self, reference: Reference, hyp: tuple[int, ...], hyp_len: int, ceiling: float
+    ) -> tuple[float, int]:
         best, best_index = float("inf"), 0
-        for variant in reference.variants:
-            if _lower_bound(len(variant.arpabet), len(hyp)) >= min(best, ceiling):
+        for codes, index, scale in self._encode_reference(reference):
+            limit = min(best, ceiling)
+            if _lower_bound(len(codes), hyp_len) >= limit:
                 continue
-            d = normalize(align(list(variant.arpabet), hyp))
+            cost = bounded_cost(codes, hyp, limit * scale)
+            d = cost / scale
             if d < best:
-                best, best_index = d, variant.index
+                best, best_index = d, index
         return best, best_index
 
     def distance(self, ingredient: str, hypothesis: list[str] | str) -> float:
-        hyp = parse(hypothesis)
-        return self._distance_to(self.references.require(ingredient), hyp, float("inf"))[0]
+        hyp = encode(parse(hypothesis))
+        return self._distance_to(
+            self.references.require(ingredient), hyp, len(hyp), float("inf")
+        )[0]
 
     def report(
         self,
@@ -131,16 +162,19 @@ class ConfusabilityIndex:
         item_id: str = "",
         k: int = 3,
     ) -> ConfusabilityReport:
-        hyp = parse(hypothesis)
+        hyp = encode(parse(hypothesis))
+        hyp_len = len(hyp)
         intended_key = ingredient.lower()
-        intended = self._distance_to(self.references.require(ingredient), hyp, float("inf"))[0]
+        intended = self._distance_to(
+            self.references.require(ingredient), hyp, hyp_len, float("inf")
+        )[0]
 
         found: list[Neighbor] = []
         ceiling = float("inf")
         for key, reference in self._pool.items():
             if key == intended_key:
                 continue
-            d, variant_index = self._distance_to(reference, hyp, ceiling)
+            d, variant_index = self._distance_to(reference, hyp, hyp_len, ceiling)
             if d < ceiling:
                 found.append(Neighbor(reference.ingredient, d, variant_index))
                 found.sort(key=lambda n: n.distance)

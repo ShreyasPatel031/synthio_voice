@@ -120,13 +120,23 @@ def sample_anchor_set(
     n: int = ANCHOR_TARGET,
     seed: str = "dose-r-anchor-v1",
     min_combinations: int = 2,
+    min_per_stratum: int = 4,
 ) -> list[Span]:
     """Pick the 40-60 spans a human should verify by hand.
 
-    Proportional allocation across name_type x difficulty band, largest
-    remainder for the leftovers, deterministic given the seed. Combination-
-    product spans are force-included to a floor because they are 3% of the set
-    but carry the aggregation decision that the row scores depend on.
+    Allocation across name_type x difficulty band is a floor plus proportional
+    remainder, not pure proportional. The bands are confounded with name type in
+    this dataset -- brand names are short and generics are long, so brand/hard
+    and generic/easy are both thin -- and a purely proportional draw would leave
+    those cells with one or two items, which is not enough to detect a
+    per-stratum bias in the judge. The floor buys coverage of the cells the
+    calibration is supposed to test, at the cost of the anchor set no longer
+    being a miniature of the benchmark. It is a diagnostic sample, not an
+    estimate of the pass rate, so that trade is the right way round.
+
+    Combination-product spans are force-included to a floor for the same reason:
+    they are 3% of the set but carry the aggregation decision the row scores
+    depend on. Deterministic given the seed.
     """
     low, high = ANCHOR_BOUNDS
     if not low <= n <= high:
@@ -142,12 +152,19 @@ def sample_anchor_set(
     for group in buckets.values():
         group.sort(key=lambda s: _stable_order(s.item_id, seed))
 
-    total = len(spans)
-    exact = {k: len(v) * n / total for k, v in buckets.items()}
-    alloc = {k: min(int(v), len(buckets[k])) for k, v in exact.items()}
-    remainder = sorted(
-        buckets, key=lambda k: (-(exact[k] - int(exact[k])), k)
-    )
+    alloc = {k: min(min_per_stratum, len(v)) for k, v in buckets.items()}
+    if sum(alloc.values()) > n:
+        raise ValueError(
+            f"floor of {min_per_stratum} across {len(buckets)} strata needs "
+            f"{sum(alloc.values())} items, more than the requested {n}"
+        )
+
+    spare = {k: len(v) - alloc[k] for k, v in buckets.items()}
+    total_spare = sum(spare.values())
+    exact = {k: v * (n - sum(alloc.values())) / total_spare for k, v in spare.items()}
+    for k, v in exact.items():
+        alloc[k] += min(int(v), spare[k])
+    remainder = sorted(buckets, key=lambda k: (-(exact[k] - int(exact[k])), k))
     i = 0
     while sum(alloc.values()) < n and i < len(remainder) * 4:
         k = remainder[i % len(remainder)]

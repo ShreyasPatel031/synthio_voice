@@ -165,7 +165,19 @@ def length_scale(reference_length: int) -> float:
 
 
 def normalize(alignment: Alignment) -> float:
-    return alignment.total_cost / length_scale(len(alignment.reference))
+    """Length-normalised segmental error plus un-normalised stress error.
+
+    Segmental cost scales with the name: a long name offers more opportunities
+    for small transcription differences. Stress does not. A name has one primary
+    stress however long it is, so relocating it is one error, and dividing it by
+    length would make a stress shift free in a long name and fatal in a short
+    one. Charging it flat is what keeps "misplaced stress costs a point, never a
+    failure" true across the whole set.
+    """
+    return (
+        alignment.segmental_cost / length_scale(len(alignment.reference))
+        + alignment.stress_cost
+    )
 
 
 def error_to_score(normalized_error: float) -> int:

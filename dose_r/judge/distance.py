@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .phonemes import is_vowel, stress_of, substitution_cost
+from .phonemes import FEATURES, is_vowel, stress_of, substitution_cost
 from .syllables import Syllable, syllabify, syllable_index_of
 
 # Indel costs. Deletions are dearer than insertions: a dropped segment removes
@@ -203,6 +203,61 @@ def align(reference: list[str], hypothesis: list[str]) -> Alignment:
         stress_cost=stress,
         syllables=_syllable_reports(syllables, ops),
     )
+
+
+_TOKENS: list[str] = sorted(
+    {p for p in FEATURES if FEATURES[p]["class"] == "consonant"}
+    | {f"{p}{d}" for p in FEATURES if FEATURES[p]["class"] == "vowel" for d in "012"}
+    | {p for p in FEATURES if FEATURES[p]["class"] == "vowel"}
+)
+_CODE = {token: i for i, token in enumerate(_TOKENS)}
+# Segmental only, matching `align`'s DP objective exactly, so `bounded_cost`
+# with an infinite ceiling reproduces `align(...).segmental_cost` to the float.
+_SUB = [[pair_cost(a, b) for b in _TOKENS] for a in _TOKENS]
+_DEL = [_delete_cost(t) for t in _TOKENS]
+_INS = [_insert_cost(t) for t in _TOKENS]
+INF = float("inf")
+
+
+def encode(phonemes) -> tuple[int, ...]:
+    """Integer codes for the fast path. Stress digits are part of the token."""
+    return tuple(_CODE[p] for p in phonemes)
+
+
+def bounded_cost(ref: tuple[int, ...], hyp: tuple[int, ...], ceiling: float) -> float:
+    """Segmental alignment cost, or `inf` once it is known to exceed `ceiling`.
+
+    Same objective as `align`, without the traceback, and abandoned early: row
+    minima of the DP table are non-decreasing, so once a whole row exceeds the
+    ceiling no completion can come back under it. This is what makes the
+    286-way confusability search affordable.
+    """
+    n, m = len(ref), len(hyp)
+    row = [0.0] * (m + 1)
+    for j in range(1, m + 1):
+        row[j] = row[j - 1] + _INS[hyp[j - 1]]
+
+    for i in range(1, n + 1):
+        sub = _SUB[ref[i - 1]]
+        delete = _DEL[ref[i - 1]]
+        diag = row[0]
+        row[0] += delete
+        best = row[0]
+        for j in range(1, m + 1):
+            candidate = diag + sub[hyp[j - 1]]
+            up = row[j] + delete
+            if up < candidate:
+                candidate = up
+            left = row[j - 1] + _INS[hyp[j - 1]]
+            if left < candidate:
+                candidate = left
+            diag = row[j]
+            row[j] = candidate
+            if candidate < best:
+                best = candidate
+        if best > ceiling:
+            return INF
+    return row[m]
 
 
 def _syllable_reports(
