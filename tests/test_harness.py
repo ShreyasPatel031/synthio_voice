@@ -998,25 +998,30 @@ def test_speech_bertscore_orthogonal_sequences_score_low():
     assert result["f1"] < 0.1
 
 
-def test_score_speech_similarity_maps_precision_not_f1_to_0_5_scale():
-    """The paper (Saeki et al.) found precision alone outperforms F1 and uses
-    it as SpeechBERTScore's actual metric -- this project's first draft used
-    F1 by mistake. Construct a case where they genuinely differ (a candidate
-    fully covered by a longer, more varied reference: high precision, lower
-    recall) and confirm the score tracks precision, not F1."""
+def test_score_speech_similarity_maps_f1_not_precision_to_0_5_scale():
+    """The paper (Saeki et al.) uses precision alone; this project
+    deliberately diverges (module docstring, "Correction history" step 3) --
+    precision was tested and found weakly sensitive to a candidate that
+    truncates part of the drug name, which matters more here than the
+    paper's own use case. Construct a case where precision and F1 genuinely
+    differ (a short candidate fully covered by a much longer reference: high
+    precision, low recall -- e.g. mimicking a truncated candidate compared
+    against a full-length reference) and confirm the score tracks F1, not
+    precision alone."""
     import numpy as np
     from dose_r.scoring.speech_similarity import score_speech_similarity
 
     rng = np.random.RandomState(1)
-    candidate = rng.randn(3, 8)          # short candidate
+    candidate = rng.randn(3, 8)          # short candidate (e.g. truncated)
     reference = np.vstack([candidate, rng.randn(20, 8)])  # candidate + lots extra
 
     score, components = score_speech_similarity(candidate, reference)
 
     assert components["precision"] == pytest.approx(1.0, abs=1e-6)  # every candidate frame matches perfectly
     assert components["recall"] < 0.5    # most reference frames have no good match
-    assert components["f1"] < 0.7        # F1 would be dragged down by recall
-    assert score == pytest.approx(5.0, abs=1e-3)  # but the score follows precision, not F1
+    assert components["f1"] < 0.7         # F1 is pulled down by the low recall
+    assert score == pytest.approx(components["f1"] * 5.0, abs=1e-3)  # score follows F1, not precision
+    assert score < 4.0  # a precision-only score would have been a false 5.0 "pass" here
 
 
 def test_score_speech_similarity_identical_sequences_scores_five():
