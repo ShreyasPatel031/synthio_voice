@@ -44,6 +44,7 @@ SOURCE_NAME = "drugs.com"
 DEFAULT_INPUTS = [
     ROOT / "data" / "collected" / "drugscom_246.json",
     ROOT / "data" / "collected" / "62a75a68-drugscom_284.json",
+    ROOT / "data" / "collected" / "drugscom_found_28.json",
 ]
 
 
