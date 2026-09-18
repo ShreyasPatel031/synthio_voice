@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from ..judge.fixtures import g2p
-from . import sources
+from . import sources, usan_stems
 from .notation import convert
 from .wiki_notation import ipa_to_arpabet_ipa, respell_to_arpabet_ipa, NotationError as WikiNotationError
 
@@ -53,6 +53,23 @@ def _from_g2p(word: str) -> list[tuple[str, str]]:
     return [(" ".join(v), g2p.to_ipa(v)) for v in g2p.to_arpabet_variants(word)]
 
 
+def _from_usan(word: str, name_type: str) -> tuple[list[tuple[str, str]], str] | None:
+    """USAN stem-rule variants and a confidence note, generics only.
+
+    USAN/INN stems are a real naming convention for coined generic names;
+    brand names are deliberately chosen NOT to follow them, so this is never
+    tried for a brand. Returns None when no recognized, back-tested-useful
+    stem applies, and the caller falls back to plain `g2p.py`.
+    """
+    if name_type != "generic":
+        return None
+    hit = usan_stems.resolve(word)
+    if hit is None:
+        return None
+    variants, note = hit
+    return [(" ".join(v), g2p.to_ipa(v)) for v in variants], note
+
+
 def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
     """A wikipedia/wiktionary source dict -> [(ARPABET, IPA), ...]."""
     try:
@@ -63,8 +80,14 @@ def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
         return []
 
 
-def _resolve_word(word: str) -> tuple[list[tuple[str, str]], list[dict], str]:
-    """Variants, sources and tier for a single word."""
+NO_SOURCE_NOTE = (
+    "no external source found -- derived from spelling by rule. "
+    "TODO: needs LLM arbitration or human review before it is trusted"
+)
+
+
+def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], list[dict], str, str]:
+    """Variants, sources, tier and (for `low`) a note, for a single word."""
     found = []
 
     mw = sources.merriam_webster(word)
@@ -93,7 +116,16 @@ def _resolve_word(word: str) -> tuple[list[tuple[str, str]], list[dict], str]:
         found.append(([(arpa, to_ipa(arpa.split()))], cmu))
 
     if not found:
-        return _from_g2p(word), [], "low"
+        stem_hit = _from_usan(word, name_type)
+        if stem_hit is not None:
+            variants, note = stem_hit
+            return variants, [], "low", note
+        no_stem_reason = (
+            "brand names do not follow USAN/INN stem conventions by design"
+            if name_type == "brand"
+            else "no recognized stem or source; generic fallback only"
+        )
+        return _from_g2p(word), [], "low", f"{NO_SOURCE_NOTE} ({no_stem_reason})"
 
     variants: list[tuple[str, str]] = []
     seen_arpa: set[str] = set()
@@ -108,7 +140,7 @@ def _resolve_word(word: str) -> tuple[list[tuple[str, str]], list[dict], str]:
                 variants.append(v)
 
     tier = "high" if len(found) > 1 else "medium"
-    return variants, [src for _, src in found], tier
+    return variants, [src for _, src in found], tier, ""
 
 
 def _join(parts: list[list[tuple[str, str]]]) -> list[tuple[str, str]]:
@@ -119,20 +151,16 @@ def _join(parts: list[list[tuple[str, str]]]) -> list[tuple[str, str]]:
 
 
 def resolve(name: str, name_type: str) -> dict:
-    whole, srcs, tier = _resolve_word(name)
-    notes = ""
+    whole, srcs, tier, notes = _resolve_word(name, name_type)
 
     if tier == "low" and " " in name:
-        per_word = [_resolve_word(w) for w in name.split()]
+        per_word = [_resolve_word(w, name_type) for w in name.split()]
         whole = _join([p[0] for p in per_word])
         srcs = [s for p in per_word for s in p[1]]
         tier = min((p[2] for p in per_word), key=TIERS.index)
-        notes = "resolved word by word; tier is the weakest word"
-
-    if tier == "low":
-        notes = (notes + "; " if notes else "") + (
-            "no external source found -- derived from spelling by rule. "
-            "TODO: needs LLM arbitration or human review before it is trusted"
+        word_notes = "; ".join(p[3] for p in per_word if p[3])
+        notes = "resolved word by word; tier is the weakest word" + (
+            f"; {word_notes}" if word_notes else ""
         )
 
     return {
