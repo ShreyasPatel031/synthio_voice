@@ -291,28 +291,40 @@ def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | 
     return None
 
 
-_STRESS_TOKEN = re.compile(r"^[a-zA-Z]{1,8}[\"'‘’]?$")
+_STRESS_MARK = r"(?:''|\"|['’])"
+_STRESS_TOKEN = re.compile(rf"^[a-zA-Z]{{1,8}}{_STRESS_MARK}?$")
 _STRESS_STOPWORDS = {
     "is", "a", "an", "the", "of", "or", "and", "in", "on", "at", "as",
     "to", "was", "were", "it", "be", "by", "for", "with",
 }
 
 
+def _stress_kind(token: str) -> str | None:
+    """`"primary"` for a single prime (' or the curly '), `"secondary"` for
+    a double prime (a real `"`, or the two-ASCII-apostrophe `''` Gemini's
+    text output renders it as), `None` for no stress mark at all."""
+    if token.endswith("''") or token.endswith('"'):
+        return "secondary"
+    if token.endswith("'") or token.endswith("’"):
+        return "primary"
+    return None
+
+
 def _extract_stress_respelling(text: str) -> str | None:
     """Pull a USAN/USP-style pronunciation-key respelling: space-separated
     syllables with a prime marking stress, e.g. `(dor" a vir' een)` or
-    `troe ril' ue zole` -- secondary stress marked with a double prime ("),
-    primary with a single prime ('). This is the official USAN adopted-name
+    `zip'' ah ler' ti nib` -- secondary stress marked with a double prime,
+    primary with a single prime. This is the official USAN adopted-name
     pronunciation convention, not the drugs.com/WebMD hyphenated style
     `_extract_respelling` handles, so it needs its own parser.
 
-    Requiring the stress mark to be the LAST character of its token (not
+    Requiring the stress mark to be the LAST character(s) of its token (not
     mid-token, as in a possessive like "Davis's") is what keeps this from
     firing on ordinary prose.
     """
     text = text.replace("*", "")
     for m in re.finditer(
-        r"(?:^|[\s(\"])((?:[a-zA-Z]{1,8}[\"'‘’]?\s+){1,5}[a-zA-Z]{1,8}[\"'‘’]?)(?=[\s.)\"]|$)",
+        rf"(?:^|[\s(\"])((?:[a-zA-Z]{{1,8}}{_STRESS_MARK}?\s+){{1,5}}[a-zA-Z]{{1,8}}{_STRESS_MARK}?)(?=[\s.)\"]|$)",
         text,
     ):
         tokens = m.group(1).split()
@@ -320,11 +332,11 @@ def _extract_stress_respelling(text: str) -> str | None:
             tokens = tokens[1:]
         if len(tokens) < 2 or not all(_STRESS_TOKEN.match(t) for t in tokens):
             continue
-        if not any(t.endswith("'") or t.endswith("’") for t in tokens):
+        if not any(_stress_kind(t) == "primary" for t in tokens):
             continue
         syllables = []
         for t in tokens:
-            primary = t.endswith("'") or t.endswith("’")
+            primary = _stress_kind(t) == "primary"
             letters = re.sub(r"[^a-zA-Z]", "", t)
             if not letters:
                 syllables = None
@@ -488,17 +500,35 @@ def verified_claims(name: str) -> list[VerifiedClaim]:
             seen.add(key)
             out.append(VerifiedClaim(respelling, ipa, url, domain, page_verified))
 
+    def _candidates(text: str) -> list[str]:
+        """Every distinct respelling candidate across all three notation
+        styles this pipeline parses. Chaining the three extractors with
+        `or` (the earlier version of this function) let an early, wrong
+        match block a later, correct one from ever being tried -- e.g. the
+        plain hyphen pattern matching a citation's document number ("USAN
+        NO-08") ahead of the real stress-marked respelling later in the
+        same sentence ("zip'' ah ler' ti nib"), for Zipalertinib. `emit`
+        already rejects a bad candidate via the format judge, so there is
+        no harm in offering it several candidates instead of just the
+        first regex's opinion.
+        """
+        out_candidates = []
+        for candidate in (
+            _extract_respelling(text, exclude=name),
+            _extract_stress_respelling(text),
+            _extract_caps_stress_respelling(text),
+        ):
+            if candidate and candidate not in out_candidates:
+                out_candidates.append(candidate)
+        return out_candidates
+
     # Precise pass: attribute each claim only to the chunks Gemini's own
     # grounding actually cited for the sentence it appeared in.
     for support in answer.supports:
         segment = support["segment_text"]
-        respelling = (
-            _extract_respelling(segment, exclude=name)
-            or _extract_stress_respelling(segment)
-            or _extract_caps_stress_respelling(segment)
-        )
         ipa = _extract_ipa(segment)
-        emit(respelling, ipa, support["chunk_indices"])
+        for respelling in _candidates(segment) or [None]:
+            emit(respelling, ipa, support["chunk_indices"])
 
     # Fallback: Gemini's segmentation sometimes doesn't attach a grounding
     # support to the headline claim sentence itself (only to the trailing
@@ -511,12 +541,8 @@ def verified_claims(name: str) -> list[VerifiedClaim]:
     # every citation Google's search grounding chose is inherently about
     # that one fact, not scattered unrelated ones.
     if not out:
-        respelling = (
-            _extract_respelling(answer.text, exclude=name)
-            or _extract_stress_respelling(answer.text)
-            or _extract_caps_stress_respelling(answer.text)
-        )
         ipa = _extract_ipa(answer.text)
-        emit(respelling, ipa, range(len(answer.chunks)))
+        for respelling in _candidates(answer.text) or [None]:
+            emit(respelling, ipa, range(len(answer.chunks)))
 
     return out

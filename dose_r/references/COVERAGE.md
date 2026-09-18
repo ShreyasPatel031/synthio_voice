@@ -6,23 +6,23 @@
 
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
-| high | 97 | 34.2% | two independent sources agree |
-| medium | 169 | 59.5% | exactly one external source answered |
-| low | 18 | 6.3% | no external source; no ground truth |
+| high | 98 | 34.5% | two independent sources agree |
+| medium | 171 | 60.2% | exactly one external source answered |
+| low | 15 | 5.3% | no external source; no ground truth |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
-| high | 54 | 43 |
-| medium | 79 | 90 |
-| low | 10 | 8 |
+| high | 54 | 44 |
+| medium | 80 | 91 |
+| low | 9 | 6 |
 
 ## Sources that answered
 
 | Source | Ingredients |
 | --- | --- |
-| gemini-grounded-search | 346 |
+| gemini-grounded-search | 355 |
 | merriam-webster/medical-api | 89 |
 | wikipedia | 22 |
 | cmudict | 13 |
@@ -36,7 +36,7 @@
 | Original (MW HTML scrape + CMUdict only) | 19 | 80 | 185 |
 | + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |
 | + MW Medical Dictionary API | 41 | 170 | 73 |
-| + Gemini/Google-Search grounding, rule-based fallback removed (this build) | 97 | 169 | 18 |
+| + Gemini/Google-Search grounding, rule-based fallback removed (this build) | 98 | 171 | 15 |
 
 The Wikipedia/Wiktionary and Medical API steps were the first two real gains.
 The Gemini step is the largest one by far: Gemini 2.5 Flash with the
@@ -59,7 +59,7 @@ derived guess dressed up as data.
 | Wikipedia (`{{IPAc-en}}`, `{{IPA\|en\|...}}`, `{{respell}}`) | **Wired in.** 22 ingredients. Most DOSE brand names are too new or minor for an English Wikipedia article at all. |
 | Wiktionary (same templates) | **Wired in.** 2 ingredients; thin, and mostly overlaps Wikipedia rather than adding new names. |
 | CMUdict | **Wired in** (pre-existing). 13 ingredients; a general dictionary, not a drug-name resource. |
-| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 346 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
+| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 355 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
 | DrugBank | Dead end. HTTP 403. |
 | FDA labels (openFDA, DailyMed) | Dead end. Reachable (200), but label text carries no pronunciation respellings -- nothing to extract. |
 | NLM RxNav / RxNorm | Dead end for pronunciation. Reachable, resolves names to RxCUIs reliably, but `allProperties` carries only coding/synonym fields (ATC, SNOMED, DrugBank ID, etc.) -- no phonetic field exists in the schema. Kept as the id-lookup step for the MedlinePlus Connect pipeline below. |
@@ -75,7 +75,7 @@ derived guess dressed up as data.
 Gemini/Google-Search grounding closed most of the old `low` tier, generic
 and brand alike (it found real citations for coined INN names like
 elranatamab-bcmm and risankizumab-rzaa just as readily as for brand names).
-What's left (18 ingredients) skews brand-name-heavy --
+What's left (15 ingredients) skews brand-name-heavy --
 these are mostly very recent approvals with essentially no indexed
 pronunciation content anywhere on the public web yet, not a gap this
 pipeline's extraction or verification logic is failing to close.
@@ -116,7 +116,7 @@ pipeline's extraction or verification logic is failing to close.
 
 ## Needs arbitration
 
-18 ingredients have no external source at all -- Gemini's
+15 ingredients have no external source at all -- Gemini's
 Google-Search grounding either found nothing or nothing that survived the
 LLM format check. There is no rule-based fallback for these: no phonetic
 reference exists for them in this layer, full stop.
@@ -130,12 +130,9 @@ reference exists for them in this layer, full stop.
 - Vyglxia (brand)
 - Wakix (brand)
 - Yuviwel (brand)
-- Zipalertinib (brand)
 - cipepofol (generic)
 - copper histidinate (generic)
 - insulin icodec-abae (generic)
-- navepegritide (generic)
 - nogapendekin alfa inbakicept-pmln (generic)
 - pivekimab sunirine-pvzy (generic)
 - prademagene zamikeracel (generic)
-- tividenofusp alfa-eknm (generic)
