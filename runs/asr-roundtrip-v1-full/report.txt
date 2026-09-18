@@ -1,0 +1,19 @@
+====================================================================================================
+DOSE-R run asr-roundtrip-v1-full   scorer=asr-roundtrip-v1
+====================================================================================================
+system                        ok  fail   pass%  brand%   gen%    p50ms    p90ms       $/utt    $total
+-----------------------------------------------------------------------------------------------------
+gtts-chirp3hd-achernar       266     8    44.2    48.3   39.7     1367     1637  0.00387902    1.0318
+gtts-neural2-c               274     0    47.8    52.4   42.7      418      534  0.00206564    0.5660
+gtts-standard-c              274     0    47.8    53.1   42.0      491      633  0.00051641    0.1415
+gtts-wavenet-c               274     0    48.9    53.1   44.3      490      675  0.00206564    0.5660
+
+Score distribution (retained, not collapsed to pass/fail):
+  system                        mean  median     p10     n
+  gtts-chirp3hd-achernar        3.35    2.67    1.79   274
+  gtts-neural2-c                3.52    2.80    1.88   274
+  gtts-standard-c               3.50    2.76    1.88   274
+  gtts-wavenet-c                3.55    2.84    1.90   274
+
+Cost note: figures are list-price estimates, not billing-export
+verified (see config.Pricing.verified).
