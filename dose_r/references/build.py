@@ -5,16 +5,16 @@ nine rows are combination products and a few ingredients repeat). Each record
 carries every accepted variant, its provenance, and a confidence tier that the
 replication-fidelity report can stratify on.
 
-Confidence follows the project contract and is deliberately conservative:
+Confidence follows the project contract:
 
     high     two independent sources agree
     medium   exactly one external source answered
-    low      no external source; derived from spelling by rule
+    low      no external source; no ground truth
 
 Multi-word ingredients are resolved word by word when the full name misses, so
-`fluticasone propionate` can take a real MW pronunciation for the head and fall
-back only where it has to. A record is only as trustworthy as its weakest word,
-so the tier is the minimum across words.
+`fluticasone propionate` can take a real pronunciation for the head word only.
+A record is only as trustworthy as its weakest word, so the tier is the minimum
+across words.
 """
 
 from __future__ import annotations
@@ -25,8 +25,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from ..judge.fixtures import g2p
-from . import gemini_grounded, sources, usan_stems
+from . import gemini_grounded, sources
 from .notation import convert
 from .wiki_notation import ipa_to_arpabet_ipa, respell_to_arpabet_ipa, NotationError as WikiNotationError
 
@@ -47,10 +46,6 @@ def ingredients() -> dict[str, str]:
             for ing in row["ingredients"]:
                 out.setdefault(ing, row["name_type"])
     return out
-
-
-def _from_g2p(word: str) -> list[tuple[str, str]]:
-    return [(" ".join(v), g2p.to_ipa(v)) for v in g2p.to_arpabet_variants(word)]
 
 
 def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict], str] | None:
@@ -90,23 +85,6 @@ def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict],
     return variants, srcs, tier
 
 
-def _from_usan(word: str, name_type: str) -> tuple[list[tuple[str, str]], str] | None:
-    """USAN stem-rule variants and a confidence note, generics only.
-
-    USAN/INN stems are a real naming convention for coined generic names;
-    brand names are deliberately chosen NOT to follow them, so this is never
-    tried for a brand. Returns None when no recognized, back-tested-useful
-    stem applies, and the caller falls back to plain `g2p.py`.
-    """
-    if name_type != "generic":
-        return None
-    hit = usan_stems.resolve(word)
-    if hit is None:
-        return None
-    variants, note = hit
-    return [(" ".join(v), g2p.to_ipa(v)) for v in variants], note
-
-
 def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
     """A wikipedia/wiktionary source dict -> [(ARPABET, IPA), ...]."""
     try:
@@ -115,12 +93,6 @@ def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
         return [respell_to_arpabet_ipa(hit["raw"].split("|"))]
     except WikiNotationError:
         return []
-
-
-NO_SOURCE_NOTE = (
-    "no external source found -- derived from spelling by rule. "
-    "TODO: needs LLM arbitration or human review before it is trusted"
-)
 
 
 def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], list[dict], str, str]:
@@ -158,17 +130,7 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
             variants, srcs, tier = gemini_hit
             return variants, srcs, tier, ""
 
-        stem_hit = _from_usan(word, name_type)
-        if stem_hit is not None:
-            variants, note = stem_hit
-            return variants, [], "low", note
-
-        no_stem_reason = (
-            "brand names do not follow USAN/INN stem conventions by design"
-            if name_type == "brand"
-            else "no recognized stem or source; generic fallback only"
-        )
-        return _from_g2p(word), [], "low", f"{NO_SOURCE_NOTE} ({no_stem_reason})"
+        return [], [], "low", "no audio and no phonetic source found"
 
     variants: list[tuple[str, str]] = []
     seen_arpa: set[str] = set()
@@ -198,7 +160,10 @@ def resolve(name: str, name_type: str) -> dict:
 
     if tier == "low" and " " in name:
         per_word = [_resolve_word(w, name_type) for w in name.split()]
-        whole = _join([p[0] for p in per_word])
+        if all(p[0] for p in per_word):
+            whole = _join([p[0] for p in per_word])
+        else:
+            whole = []
         srcs = [s for p in per_word for s in p[1]]
         tier = min((p[2] for p in per_word), key=TIERS.index)
         word_notes = "; ".join(p[3] for p in per_word if p[3])
@@ -243,7 +208,7 @@ def coverage_report(records: list[dict]) -> str:
     meaning = {
         "high": "two independent sources agree",
         "medium": "exactly one external source answered",
-        "low": "no external source; derived from spelling by rule",
+        "low": "no external source; no ground truth",
     }
     for t in TIERS:
         n = len(by_tier[t])

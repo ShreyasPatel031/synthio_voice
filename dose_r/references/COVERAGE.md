@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | high | 41 | 14.4% | two independent sources agree |
 | medium | 170 | 59.9% | exactly one external source answered |
-| low | 73 | 25.7% | no external source; derived from spelling by rule |
+| low | 73 | 25.7% | no external source; no ground truth |
 
 ## By name type
 
