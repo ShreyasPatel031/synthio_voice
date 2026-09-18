@@ -6,12 +6,53 @@ runner needs -- audio, timing, cost, failure -- comes back in SynthesisResult.
 
 from __future__ import annotations
 
+import random
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
 from ..config import VoiceSpec
+
+
+class RetryableError(Exception):
+    """A synthesis failure that is worth retrying (rate limit, transient 5xx,
+    timeout, connection reset).
+
+    `retry_after_s`, when the backend supplies one (e.g. a 429's Retry-After
+    header), lets the retry loop honor the backend's own cooldown instead of
+    guessing at one -- the backend knows its quota window, we don't.
+    """
+
+    def __init__(self, message: str, *, retry_after_s: float | None = None):
+        super().__init__(message)
+        self.retry_after_s = retry_after_s
+
+
+class NonRetryableError(Exception):
+    """A synthesis failure that will not succeed on retry (bad request, auth,
+    not-found, ...). Retrying it just burns attempts and backoff time on an
+    outcome that cannot change.
+    """
+
+
+def _backoff_delay(base_s: float, attempt: int, retry_after_s: float | None) -> float:
+    """Exponential backoff with full jitter (per AWS's backoff-and-jitter note).
+
+    A deterministic `base * 2**(attempt-1)` sleep is exactly wrong under
+    concurrency: if N workers hit a shared rate limit in the same instant,
+    they all sleep the identical duration and all retry in the same instant
+    again, colliding with the limit repeatedly until they run out of
+    attempts. Drawing the sleep uniformly from [0, ceiling] spreads workers
+    across the window so they stop retrying in lockstep.
+    """
+    if retry_after_s is not None:
+        # The backend told us how long to wait. Still add a little jitter on
+        # top so workers that all received the same Retry-After don't all
+        # wake at exactly the same moment either.
+        return retry_after_s + random.uniform(0, base_s)
+    ceiling = base_s * (2 ** (attempt - 1))
+    return random.uniform(0, ceiling)
 
 
 @dataclass
@@ -89,15 +130,33 @@ class TTSAdapter(ABC):
         """Call `_synthesize` with retries, capturing timing and cost."""
         cost, verified = self.estimate_cost(len(text))
         last_error: str | None = None
+        attempts_used = 0
 
         for attempt in range(1, max_attempts + 1):
+            attempts_used = attempt
             t0 = time.perf_counter()
             try:
                 audio, meta = self._synthesize(text)
-            except Exception as exc:  # adapter-specific failures are all reported alike
+            except NonRetryableError as exc:
+                # E.g. a 400: the input itself is the problem, so attempt 2
+                # and 3 would just reproduce it. Fail fast instead of paying
+                # two more backoff sleeps for a foregone conclusion.
+                last_error = f"{type(exc).__name__}: {exc}"
+                break
+            except RetryableError as exc:
                 last_error = f"{type(exc).__name__}: {exc}"
                 if attempt < max_attempts:
-                    time.sleep(backoff_s * (2 ** (attempt - 1)))
+                    time.sleep(_backoff_delay(backoff_s, attempt, exc.retry_after_s))
+                continue
+            except Exception as exc:
+                # No retry policy is known for this failure. Retry it
+                # conservatively (old behavior) rather than assume it's
+                # permanent -- adapters that haven't adopted
+                # Retryable/NonRetryableError still get *a* backoff, just
+                # without a retry-after hint.
+                last_error = f"{type(exc).__name__}: {exc}"
+                if attempt < max_attempts:
+                    time.sleep(_backoff_delay(backoff_s, attempt, None))
                 continue
 
             return SynthesisResult(
@@ -115,5 +174,5 @@ class TTSAdapter(ABC):
         return SynthesisResult(
             system_id=self.system_id, item_id=item_id, ok=False,
             billable_chars=len(text), cost_usd=0.0, price_verified=verified,
-            attempts=max_attempts, error=last_error,
+            attempts=attempts_used, error=last_error,
         )

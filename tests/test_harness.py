@@ -92,6 +92,159 @@ def test_cost_scales_with_characters():
     assert c1 > 0
 
 
+# --- retry/backoff classification -------------------------------------------
+# Regression coverage for the 8/274 gtts-chirp3hd-achernar failures in
+# runs/standin-v1: all 8 were HTTP 429 RESOURCE_EXHAUSTED, clustered together
+# in item order (i.e. concurrency-correlated), and all 3 attempts were burned
+# with a deterministic 2s/4s backoff that lets 6 concurrent workers collide
+# with the rate limit in lockstep. Re-running the same 8 items sequentially
+# against the live API succeeded first-try, confirming the input text was
+# never the problem. Everything below runs offline against a scripted fake
+# `requests.Session` -- no network, no spend.
+
+class _FakeResponse:
+    def __init__(self, status_code: int, text: str = "", json_data=None,
+                 headers=None):
+        self.status_code = status_code
+        self.text = text
+        self._json = json_data or {}
+        self.headers = headers or {}
+
+    def json(self):
+        return self._json
+
+
+class _ScriptedSession:
+    """Stands in for requests.Session: returns/raises each scripted item in order."""
+
+    def __init__(self, script):
+        self._script = list(script)
+        self.calls = 0
+
+    def post(self, *args, **kwargs):
+        self.calls += 1
+        item = self._script.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+
+def _ok_response():
+    import base64
+    audio = b"RIFF" + b"\x00" * 40  # just needs to start with RIFF
+    return _FakeResponse(200, json_data={"audioContent": base64.b64encode(audio).decode()})
+
+
+@pytest.fixture(autouse=True)
+def _no_real_auth(monkeypatch):
+    """Adapter tests below never touch the network, but _synthesize still calls
+    auth.auth_headers() before the (fake) request -- stub it so these tests
+    don't depend on GOOGLE_APPLICATION_CREDENTIALS_JSON being set, and never
+    trigger a real OAuth token refresh."""
+    monkeypatch.setattr("dose_r.adapters.google_tts.auth.auth_headers", lambda: {})
+
+
+@pytest.fixture(autouse=True)
+def _no_real_sleep(monkeypatch):
+    """Backoff sleeps are real seconds otherwise; tests only care that sleep
+    *was requested* with the right duration, not that it actually elapsed."""
+    monkeypatch.setattr("dose_r.adapters.base.time.sleep", lambda s: None)
+
+
+def test_429_is_retried_and_can_still_succeed():
+    """This is exactly runs/standin-v1's failure mode: a 429 that clears up
+    a moment later must not be treated as permanent."""
+    from dose_r.adapters import GoogleTTSAdapter
+    from dose_r.config import CHEAP_TIER
+
+    session = _ScriptedSession([
+        _FakeResponse(429, text='{"error": {"status": "RESOURCE_EXHAUSTED"}}'),
+        _ok_response(),
+    ])
+    adapter = GoogleTTSAdapter(CHEAP_TIER["gtts-chirp3hd-achernar"], session=session)
+    res = adapter.synthesize("Take Abilify daily.", "x", max_attempts=3, backoff_s=0.01)
+
+    assert res.ok
+    assert res.attempts == 2
+    assert session.calls == 2
+
+
+def test_429_exhausting_all_attempts_reports_the_429():
+    from dose_r.adapters import GoogleTTSAdapter
+    from dose_r.adapters.base import RetryableError
+    from dose_r.config import CHEAP_TIER
+
+    session = _ScriptedSession([_FakeResponse(429, text="quota")] * 3)
+    adapter = GoogleTTSAdapter(CHEAP_TIER["gtts-chirp3hd-achernar"], session=session)
+    res = adapter.synthesize("Take Abilify daily.", "x", max_attempts=3, backoff_s=0.01)
+
+    assert not res.ok
+    assert res.attempts == 3
+    assert "429" in res.error
+    assert RetryableError.__name__ in res.error
+
+
+def test_400_is_not_retried():
+    """A bad-request 400 will fail identically on every attempt -- retrying it
+    just burns two backoff sleeps and two attempts for nothing."""
+    from dose_r.adapters import GoogleTTSAdapter
+    from dose_r.config import CHEAP_TIER
+
+    session = _ScriptedSession([_FakeResponse(400, text="invalid voice name")])
+    adapter = GoogleTTSAdapter(CHEAP_TIER["gtts-chirp3hd-achernar"], session=session)
+    res = adapter.synthesize("Take Abilify daily.", "x", max_attempts=3, backoff_s=0.01)
+
+    assert not res.ok
+    assert res.attempts == 1          # failed fast, did not spend all 3
+    assert session.calls == 1         # and never called the backend again
+    assert "400" in res.error
+
+
+def test_503_is_retryable_like_429():
+    from dose_r.adapters import GoogleTTSAdapter
+    from dose_r.config import CHEAP_TIER
+
+    session = _ScriptedSession([_FakeResponse(503, text="backend unavailable"), _ok_response()])
+    adapter = GoogleTTSAdapter(CHEAP_TIER["gtts-chirp3hd-achernar"], session=session)
+    res = adapter.synthesize("Take Abilify daily.", "x", max_attempts=3, backoff_s=0.01)
+
+    assert res.ok and res.attempts == 2
+
+
+def test_retry_after_header_is_honored():
+    """When the backend names its own cooldown, the retry loop should wait at
+    least that long rather than substituting a shorter guess."""
+    from dose_r.adapters.base import _backoff_delay
+
+    delay = _backoff_delay(base_s=2.0, attempt=1, retry_after_s=5.0)
+    assert delay >= 5.0
+
+
+def test_backoff_has_jitter_not_lockstep():
+    """The bug: a deterministic 2s/4s backoff lets N concurrent workers that
+    hit a shared rate limit at the same instant all retry at the same instant
+    again, colliding with it repeatedly. Jitter must make the delays vary."""
+    from dose_r.adapters.base import _backoff_delay
+
+    delays = {_backoff_delay(base_s=2.0, attempt=2, retry_after_s=None) for _ in range(20)}
+    assert len(delays) > 1, "20 draws all identical -- backoff is not jittered"
+    assert all(0 <= d <= 4.0 for d in delays), "delay exceeded the attempt-2 ceiling"
+
+
+def test_timeout_is_retryable_not_fatal():
+    """A slow response is not evidence the request was malformed."""
+    import requests
+
+    from dose_r.adapters import GoogleTTSAdapter
+    from dose_r.config import CHEAP_TIER
+
+    session = _ScriptedSession([requests.Timeout("read timed out"), _ok_response()])
+    adapter = GoogleTTSAdapter(CHEAP_TIER["gtts-chirp3hd-achernar"], session=session)
+    res = adapter.synthesize("Take Abilify daily.", "x", max_attempts=3, backoff_s=0.01)
+
+    assert res.ok and res.attempts == 2
+
+
 # --- scoring ---------------------------------------------------------------
 def test_standin_scorer_is_flagged_as_not_pronunciation():
     assert build_scorer("standin").measures_pronunciation is False
