@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from ..judge.fixtures import g2p
-from . import sources, usan_stems
+from . import gemini_grounded, sources, usan_stems
 from .notation import convert
 from .wiki_notation import ipa_to_arpabet_ipa, respell_to_arpabet_ipa, NotationError as WikiNotationError
 
@@ -51,6 +51,43 @@ def ingredients() -> dict[str, str]:
 
 def _from_g2p(word: str) -> list[tuple[str, str]]:
     return [(" ".join(v), g2p.to_ipa(v)) for v in g2p.to_arpabet_variants(word)]
+
+
+def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict], str] | None:
+    """Gemini-retrieved, independently-verified respellings for `word`.
+
+    Every claim here has already been checked against its own cited page's
+    real fetched content by `gemini_grounded.verified_claims` -- this is
+    retrieval with a citation, not a model guess, and works for brands too
+    since a manufacturer's own site is a real, checkable source for a trade
+    name in a way no naming convention ever could be.
+    """
+    claims = gemini_grounded.verified_claims(word)
+    if not claims:
+        return None
+
+    variants: list[tuple[str, str]] = []
+    srcs: list[dict] = []
+    seen_norm: set[str] = set()
+    for claim in claims:
+        norm = gemini_grounded._normalize(claim.respelling)
+        try:
+            variant = respell_to_arpabet_ipa(claim.respelling.split("-"))
+        except WikiNotationError:
+            continue
+        if norm not in seen_norm:
+            seen_norm.add(norm)
+            variants.append(variant)
+        srcs.append(
+            {"name": "gemini-grounded-search", "raw": claim.respelling, "url": claim.source_url}
+        )
+
+    if not variants:
+        return None
+
+    distinct_domains = {s["url"] for s in srcs}
+    tier = "high" if len(seen_norm) == 1 and len(distinct_domains) > 1 else "medium"
+    return variants, srcs, tier
 
 
 def _from_usan(word: str, name_type: str) -> tuple[list[tuple[str, str]], str] | None:
@@ -116,10 +153,16 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
         found.append(([(arpa, to_ipa(arpa.split()))], cmu))
 
     if not found:
+        gemini_hit = _from_gemini_grounded(word)
+        if gemini_hit is not None:
+            variants, srcs, tier = gemini_hit
+            return variants, srcs, tier, ""
+
         stem_hit = _from_usan(word, name_type)
         if stem_hit is not None:
             variants, note = stem_hit
             return variants, [], "low", note
+
         no_stem_reason = (
             "brand names do not follow USAN/INN stem conventions by design"
             if name_type == "brand"

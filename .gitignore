@@ -32,3 +32,6 @@ data/collected/
 # entirely, so unlike the Merriam-Webster MP3s they cannot be re-fetched from
 # anywhere. They are tracked deliberately.
 !data/reference_audio/drugs_com/*.wav
+
+# Gemini grounded-search cache: rebuildable, one file per API call/page fetch
+dose_r/references/.cache/gemini_*.json
