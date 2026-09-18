@@ -1066,24 +1066,113 @@ def test_extract_words_with_timing_empty_on_no_results():
     assert _extract_words_with_timing({"results": []}) == []
 
 
-def test_locate_span_with_timing_returns_none_when_drug_absent():
-    from dose_r.audio_span import _locate_span_with_timing
+def test_locate_span_indices_returns_none_when_drug_absent():
+    from dose_r.audio_span import _locate_span_indices
 
     words = [{"word": "Take", "start_s": 0.0, "end_s": 0.3}]
-    result = _locate_span_with_timing("Take Advil now.", "Advil", words)
+    result = _locate_span_indices("Take Advil now.", "Advil", words)
     assert result is None
 
 
-def test_locate_span_with_timing_finds_matching_word():
-    from dose_r.audio_span import _locate_span_with_timing
+def test_locate_span_indices_finds_matching_word():
+    from dose_r.audio_span import _locate_span_indices
 
     words = [
         {"word": "Take", "start_s": 0.0, "end_s": 0.3},
         {"word": "Advil", "start_s": 0.3, "end_s": 0.9},
         {"word": "now", "start_s": 0.9, "end_s": 1.1},
     ]
-    result = _locate_span_with_timing("Take Advil now.", "Advil", words)
-    assert result == (0.3, 0.9)
+    result = _locate_span_indices("Take Advil now.", "Advil", words)
+    assert result == (1, 1)
+
+
+# --- regression tests for the two confirmed span-contamination bugs --------
+# Both found by listening to extracted spans on real Gemini Flash TTS audio,
+# not by inspection -- see the module docstring's "Two real, confirmed
+# contamination bugs" section for the full story and the real STT responses
+# these fixtures are drawn from.
+
+def test_clamp_padding_does_not_bleed_into_previous_word():
+    """The confirmed "esomeprazole" bug: Cloud STT garbled the drug name into
+    "a"/"summer" (0.8-1.6s); the immediately preceding word "start" ends at
+    exactly 0.8s, so a naive fixed 0.12s pad pulled the clip start back to
+    0.68s -- INSIDE "start"'s own span. Padding must stop at the midpoint of
+    the gap to the neighbor, and here the gap is zero (0.8s to 0.8s)."""
+    from dose_r.audio_span import _clamp_padding
+
+    words = [
+        {"word": "start", "start_s": 0.5, "end_s": 0.8},
+        {"word": "a", "start_s": 0.8, "end_s": 1.4},
+        {"word": "summer", "start_s": 1.4, "end_s": 1.6},
+        {"word": "once", "start_s": 1.6, "end_s": 2.6},
+    ]
+    start_s, end_s = _clamp_padding(words, i=1, j=2)
+    assert start_s >= 0.8   # never reaches back into "start"'s span (ends at 0.8)
+    assert end_s <= 1.6 + 0.12  # end-side gap is generous, full pad is fine there
+
+
+def test_clamp_padding_respects_a_narrow_gap_on_both_sides():
+    """A tighter, symmetric case: words with only 0.04s of silence on each
+    side should clamp padding to half that gap (0.02s), not the full 0.12s."""
+    from dose_r.audio_span import _clamp_padding
+
+    words = [
+        {"word": "the", "start_s": 0.0, "end_s": 0.46},
+        {"word": "Advil", "start_s": 0.50, "end_s": 0.90},
+        {"word": "now", "start_s": 0.94, "end_s": 1.20},
+    ]
+    start_s, end_s = _clamp_padding(words, i=1, j=1)
+    assert start_s == pytest.approx(0.48, abs=1e-6)  # 0.50 - min(0.12, 0.04/2)
+    assert end_s == pytest.approx(0.92, abs=1e-6)     # 0.90 + min(0.12, 0.04/2)
+
+
+def test_duration_plausibility_rejects_corrupted_stt_timestamp():
+    """The confirmed "talquetamab" bug: Cloud STT collapsed six real spoken
+    words into one garbled token with a reported span of 0.6s to 5.7s (5.1s)
+    while the sentence's other words average well under 1s each. No padding
+    fix can catch this -- it is STT's own timestamp that is corrupted."""
+    from dose_r.audio_span import _duration_is_plausible
+
+    normal_paced_words = [
+        {"word": "since", "start_s": 0.1, "end_s": 0.6},
+        {"word": "it", "start_s": 5.7, "end_s": 6.2},
+        {"word": "offers", "start_s": 6.2, "end_s": 6.6},
+        {"word": "a", "start_s": 6.6, "end_s": 7.1},
+    ]
+    assert _duration_is_plausible(normal_paced_words, span_duration_s=5.1) is False
+    assert _duration_is_plausible(normal_paced_words, span_duration_s=0.6) is True
+
+
+def test_verify_by_retranscription_accepts_garbled_or_empty_transcript():
+    """A coined drug name being unrecognizable to ASR is EXPECTED and must
+    not itself fail verification -- only too MANY recognized words should."""
+    from dose_r.audio_span import _verify_by_retranscription
+
+    empty = _FakeResponse(200, json_data={"results": []})
+    session = _ScriptedSession([empty])
+    assert _verify_by_retranscription(b"fake", "esomeprazole", 24000, session, 30) is True
+
+
+def test_verify_by_retranscription_rejects_too_many_words():
+    """Mirrors the "start esomeprazole once" contamination shape: a span that
+    re-transcribes to several unrelated real words should fail verification
+    for a single-word drug name."""
+    from dose_r.audio_span import _verify_by_retranscription
+
+    contaminated = _FakeResponse(200, json_data={"results": [
+        {"alternatives": [{"transcript": "start a summer once"}]},
+    ]})
+    session = _ScriptedSession([contaminated])
+    assert _verify_by_retranscription(b"fake", "esomeprazole", 24000, session, 30) is False
+
+
+def test_verify_by_retranscription_transport_failure_does_not_reject():
+    """A hiccup on the verification call itself must not invalidate an
+    otherwise-good span -- fail open, not closed, on transport errors."""
+    from dose_r.audio_span import _verify_by_retranscription
+
+    session = _ScriptedSession([_FakeResponse(500, text="server error")])
+    assert _verify_by_retranscription(b"fake", "esomeprazole", 24000, session, 30) is True
 
 
 def test_speech_similarity_scorer_no_reference_clip_is_unscoreable():
