@@ -28,6 +28,7 @@ from pathlib import Path
 from ..judge.fixtures import g2p
 from . import sources
 from .notation import convert
+from .wiki_notation import ipa_to_arpabet_ipa, respell_to_arpabet_ipa, NotationError as WikiNotationError
 
 ROOT = Path(__file__).resolve().parents[2]
 DATASET = ROOT / "data" / "dose_v1.jsonl"
@@ -52,6 +53,16 @@ def _from_g2p(word: str) -> list[tuple[str, str]]:
     return [(" ".join(v), g2p.to_ipa(v)) for v in g2p.to_arpabet_variants(word)]
 
 
+def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
+    """A wikipedia/wiktionary source dict -> [(ARPABET, IPA), ...]."""
+    try:
+        if hit["kind"] == "ipa":
+            return [ipa_to_arpabet_ipa(hit["raw"])]
+        return [respell_to_arpabet_ipa(hit["raw"].split("|"))]
+    except WikiNotationError:
+        return []
+
+
 def _resolve_word(word: str) -> tuple[list[tuple[str, str]], list[dict], str]:
     """Variants, sources and tier for a single word."""
     found = []
@@ -61,6 +72,18 @@ def _resolve_word(word: str) -> tuple[list[tuple[str, str]], list[dict], str]:
         variants = convert(mw["raw"])
         if variants:
             found.append((variants, mw))
+
+    wp = sources.wikipedia_pronunciation(word)
+    if wp:
+        variants = _wiki_variants(wp)
+        if variants:
+            found.append((variants, {k: v for k, v in wp.items() if k != "kind"}))
+
+    wikt = sources.wiktionary_pronunciation(word)
+    if wikt:
+        variants = _wiki_variants(wikt)
+        if variants:
+            found.append((variants, {k: v for k, v in wikt.items() if k != "kind"}))
 
     cmu = sources.cmudict_lookup(word)
     if cmu:
@@ -73,9 +96,15 @@ def _resolve_word(word: str) -> tuple[list[tuple[str, str]], list[dict], str]:
         return _from_g2p(word), [], "low"
 
     variants: list[tuple[str, str]] = []
+    seen_arpa: set[str] = set()
     for group, _ in found:
         for v in group:
-            if v not in variants:
+            # Dedupe on the ARPABET form, which is what scoring actually
+            # matches against; two sources rendering the identical phoneme
+            # sequence with slightly different IPA glyphs (e.g. length marks)
+            # are not a second variant.
+            if v[0] not in seen_arpa:
+                seen_arpa.add(v[0])
                 variants.append(v)
 
     tier = "high" if len(found) > 1 else "medium"

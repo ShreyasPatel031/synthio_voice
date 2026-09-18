@@ -6,6 +6,11 @@ import pytest
 from dose_r.judge.phonemes import parse
 from dose_r.judge.references import ReferenceSet
 from dose_r.references.notation import convert, to_arpabet_ipa
+from dose_r.references.wiki_notation import (
+    ipa_to_arpabet_ipa,
+    ipac_en_args_to_arpabet_ipa,
+    respell_to_arpabet_ipa,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCES = ROOT / "dose_r" / "references" / "references.jsonl"
@@ -78,3 +83,48 @@ def test_mw_trailing_variant_expands_to_a_full_form():
     variants = convert("flü-ˈtik-ə-ˌsōn, -ˌzōn")
     assert len(variants) == 2
     assert variants[0][0].replace(" S ", " Z ") == variants[1][0]
+
+
+# --- Wikipedia / Wiktionary notation ---------------------------------------
+#
+# The three known-good cases from the project brief: a Wikipedia {{respell}}
+# for a word with a mid-word stressed syllable (Metformin), a {{respell}} with
+# a four-syllable coined INN (suzetrigine), and a Wiktionary {{IPA|en|...}}
+# already in IPA (cefepime), which needs the IPA-to-ARPABET path rather than
+# the respelling-key path.
+
+
+def test_respell_metformin():
+    arpa, ipa = respell_to_arpabet_ipa(["met", "FOR", "min"])
+    assert arpa == "M EH0 T F AO1 R M IH0 N"
+    assert ipa == "mɛtfɔːrmɪn"
+
+
+def test_respell_suzetrigine():
+    arpa, ipa = respell_to_arpabet_ipa(["soo", "ZE", "tri", "jeen"])
+    assert arpa == "S UW0 Z EH1 T R IH0 JH IY0 N"
+    assert ipa == "suːzɛtrɪdʒiːn"
+
+
+def test_ipa_cefepime():
+    arpa, ipa = ipa_to_arpabet_ipa("/ˈsɛf.ə.piːm/")
+    assert arpa == "S EH1 F AH0 P IY0 M"
+    assert ipa == "sɛfəpiːm"
+
+
+def test_ipac_en_metformin_agrees_with_respell_and_mw():
+    # Wikipedia's IPAc-en transcription of the same word, pre-split into one
+    # template argument per phoneme/stress-mark, as it actually appears in
+    # the "Metformin" article's wikitext.
+    arpa, _ = ipac_en_args_to_arpabet_ipa(
+        ["m", "ɛ", "t", "ˈ", "f", "ɔːr", "m", "ᵻ", "n"]
+    )
+    # Same segmental content and stress as the respelling and as Merriam-
+    # Webster's "met-'fOr-m at n" (MEH0-T-F-AO1-R-M-*-N); only the reduced
+    # final vowel differs, which is exactly what the /ɪ~ə/ marker ᵻ encodes.
+    assert arpa == "M EH0 T F AO1 R M AH0 N"
+
+
+def test_ipa_to_arpabet_defaults_to_first_vowel_when_unmarked():
+    arpa, _ = ipa_to_arpabet_ipa("/sɛfəpiːm/")
+    assert arpa.split()[1] == "EH1"

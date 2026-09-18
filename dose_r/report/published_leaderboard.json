@@ -1,0 +1,35 @@
+{
+  "provenance": "Transcribed by hand from Synthio's public DOSE leaderboard write-up. Not machine-fetched, not independently audited. Only the figures explicitly given to Workstream 1d are recorded here -- nothing below was inferred, interpolated, or guessed to fill out the field of 9.",
+  "known_system_count": 3,
+  "total_system_count": 9,
+  "unknown_systems_note": "DOSE ranks 9 TTS systems overall. Six of the nine system names and scores were never given to this workstream and are not recorded here or anywhere else in this repo. Do not treat this file as the full leaderboard, and do not compute a 9-point rank correlation against it -- there are only 3 usable anchors.",
+  "systems": {
+    "rxpronounce": {
+      "vendor": "Synthio",
+      "system_name": "RxPronounce",
+      "rank": 1,
+      "overall_pass_rate": 0.912,
+      "established_pass_rate": null,
+      "new_pass_rate": null,
+      "note": "Top of the published ranking. Only the overall figure was given; the established/new breakdown is not available."
+    },
+    "gemini_tts": {
+      "vendor": "Google",
+      "system_name": "Gemini TTS",
+      "rank": null,
+      "overall_pass_rate": 0.745,
+      "established_pass_rate": 0.891,
+      "new_pass_rate": 0.616,
+      "note": "The one system with a full established/new breakdown available. Use this as the primary fidelity anchor: reproducing the ~27.5-point established-vs-new drop matters more than reproducing 74.5% exactly."
+    },
+    "azure_dragonhd": {
+      "vendor": "Microsoft",
+      "system_name": "Azure DragonHD",
+      "rank": 9,
+      "overall_pass_rate": 0.631,
+      "established_pass_rate": null,
+      "new_pass_rate": null,
+      "note": "Bottom of the published ranking. Only the overall figure was given."
+    }
+  }
+}

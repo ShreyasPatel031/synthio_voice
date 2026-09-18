@@ -4,9 +4,17 @@ Coverage reality, measured against the 284 unique DOSE ingredients rather than
 assumed:
 
 - Merriam-Webster (medical, then general) carries real lexicographer-assigned
-  pronunciations and often several accepted variants. It is the only external
-  source that answered: Drugs.com returns 403, and FDA labels via openFDA and
-  DailyMed turn out to carry no pronunciation respellings at all.
+  pronunciations and often several accepted variants. Drugs.com and DrugBank
+  return 403, and FDA labels via openFDA and DailyMed turn out to carry no
+  pronunciation respellings at all.
+- Wikipedia and Wiktionary carry real pronunciations too, but not in the
+  plaintext extract -- they live in the wikitext as `{{IPAc-en|...}}` /
+  `{{IPA|en|...}}` templates (raw IPA) or `{{respell|...}}` templates
+  (Wikipedia's own respelling key, see `wiki_notation.py`). Coverage is much
+  thinner than Merriam-Webster's -- most DOSE brand names are too new or too
+  minor to have an English Wikipedia article at all -- but where it answers
+  it is an independent, real, citable source, which is exactly what lets an
+  MW entry be corroborated into "high" confidence instead of just "medium".
 - CMUdict covers 13 ingredients. Almost every DOSE name is a coined trade or INN
   name that no general dictionary lists, so a pronunciation dictionary is a
   rounding error here, not a backbone.
@@ -21,6 +29,8 @@ from __future__ import annotations
 
 import json
 import re
+import threading
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -28,6 +38,11 @@ from pathlib import Path
 CACHE = Path(__file__).resolve().parent / ".cache"
 MW_BASE = "https://www.merriam-webster.com"
 UA = {"User-Agent": "Mozilla/5.0 (compatible; DOSE-R research benchmark)"}
+WIKI_UA = {
+    "User-Agent": "DOSE-R-research-bot/1.0 "
+    "(https://github.com/ -- gold pronunciation reference layer; "
+    "contact: shreyas.patel@searce.com)"
+}
 TIMEOUT = 25
 
 _PRON = re.compile(r"prons?[^>]*>([^<]{2,80})<")
@@ -85,6 +100,131 @@ def merriam_webster(name: str) -> dict | None:
 
     _store(f"mw::{name}", {})
     return None
+
+
+_WIKI_LOCK = threading.Lock()
+_WIKI_NEXT_OK = [0.0]
+_WIKI_MIN_INTERVAL = 0.4  # be polite: this build runs many words concurrently
+
+
+def _wiki_throttle() -> None:
+    with _WIKI_LOCK:
+        wait = _WIKI_NEXT_OK[0] - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        _WIKI_NEXT_OK[0] = time.monotonic() + _WIKI_MIN_INTERVAL
+
+
+def _wiki_wikitext(domain: str, title: str) -> str | None:
+    """Raw wikitext of `title` on `domain` (en.wikipedia.org / en.wiktionary.org)."""
+    cache_key = f"wikitext::{domain}::{title}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit["text"] or None
+
+    url = (
+        f"https://{domain}/w/api.php?action=parse&page="
+        f"{urllib.parse.quote(title)}&prop=wikitext&format=json"
+    )
+    text: str | None = None
+    for attempt in range(4):
+        _wiki_throttle()
+        try:
+            req = urllib.request.Request(url, headers=WIKI_UA)
+            raw = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode(
+                "utf-8", "ignore"
+            )
+        except Exception:
+            text = None
+            break
+
+        if "too many requests" in raw.lower() or "rate limit" in raw.lower():
+            time.sleep(2**attempt)  # transient 429 from a shared IP; back off
+            continue
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            text = None
+            break
+
+        if "error" in data:
+            text = None  # missingtitle, invalidtitle, etc. -- no such page
+        else:
+            text = data.get("parse", {}).get("wikitext", {}).get("*")
+        break
+
+    _store(cache_key, {"text": text})
+    return text
+
+
+# Longest-content-first: {{IPAc-en|...}} and {{IPA|en|...}} carry real IPA and
+# are preferred over {{respell|...}}, which is a lossy lay respelling of the
+# same pronunciation and is usually present *alongside* one of the other two.
+_IPAC_EN = re.compile(r"\{\{\s*IPAc-en\s*\|([^{}]+)\}\}", re.IGNORECASE)
+_IPA_EN = re.compile(r"\{\{\s*IPA\s*\|\s*en\s*\|([^{}]+)\}\}", re.IGNORECASE)
+_RESPELL = re.compile(r"\{\{\s*respell\s*\|([^{}]+)\}\}", re.IGNORECASE)
+
+
+def _args(inner: str) -> list[str]:
+    return [a.strip() for a in inner.split("|") if a.strip() and "=" not in a]
+
+
+def _extract_pronunciation(wikitext: str) -> dict | None:
+    """The first usable pronunciation template in a page's wikitext."""
+    m = _IPAC_EN.search(wikitext)
+    if m:
+        args = _args(m.group(1))
+        if args:
+            return {"kind": "ipa", "raw": "".join(args)}
+
+    m = _IPA_EN.search(wikitext)
+    if m:
+        args = _args(m.group(1))
+        if args:
+            return {"kind": "ipa", "raw": args[0]}
+
+    m = _RESPELL.search(wikitext)
+    if m:
+        args = _args(m.group(1))
+        if args:
+            return {"kind": "respell", "raw": args}
+
+    return None
+
+
+def _wiki_source(domain: str, source_name: str, name: str) -> dict | None:
+    cache_key = f"wiki-pron::{domain}::{name}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit or None
+
+    title = name[:1].upper() + name[1:] if name else name
+    wikitext = _wiki_wikitext(domain, title)
+    result = None
+    if wikitext:
+        pron = _extract_pronunciation(wikitext)
+        if pron:
+            raw = pron["raw"]
+            result = {
+                "name": source_name,
+                "raw": raw if isinstance(raw, str) else "|".join(raw),
+                "kind": pron["kind"],
+                "url": f"https://{domain}/wiki/{urllib.parse.quote(title)}",
+            }
+
+    _store(cache_key, result or {})
+    return result
+
+
+def wikipedia_pronunciation(name: str) -> dict | None:
+    """A real pronunciation from the English Wikipedia article for `name`."""
+    return _wiki_source("en.wikipedia.org", "wikipedia", name)
+
+
+def wiktionary_pronunciation(name: str) -> dict | None:
+    """A real pronunciation from the English Wiktionary entry for `name`."""
+    return _wiki_source("en.wiktionary.org", "wiktionary", name)
 
 
 def cmudict_lookup(name: str) -> dict | None:
