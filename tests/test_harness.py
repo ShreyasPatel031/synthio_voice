@@ -528,3 +528,160 @@ def test_asr_roundtrip_synthesis_failure_scores_zero_not_none():
         item, failed
     )
     assert sr.score == 0.0 and sr.scoreable is True
+
+
+# --- reference-audio grounding ----------------------------------------------
+def _write_manifest(tmp_path, records):
+    p = tmp_path / "manifest.jsonl"
+    with p.open("w") as f:
+        for r in records:
+            f.write(json.dumps(r) + "\n")
+    return p
+
+
+def _make_wav(path, *, channels=1, rate=16000, n_frames=800):
+    import struct
+    import wave
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(channels)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(struct.pack(f"<{n_frames * channels}h", *([0] * (n_frames * channels))))
+
+
+def test_available_clips_prefers_drugs_com_over_merriam_webster(tmp_path):
+    from dose_r.references import reference_clips
+
+    wav = tmp_path / "clip.wav"
+    _make_wav(wav)
+    manifest = _write_manifest(tmp_path, [
+        {"ingredient": "Abilify", "name_type": "brand", "source": "merriam-webster",
+         "coverage": "full", "local_path": str(wav), "format": "wav",
+         "sample_rate_hz": 16000, "duration_s": 1.0},
+        {"ingredient": "Abilify", "name_type": "brand", "source": "drugs.com",
+         "coverage": "full", "local_path": str(wav), "format": "wav",
+         "sample_rate_hz": 16000, "duration_s": 1.0},
+    ])
+    clips = reference_clips.available_clips(manifest)
+    assert clips["Abilify"].source == "drugs.com"
+
+
+def test_available_clips_skips_records_whose_file_is_missing(tmp_path):
+    from dose_r.references import reference_clips
+
+    manifest = _write_manifest(tmp_path, [
+        {"ingredient": "Ghostidine", "name_type": "generic", "source": "merriam-webster",
+         "coverage": "full", "local_path": str(tmp_path / "does-not-exist.mp3"),
+         "format": "mp3", "sample_rate_hz": 22050, "duration_s": 1.0},
+    ])
+    # The gitignored-source gap (Merriam-Webster/UMich audio not committed to
+    # this repo) must be silently skipped, not raised as an error.
+    assert reference_clips.available_clips(manifest) == {}
+
+
+def test_stt_config_declares_channel_count_only_when_not_mono(tmp_path):
+    from dose_r.references.reference_clips import ReferenceClip, stt_config_for_clip
+
+    mono = tmp_path / "mono.wav"
+    stereo = tmp_path / "stereo.wav"
+    _make_wav(mono, channels=1, rate=22050)
+    _make_wav(stereo, channels=2, rate=44100)
+
+    mono_clip = ReferenceClip("x", "brand", "drugs.com", mono, "wav", 22050, 1.0)
+    stereo_clip = ReferenceClip("y", "brand", "drugs.com", stereo, "wav", 44100, 1.0)
+
+    mono_cfg = stt_config_for_clip(mono_clip)
+    stereo_cfg = stt_config_for_clip(stereo_clip)
+
+    assert "audioChannelCount" not in mono_cfg
+    assert mono_cfg["sampleRateHertz"] == 22050
+    assert stereo_cfg["audioChannelCount"] == 2
+    assert stereo_cfg["sampleRateHertz"] == 44100
+
+
+def test_stt_config_for_mp3_uses_manifest_rate():
+    from dose_r.references.reference_clips import ReferenceClip, stt_config_for_clip
+
+    clip = ReferenceClip("x", "brand", "merriam-webster", Path("/nonexistent.mp3"),
+                         "mp3", 11025, 1.0)
+    cfg = stt_config_for_clip(clip)
+    assert cfg == {"encoding": "MP3", "sampleRateHertz": 11025,
+                   "languageCode": "en-US", "model": "latest_long"}
+
+
+def test_transcribe_reference_clip_empty_result_is_unrecognizable_not_error(tmp_path):
+    from dose_r.references.audio_grounded import transcribe_reference_clip
+    from dose_r.references.reference_clips import ReferenceClip
+
+    wav = tmp_path / "silent.wav"
+    _make_wav(wav)
+    clip = ReferenceClip("Mystery", "generic", "drugs.com", wav, "wav", 16000, 0.5)
+
+    session = _ScriptedSTTSession(_FakeSTTResponse(200, {"results": []}))
+    t = transcribe_reference_clip(clip, {}, session=session)
+
+    assert session.calls == 1
+    assert t.recognized is None
+    assert t.asr_recognizable is False
+
+
+def test_transcribe_reference_clip_happy_path(tmp_path):
+    from dose_r.references.audio_grounded import transcribe_reference_clip
+    from dose_r.references.reference_clips import ReferenceClip
+
+    wav = tmp_path / "abilify.wav"
+    _make_wav(wav)
+    clip = ReferenceClip("Abilify", "brand", "drugs.com", wav, "wav", 16000, 0.5)
+
+    session = _ScriptedSTTSession(_FakeSTTResponse(200, _stt_result(["Abilify"], 0.95)))
+    t = transcribe_reference_clip(clip, {}, session=session)
+
+    assert t.recognized == "Abilify"
+    assert t.asr_recognizable is True
+    assert t.confidence == 0.95
+
+
+def test_transcribe_reference_clip_raises_on_http_error(tmp_path):
+    from dose_r.references.audio_grounded import transcribe_reference_clip
+    from dose_r.references.reference_clips import ReferenceClip
+
+    wav = tmp_path / "abilify.wav"
+    _make_wav(wav)
+    clip = ReferenceClip("Abilify", "brand", "drugs.com", wav, "wav", 16000, 0.5)
+
+    session = _ScriptedSTTSession(_FakeSTTResponse(400, text="bad request"))
+    with pytest.raises(RuntimeError):
+        transcribe_reference_clip(clip, {}, session=session)
+
+
+def test_score_against_reference_when_reference_itself_unrecognized():
+    from dose_r.references.audio_grounded import ReferenceTranscript, score_against_reference
+
+    unrecognized_ref = ReferenceTranscript("Retatrutide", "drugs.com", None, None,
+                                           asr_recognizable=False, recognizable_score=None)
+    result = score_against_reference(unrecognized_ref, "some synth transcript")
+    assert result["scoreable"] is False
+    assert result["reference_asr_recognizable"] is False
+
+
+def test_score_against_reference_compares_to_reference_not_spelling():
+    from dose_r.references.audio_grounded import ReferenceTranscript, score_against_reference
+
+    # The reference itself was misheard as "a lift trick" -- a synth clip
+    # recognized the SAME way should score as a match against the reference,
+    # even though neither string matches the drug's spelling.
+    ref = ReferenceTranscript("Alyftrek", "drugs.com", "a lift trick", 0.91,
+                              asr_recognizable=True, recognizable_score=4.74)
+    result = score_against_reference(ref, "a lift trick")
+    assert result["scoreable"] is True
+    assert result["passed_vs_reference"] is True
+    assert result["reference_transcript"] == "a lift trick"
+
+
+def test_score_against_reference_flags_genuine_mismatch():
+    from dose_r.references.audio_grounded import ReferenceTranscript, score_against_reference
+
+    ref = ReferenceTranscript("Abilify", "drugs.com", "Abilify", 0.95,
+                              asr_recognizable=True, recognizable_score=5.0)
+    result = score_against_reference(ref, "unrelated garbage")
+    assert result["passed_vs_reference"] is False
