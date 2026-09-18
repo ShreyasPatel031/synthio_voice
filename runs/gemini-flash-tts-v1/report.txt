@@ -1,0 +1,19 @@
+====================================================================================================
+DOSE-R run gemini-flash-tts-v1   scorer=standin-audio-plausibility-v1
+====================================================================================================
+
+  !! STAND-IN SCORER -- NOT A PRONUNCIATION JUDGEMENT !!
+  These pass rates measure audio deliverability, not whether the drug name
+  was pronounced correctly. They are NOT comparable to DOSE's leaderboard.
+  Latency and cost figures below ARE real measurements.
+
+system                        ok  fail   pass%  brand%   gen%    p50ms    p90ms       $/utt    $total
+-----------------------------------------------------------------------------------------------------
+gemini-2.5-flash-tts         274     0    99.6   100.0   99.2     7497     9039  0.00193653    0.5306
+
+Score distribution (retained, not collapsed to pass/fail):
+  system                        mean  median     p10     n
+  gemini-2.5-flash-tts          5.00    5.00    5.00   274
+
+Cost note: figures are list-price estimates, not billing-export
+verified (see config.Pricing.verified).
