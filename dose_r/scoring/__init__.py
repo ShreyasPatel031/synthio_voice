@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from .base import PASS_THRESHOLD, ScoreResult, Scorer
 from .standin import StandInScorer
+from .asr_roundtrip import AsrRoundTripScorer
 
 _REGISTRY: dict[str, type[Scorer]] = {
     "standin": StandInScorer,
+    "asr-roundtrip": AsrRoundTripScorer,
 }
 
 
@@ -26,4 +28,5 @@ def available_scorers() -> list[str]:
 
 
 __all__ = ["PASS_THRESHOLD", "ScoreResult", "Scorer", "StandInScorer",
-           "register_scorer", "build_scorer", "available_scorers"]
+           "AsrRoundTripScorer", "register_scorer", "build_scorer",
+           "available_scorers"]

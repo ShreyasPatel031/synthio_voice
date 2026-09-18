@@ -329,3 +329,202 @@ def test_report_warns_loudly_on_standin_scorer(tmp_path):
     text = report.render_text(
         report.summarize(report.load_records(runner.results_path)), manifest)
     assert "NOT A PRONUNCIATION JUDGEMENT" in text
+
+
+# --- ASR round-trip scorer ---------------------------------------------------
+# All offline: score_pronunciation() and locate_recognized_span() are pure
+# functions (no network), and AsrRoundTripScorer.score() below is exercised
+# against a scripted fake requests.Session, exactly like the GoogleTTSAdapter
+# retry tests above -- no real Cloud STT call is ever made in this suite.
+from dose_r.scoring.asr_roundtrip import (  # noqa: E402
+    AsrRoundTripScorer, locate_recognized_span, score_pronunciation,
+)
+
+
+def test_score_pronunciation_exact_match_is_five():
+    score, components = score_pronunciation("Abilify", "Abilify")
+    assert score == 5.0
+    assert components["exact_match"] == 1.0
+
+
+def test_score_pronunciation_is_case_and_spacing_insensitive():
+    """Collapsing (lowercase, strip non-alphanumerics) means a multi-word drug
+    recognized with different word breaks still counts as an exact match --
+    ASR's word segmentation is arbitrary, not part of pronunciation."""
+    score, components = score_pronunciation("insulin icodec-abae", "insulin I codec abae")
+    assert score == 5.0
+    assert components["exact_match"] == 1.0
+
+
+def test_score_pronunciation_metaphone_mismatch_caps_below_pass_threshold():
+    """'retatrutide' -> 'retro tide': shares enough characters for a high
+    Jaro-Winkler score (common prefix), but the metaphone codes disagree, so
+    it must not be able to buy its way to a pass on surface similarity alone."""
+    score, components = score_pronunciation("retatrutide", "retro tide")
+    assert components["exact_match"] == 0.0
+    assert components["metaphone_match"] == 0.0
+    assert components["jaro_winkler"] > 0.5      # surface similarity is real...
+    assert score < PASS_THRESHOLD                # ...but must not pass on it alone
+
+
+def test_score_pronunciation_metaphone_match_scores_above_floor():
+    """Same phonetic code but not an exact string -- should land in the upper
+    band (3.5-5.0), not be punished the way a metaphone mismatch is."""
+    score, components = score_pronunciation("Prozac", "Pro-zack")
+    assert components["metaphone_match"] == 1.0
+    assert score >= 3.5
+
+
+def test_score_pronunciation_empty_recognized_span_scores_zero():
+    """No hypothesis words aligned to the drug at all -- a real, scoreable
+    'not recognized here' result, not a crash and not a false phonetic match."""
+    score, components = score_pronunciation("retatrutide", "")
+    assert score == 0.0
+    assert components == {"exact_match": 0.0, "jaro_winkler": 0.0, "metaphone_match": 0.0}
+
+
+def test_score_pronunciation_never_exceeds_scale():
+    score, _ = score_pronunciation("x", "x")
+    assert score <= 5.0
+
+
+def test_locate_recognized_span_simple_case():
+    sentence = "I recommend taking Advil to help relieve the pain."
+    hyp = "I recommend taking Advil to help relieve the pain".split()
+    assert locate_recognized_span(sentence, "Advil", hyp) == "Advil"
+
+
+def test_locate_recognized_span_handles_multiword_drug():
+    sentence = ("By activating the insulin receptor, insulin icodec-abae "
+                "effectively stimulates peripheral glucose uptake.")
+    # ASR frequently splits "icodec-abae" into separate tokens and drops the comma.
+    hyp = ("by activating the insulin receptor insulin I codec abae "
+           "effectively stimulates peripheral glucose uptake").split()
+    span = locate_recognized_span(sentence, "insulin icodec-abae", hyp)
+    assert span == "insulin I codec abae"
+
+
+def test_locate_recognized_span_robust_to_mismatch_elsewhere_in_sentence():
+    """An ASR error far from the drug name must not disturb the drug span
+    alignment -- this is exactly why word-index-based lookup would be wrong
+    and difflib-based alignment is used instead."""
+    sentence = "I recommend taking Advil to help relieve the minor pain today."
+    # "recommend" -> "suggest" (substitution) well before the drug; "today" is
+    # dropped at the very end, well after it.
+    hyp = "I suggest taking Advil to help relieve the minor pain".split()
+    assert locate_recognized_span(sentence, "Advil", hyp) == "Advil"
+
+
+def test_locate_recognized_span_empty_when_drug_dropped_entirely():
+    """ASR recognized the rest of the sentence but produced nothing at all
+    for the drug's position -- must come back empty, not a neighboring word."""
+    sentence = "I recommend taking Advil to help relieve the pain."
+    hyp = "I recommend taking to help relieve the pain".split()
+    assert locate_recognized_span(sentence, "Advil", hyp) == ""
+
+
+def test_locate_recognized_span_unknown_drug_name_does_not_crash():
+    """dataset.validate() guarantees the drug appears in its sentence for the
+    shipped data, but this must degrade gracefully rather than raise if that
+    ever stops being true."""
+    assert locate_recognized_span("nothing to see here", "not-present-drug", ["a", "b"]) == ""
+
+
+class _FakeSTTResponse:
+    def __init__(self, status_code: int, json_data: dict | None = None, text: str = ""):
+        self.status_code = status_code
+        self._json = json_data or {}
+        self.text = text
+
+    def json(self):
+        return self._json
+
+
+class _ScriptedSTTSession:
+    def __init__(self, response):
+        self._response = response
+        self.calls = 0
+
+    def post(self, *args, **kwargs):
+        self.calls += 1
+        if isinstance(self._response, Exception):
+            raise self._response
+        return self._response
+
+
+def _stt_result(transcript_words: list[str], confidence: float = 0.9) -> dict:
+    return {
+        "results": [{
+            "alternatives": [{
+                "transcript": " ".join(transcript_words),
+                "confidence": confidence,
+                "words": [{"word": w} for w in transcript_words],
+            }],
+        }],
+    }
+
+
+def test_asr_roundtrip_scorer_is_flagged_as_measuring_pronunciation():
+    assert AsrRoundTripScorer().measures_pronunciation is True
+
+
+def test_asr_roundtrip_happy_path_scores_and_carries_asymmetry_note():
+    item = next(i for i in dataset.load_items() if i.drug == "Advil")
+    words = item.sentence.replace(",", "").replace(".", "").split()
+    session = _ScriptedSTTSession(_FakeSTTResponse(200, _stt_result(words, confidence=0.95)))
+    scorer = AsrRoundTripScorer(session=session)
+
+    from dose_r.adapters.base import SynthesisResult
+    res = SynthesisResult(system_id="x", item_id=item.item_id, ok=True,
+                          audio=b"RIFF" + b"\x00" * 40, sample_rate_hz=24000)
+    sr = scorer.score(item, res)
+
+    assert sr.scoreable is True
+    assert sr.score == 5.0
+    assert sr.components["exact_match"] == 1.0
+    assert sr.components["asr_confidence"] == pytest.approx(0.95)
+    assert "ASR round-trip proxy" in sr.notes  # the asymmetry caveat, always present
+    assert session.calls == 1
+
+
+def test_asr_roundtrip_empty_results_is_scoreable_false_not_zero():
+    """This is the critical honesty requirement: no signal must never be
+    silently reported as a confirmed mispronunciation (score 0)."""
+    item = dataset.load_items()[0]
+    session = _ScriptedSTTSession(_FakeSTTResponse(200, {"results": []}))
+    scorer = AsrRoundTripScorer(session=session)
+
+    from dose_r.adapters.base import SynthesisResult
+    res = SynthesisResult(system_id="x", item_id=item.item_id, ok=True,
+                          audio=b"RIFF" + b"\x00" * 40, sample_rate_hz=24000)
+    sr = scorer.score(item, res)
+
+    assert sr.scoreable is False
+    assert sr.score is None
+    assert sr.error
+
+
+def test_asr_roundtrip_request_failure_is_scoreable_false_not_zero():
+    item = dataset.load_items()[0]
+    session = _ScriptedSTTSession(_FakeSTTResponse(500, text="backend error"))
+    scorer = AsrRoundTripScorer(session=session)
+
+    from dose_r.adapters.base import SynthesisResult
+    res = SynthesisResult(system_id="x", item_id=item.item_id, ok=True,
+                          audio=b"RIFF" + b"\x00" * 40, sample_rate_hz=24000)
+    sr = scorer.score(item, res)
+
+    assert sr.scoreable is False
+    assert sr.score is None
+
+
+def test_asr_roundtrip_synthesis_failure_scores_zero_not_none():
+    """Mirrors test_failed_synthesis_scores_zero_not_none for the standin
+    scorer: an upstream synthesis failure is a known 0, not an unscoreable."""
+    item = dataset.load_items()[0]
+    from dose_r.adapters.base import SynthesisResult
+    failed = SynthesisResult(system_id="x", item_id=item.item_id, ok=False, error="boom")
+    sr = AsrRoundTripScorer(session=_ScriptedSTTSession(Exception("must not be called"))).score(
+        item, failed
+    )
+    assert sr.score == 0.0 and sr.scoreable is True
