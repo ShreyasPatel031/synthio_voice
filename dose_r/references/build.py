@@ -93,7 +93,7 @@ def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict],
         # institutional sources and tells it not to fall back to a
         # crowdsourced one. Genuinely separate query, separate cache entry;
         # this is a second pass in addition to the first, not a replacement.
-        result = _variants_from_claims(gemini_grounded.verified_claims(word, tight=True))
+        result = _variants_from_claims(gemini_grounded.verified_claims(word, mode="tight"))
     return result
 
 
@@ -228,49 +228,58 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
     # Tried first, generics only: the USAN Council's own Statement on
     # Adoption is the single most authoritative pronunciation record that
     # exists for a coined INN/USAN generic name -- it is the naming body's
-    # own adopted-name record, not a secondhand citation of it. Web search
-    # (Gemini-grounded or otherwise) doesn't reliably surface these PDFs
-    # even though they are public and free, so this fetches the document
-    # store directly rather than hoping a search engine ranks it. Brand
-    # names are never filed here; USAN registers generic names only.
+    # own adopted-name record, not a secondhand citation of it.
+    # `usan_pronunciation` queries AMA's own real search index directly (no
+    # search engine, no filename guessing). If that index search itself
+    # comes up empty -- a name spelled differently than our query, a
+    # transient issue, a name genuinely missing from that index -- fall
+    # back to asking Gemini's web search to look specifically for a USAN
+    # Statement (`mode="usan"`) before giving up on USAN entirely and
+    # moving on to the general-purpose sources below. Brand names are never
+    # filed here; USAN registers generic names only.
     if name_type == "generic":
         usan = sources.usan_pronunciation(word)
         if usan:
             variant = _respelling_text_to_variant(usan["raw"])
             if variant:
-                found.append(([variant], _tagged(usan)))
+                found.append(([variant], [_tagged(usan)]))
+        else:
+            usan_hit = _variants_from_claims(gemini_grounded.verified_claims(word, mode="usan"))
+            if usan_hit:
+                variants, srcs, _tier = usan_hit
+                found.append((variants, srcs))
 
     mw = sources.merriam_webster(word)
     if mw:
         variants = convert(mw["raw"])
         if variants:
-            found.append((variants, _tagged(mw)))
+            found.append((variants, [_tagged(mw)]))
 
     wp = sources.wikipedia_pronunciation(word)
     if wp:
         variants = _wiki_variants(wp)
         if variants:
-            found.append((variants, _tagged({k: v for k, v in wp.items() if k != "kind"})))
+            found.append((variants, [_tagged({k: v for k, v in wp.items() if k != "kind"})]))
 
     wikt = sources.wiktionary_pronunciation(word)
     if wikt:
         variants = _wiki_variants(wikt)
         if variants:
-            found.append((variants, _tagged({k: v for k, v in wikt.items() if k != "kind"})))
+            found.append((variants, [_tagged({k: v for k, v in wikt.items() if k != "kind"})]))
 
     cmu = sources.cmudict_lookup(word)
     if cmu:
         from ..judge.fixtures.g2p import to_ipa
 
         arpa = cmu["raw"]
-        found.append(([(arpa, to_ipa(arpa.split()))], _tagged(cmu)))
+        found.append(([(arpa, to_ipa(arpa.split()))], [_tagged(cmu)]))
 
     if name_type == "brand":
         dm = sources.dailymed_pronunciation(word)
         if dm:
             variant = _respelling_text_to_variant(dm["raw"])
             if variant:
-                found.append(([variant], _tagged(dm)))
+                found.append(([variant], [_tagged(dm)]))
 
     if not found:
         gemini_hit = _from_gemini_grounded(word)
@@ -293,7 +302,7 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
                 variants.append(v)
 
     tier = "high" if len(found) > 1 else "medium"
-    return variants, [src for _, src in found], tier, ""
+    return variants, [src for _, srcs in found for src in srcs], tier, ""
 
 
 def _join(parts: list[list[tuple[str, str]]]) -> list[tuple[str, str]]:
@@ -419,7 +428,7 @@ def coverage_report(records: list[dict]) -> str:
         "tenecteplase) had their *only* source turn out to be `third_party_unverified`",
         "once this classification was added -- 5 (Blujepa, Simtriyo, TNKase, Zaiidra,",
         "tenecteplase) were recovered by a second, more restrictive Gemini query that",
-        "explicitly excludes crowdsourced sites (`verified_claims(..., tight=True)`),",
+        "explicitly excludes crowdsourced sites (`verified_claims(..., mode='tight')`),",
         "and 2 (Avlayah, Toujeo) had no official/secondary source to find at all even",
         "under that restriction and reverted to `low`.",
         "",
@@ -517,15 +526,35 @@ def coverage_report(records: list[dict]) -> str:
         "| AMA USAN Statement PDFs (searchusan.ama-assn.org) | **Wired in as the "
         "primary source for generics** (`sources.usan_pronunciation`), correcting an "
         "earlier claim in this table that this was only a notation key, not a "
-        "per-drug lookup. The Angular search UI (`/usan/`) is indeed a dead end as "
-        "scraped, but each drug's own Statement on Adoption is a real, individually "
-        "fetchable PDF at a predictable URL (`documentDownload?uri=/unstructured/"
-        "binary/usan/{name}.pdf`, base INN name, FDA biosimilar suffix stripped), "
-        "with its own PRONUNCIATION field in the USAN prime-stress notation -- "
-        f"{by_source.get('usan-official', 0)} ingredients this build. The document "
-        "store answers HTTP 200 whether or not a name exists (a small JSON error "
-        "body on a miss, a real PDF on a hit), so the body has to be checked, not "
-        "the status code. |",
+        "per-drug lookup. The rendered Angular UI (`/usan/`) is indeed a dead end as "
+        "scraped, but its real backing search API isn't -- reverse-engineered from "
+        "the app's own JS bundle (`this.searchUrl = \"/\" + this.collection + "
+        "\"/search/\" + term + \"/\" + sort + \"/\" + pageNum`), it's a MarkLogic "
+        "full-text index (`GET /usan/search/{term}/relevant/1`) that returns each "
+        "match's real title and document URI directly -- no filename to guess, and "
+        "no HTTP-200-with-an-error-body ambiguity the document-download endpoint "
+        "alone has. (An earlier version of this source tried constructing PDF "
+        "filenames directly instead of searching; that missed several real "
+        "documents outright, e.g. elranatamab's actual file has a trailing hyphen "
+        "-- \"elranatamab-.pdf\" -- that isn't guessable, and searching finds it "
+        "immediately.) Matched by similarity, not exact string equality, since "
+        "USAN's own title field can itself contain a typo (\"PRADEMEGENE "
+        "ZAMIKERACEL\" for a query of \"prademagene zamikeracel\") and a search can "
+        "return an unrelated but textually-similar document (querying a brand name "
+        "like \"Wakix\" returns its generic ingredient pitolisant's statement, not "
+        "one for Wakix itself -- USAN doesn't register brand names at all, and a "
+        "low similarity score correctly rejects that mismatch rather than "
+        "attributing pitolisant's pronunciation to Wakix). "
+        f"{by_source.get('usan-official', 0)} ingredients this build via direct "
+        "search, plus a small number more via a Gemini web-search fallback "
+        "targeted specifically at USAN documents when the direct index search "
+        "itself returns nothing (`gemini_grounded.verified_claims(..., "
+        "mode='usan')`) -- e.g. a name spelled differently in the index than in "
+        "this dataset. Coverage is generic-only and modern-name-skewed: older, "
+        "pre-digital-archive generics (acetaminophen, diazepam, aspirin) have no "
+        "USAN Statement in this system at all and fall through to Merriam-Webster "
+        "or Gemini-grounded search instead, which is a real gap in USAN's archive, "
+        "not a bug in how this source is queried. |",
         "| WHO INN lists (who.int) | Reachable (200), but the published INN list "
         "documents are name/CAS-number registries, not phonetic dictionaries; no "
         "pronunciation field found. |",
@@ -540,8 +569,9 @@ def coverage_report(records: list[dict]) -> str:
         "brand alike. cipepofol and copper histidinate in particular were both wrongly",
         "written off in an earlier version of this report as needing a **purchased**",
         "USP Dictionary subscription -- the actual per-drug USAN Statement (the same",
-        "record USP compiles from) is a free, individually fetchable PDF at a",
-        "predictable URL, confirmed directly and now the primary source for both.",
+        "record USP compiles from) is free and individually findable through AMA's",
+        "own real search index (see the Sources tried table above), confirmed",
+        "directly and now the primary source for both.",
         f"What's left ({len(by_tier['low'])} ingredients) was checked individually,",
         "not just left to the pipeline's word: Vyglxia (troriluzole) has no FDA",
         "approval at all yet (a Complete Response Letter, not approval, as of this",
@@ -552,7 +582,7 @@ def coverage_report(records: list[dict]) -> str:
         "discarded rather than recorded as data; Avlayah and Toujeo have no",
         "official/verified-secondary source even under a second, more restrictive",
         "query that explicitly excludes crowdsourced sites (`verified_claims(...,",
-        "tight=True)`) -- the only hits for both are third_party_unverified (a",
+        "mode='tight')`) -- the only hits for both are third_party_unverified (a",
         "crowdsourced pronunciation site), correctly excluded rather than counted",
         "as a citation (see the Trust tiers section above).",
         "",

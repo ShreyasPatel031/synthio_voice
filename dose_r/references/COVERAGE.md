@@ -6,24 +6,24 @@
 
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
-| high | 76 | 26.8% | two independent sources agree |
-| medium | 204 | 71.8% | exactly one external source answered |
+| high | 85 | 29.9% | two independent sources agree |
+| medium | 195 | 68.7% | exactly one external source answered |
 | low | 4 | 1.4% | no external source; no ground truth |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
-| high | 49 | 27 |
-| medium | 90 | 114 |
+| high | 49 | 36 |
+| medium | 90 | 105 |
 | low | 4 | 0 |
 
 ## Sources that answered
 
 | Source | Ingredients |
 | --- | --- |
-| usan-official | 91 |
-| gemini-grounded-search | 90 |
+| gemini-grounded-search | 99 |
+| usan-official | 94 |
 | merriam-webster/medical-api | 88 |
 | dailymed | 84 |
 | wikipedia | 22 |
@@ -45,8 +45,8 @@ hardcoded domain list) -- see `classify_source_trust` in gemini_grounded.py.
 
 | Tier | Meaning | Ingredients citing at least one |
 | --- | --- | --- |
-| official_medical | Government health agency, national regulator, or the drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | 197 |
-| verified_secondary | Editorially-maintained reference, not a primary authority but not open to public submission either (Drugs.com, WebMD, Wikipedia, Merriam-Webster, a university hospital's patient site) | 194 |
+| official_medical | Government health agency, national regulator, or the drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | 205 |
+| verified_secondary | Editorially-maintained reference, not a primary authority but not open to public submission either (Drugs.com, WebMD, Wikipedia, Merriam-Webster, a university hospital's patient site) | 198 |
 | third_party_unverified | Crowdsourced/user-generated, no editorial review (howtopronounce.com, a YouTube upload, a blog) -- **excluded**, never counted | 0 |
 
 That last row should always read 0: it is what `_variants_from_claims` in
@@ -55,7 +55,7 @@ the data. 7 ingredients (Avlayah, Blujepa, Simtriyo, TNKase, Toujeo, Zaiidra,
 tenecteplase) had their *only* source turn out to be `third_party_unverified`
 once this classification was added -- 5 (Blujepa, Simtriyo, TNKase, Zaiidra,
 tenecteplase) were recovered by a second, more restrictive Gemini query that
-explicitly excludes crowdsourced sites (`verified_claims(..., tight=True)`),
+explicitly excludes crowdsourced sites (`verified_claims(..., mode='tight')`),
 and 2 (Avlayah, Toujeo) had no official/secondary source to find at all even
 under that restriction and reverted to `low`.
 
@@ -67,7 +67,7 @@ under that restriction and reverted to `low`.
 | + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |
 | + MW Medical Dictionary API | 41 | 170 | 73 |
 | + Gemini/Google-Search grounding, rule-based fallback removed | 98 | 171 | 15 |
-| + DailyMed Medication Guide respellings (this build) | 76 | 204 | 4 |
+| + DailyMed Medication Guide respellings (this build) | 85 | 195 | 4 |
 
 The Wikipedia/Wiktionary and Medical API steps were the first two real gains.
 The Gemini step is the largest one by far: Gemini 2.5 Flash with the
@@ -100,13 +100,13 @@ checked against the same Gemini format-plausibility judge before acceptance.
 | Wiktionary (same templates) | **Wired in.** 2 ingredients; thin, and mostly overlaps Wikipedia rather than adding new names. |
 | CMUdict | **Wired in** (pre-existing). 13 ingredients; a general dictionary, not a drug-name resource. |
 | DailyMed (FDA Medication Guides) | **Wired in.** 84 ingredients (brands only). Reachable from this environment (unlike drugs.com), and a real find caught by manual spot-checking after this build shipped: many Medication Guides state the brand's own respelling right in the title line (`AMBELVIST (am bel' vist)`), in the same USAN prime-stress notation the Gemini-grounded path already parses. Not every label includes one, so this doesn't close every remaining gap. |
-| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 90 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
+| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 99 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
 | DrugBank | Dead end. HTTP 403. |
 | FDA labels via openFDA (structured JSON) | Dead end for pronunciation. Reachable (200), but the structured label JSON does not carry the Medication Guide's free-text title line, which is where a respelling (if present at all) actually lives -- see DailyMed above, which serves the rendered guide text instead of the structured fields. |
 | NLM RxNav / RxNorm | Dead end for pronunciation. Reachable, resolves names to RxCUIs reliably, but `allProperties` carries only coding/synonym fields (ATC, SNOMED, DrugBank ID, etc.) -- no phonetic field exists in the schema. Kept as the id-lookup step for the MedlinePlus Connect pipeline below. |
 | MedlinePlus drug monographs | **Real pronunciations confirmed** (e.g. Metformin: `pronounced as (met for' min)`), reachable via a working, unauthenticated pipeline: RxNav name-to-RxCUI, then `connect.medlineplus.gov` (RxNorm OID `2.16.840.1.113883.6.88`) to the drug's monograph URL, then a page fetch. **Not wired into this build**: MedlinePlus's own lay respelling (`met for' min`, `a set a mee' noe fen`) is not the same key as Wikipedia's, and no citable published key for it was found -- guessing its letter-to-phoneme mapping would risk silently wrong phonemes recorded as sourced, which is the failure mode this project must not introduce. See the ranked list below. |
 | NCI Drug Dictionary (cancer.gov) | Dead end as scraped. The public page is a React SPA (`drug-dictionary-app`) with no server-rendered content; its bundled config points at `webapis-dev.cancer.gov`, which does not resolve (NXDOMAIN) -- the backing API is not public from this environment. |
-| AMA USAN Statement PDFs (searchusan.ama-assn.org) | **Wired in as the primary source for generics** (`sources.usan_pronunciation`), correcting an earlier claim in this table that this was only a notation key, not a per-drug lookup. The Angular search UI (`/usan/`) is indeed a dead end as scraped, but each drug's own Statement on Adoption is a real, individually fetchable PDF at a predictable URL (`documentDownload?uri=/unstructured/binary/usan/{name}.pdf`, base INN name, FDA biosimilar suffix stripped), with its own PRONUNCIATION field in the USAN prime-stress notation -- 91 ingredients this build. The document store answers HTTP 200 whether or not a name exists (a small JSON error body on a miss, a real PDF on a hit), so the body has to be checked, not the status code. |
+| AMA USAN Statement PDFs (searchusan.ama-assn.org) | **Wired in as the primary source for generics** (`sources.usan_pronunciation`), correcting an earlier claim in this table that this was only a notation key, not a per-drug lookup. The rendered Angular UI (`/usan/`) is indeed a dead end as scraped, but its real backing search API isn't -- reverse-engineered from the app's own JS bundle (`this.searchUrl = "/" + this.collection + "/search/" + term + "/" + sort + "/" + pageNum`), it's a MarkLogic full-text index (`GET /usan/search/{term}/relevant/1`) that returns each match's real title and document URI directly -- no filename to guess, and no HTTP-200-with-an-error-body ambiguity the document-download endpoint alone has. (An earlier version of this source tried constructing PDF filenames directly instead of searching; that missed several real documents outright, e.g. elranatamab's actual file has a trailing hyphen -- "elranatamab-.pdf" -- that isn't guessable, and searching finds it immediately.) Matched by similarity, not exact string equality, since USAN's own title field can itself contain a typo ("PRADEMEGENE ZAMIKERACEL" for a query of "prademagene zamikeracel") and a search can return an unrelated but textually-similar document (querying a brand name like "Wakix" returns its generic ingredient pitolisant's statement, not one for Wakix itself -- USAN doesn't register brand names at all, and a low similarity score correctly rejects that mismatch rather than attributing pitolisant's pronunciation to Wakix). 94 ingredients this build via direct search, plus a small number more via a Gemini web-search fallback targeted specifically at USAN documents when the direct index search itself returns nothing (`gemini_grounded.verified_claims(..., mode='usan')`) -- e.g. a name spelled differently in the index than in this dataset. Coverage is generic-only and modern-name-skewed: older, pre-digital-archive generics (acetaminophen, diazepam, aspirin) have no USAN Statement in this system at all and fall through to Merriam-Webster or Gemini-grounded search instead, which is a real gap in USAN's archive, not a bug in how this source is queried. |
 | WHO INN lists (who.int) | Reachable (200), but the published INN list documents are name/CAS-number registries, not phonetic dictionaries; no pronunciation field found. |
 | StatPearls / NCBI Bookshelf | Not pursued past a spot check -- these are clinical review monographs, not lexicographic sources, and did not surface pronunciation content. |
 
@@ -117,8 +117,9 @@ Statement PDFs closed all but a handful of the old `low` tier, generic and
 brand alike. cipepofol and copper histidinate in particular were both wrongly
 written off in an earlier version of this report as needing a **purchased**
 USP Dictionary subscription -- the actual per-drug USAN Statement (the same
-record USP compiles from) is a free, individually fetchable PDF at a
-predictable URL, confirmed directly and now the primary source for both.
+record USP compiles from) is free and individually findable through AMA's
+own real search index (see the Sources tried table above), confirmed
+directly and now the primary source for both.
 What's left (4 ingredients) was checked individually,
 not just left to the pipeline's word: Vyglxia (troriluzole) has no FDA
 approval at all yet (a Complete Response Letter, not approval, as of this
@@ -129,7 +130,7 @@ search) and its USAN Statement doesn't state one either, so the only web hit
 discarded rather than recorded as data; Avlayah and Toujeo have no
 official/verified-secondary source even under a second, more restrictive
 query that explicitly excludes crowdsourced sites (`verified_claims(...,
-tight=True)`) -- the only hits for both are third_party_unverified (a
+mode='tight')`) -- the only hits for both are third_party_unverified (a
 crowdsourced pronunciation site), correctly excluded rather than counted
 as a citation (see the Trust tiers section above).
 

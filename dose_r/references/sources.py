@@ -42,6 +42,7 @@ coverage numbers in COVERAGE.md are reproducible without re-fetching.
 
 from __future__ import annotations
 
+import difflib
 import json
 import logging
 import os
@@ -461,6 +462,7 @@ def dailymed_pronunciation(name: str) -> dict | None:
     return result
 
 
+USAN_SEARCH_BASE = "https://searchusan.ama-assn.org/usan/search"
 USAN_DOC_BASE = "https://searchusan.ama-assn.org/usan/documentDownload"
 
 # "PRONUNCIATION" is followed by the respelling and then the next section
@@ -472,62 +474,116 @@ _USAN_PRONUNCIATION = re.compile(
 )
 
 
+def _norm_for_match(s: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def _usan_search(term: str) -> list[dict]:
+    """Raw hits from the real full-text search API behind the (otherwise
+    dead-end, Angular-rendered) searchusan.ama-assn.org UI -- reverse-
+    engineered from its own JS bundle (`this.searchUrl = "/" +
+    this.collection + "/search/" + term + "/" + sort + "/" + pageNum`,
+    `collection` defaulting to `"usan"`), not guessed at from the app's
+    rendered HTML. It's a MarkLogic index (`cts:search` shows up in the
+    response's own `report` field) that returns each match's real
+    `document-uri` and `title` directly -- no filename to guess, and no
+    HTTP-200-with-an-error-body ambiguity the document-download endpoint
+    alone has.
+    """
+    cache_key = f"usan-search::{term}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit.get("results", [])
+
+    results: list[dict] = []
+    try:
+        url = f"{USAN_SEARCH_BASE}/{urllib.parse.quote(term)}/relevant/1"
+        req = urllib.request.Request(url, headers=UA)
+        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
+        data = json.loads(raw)
+        for r in data.get("results", []):
+            content = r.get("extracted", {}).get("content", [])
+            title = next((c["title"] for c in content if "title" in c), None)
+            doc_uri = next((c["document-uri"] for c in content if "document-uri" in c), None)
+            if title and doc_uri:
+                results.append({"title": title, "document_uri": doc_uri})
+    except Exception:
+        pass
+
+    _store(cache_key, {"results": results})
+    return results
+
+
 def usan_pronunciation(name: str) -> dict | None:
-    """The official USAN Statement's own PRONUNCIATION field, fetched
-    directly from AMA's document store rather than hoping a web search
-    surfaces it.
+    """The official USAN Statement's own PRONUNCIATION field, found via
+    AMA's real search index rather than guessed at (an earlier version of
+    this function tried constructing the document filename directly --
+    e.g. "elranatamab.pdf" -- which is fragile: the real file for that name
+    turns out to be "elranatamab-.pdf", a trailing-hyphen quirk that isn't
+    guessable and that blind pattern-trying missed for several names this
+    function now finds correctly by searching instead).
 
     Generic names only: this is the USAN Council's own per-drug adopted-
     name record (`si pep' oh fol` for cipepofol, `kop' er his' ti di nate`
-    for copper histidinate -- both confirmed by fetching the actual PDF, at
-    a predictable URL keyed by the base INN name with any FDA biosimilar
-    suffix stripped, e.g. "risankizumab" not "risankizumab-rzaa"). The
-    document store answers HTTP 200 whether or not a name exists, with a
-    small JSON error body on a miss and a real PDF (`%PDF` magic bytes) on
-    a hit -- the body has to be checked, the status code can't be trusted.
+    for copper histidinate). Searching still needs the FDA biosimilar
+    suffix stripped first ("risankizumab", not "risankizumab-rzaa") -- the
+    index has no entry for the suffixed form at all, confirmed directly
+    (0 results either way this function tries it).
 
-    This exists because Google/Gemini's web search doesn't reliably surface
-    these documents even though they are public, free, and the single most
-    authoritative source for a USAN generic name's pronunciation -- cipepofol
-    and copper histidinate were both still `low` confidence after the
-    Gemini-grounded pass, and the actual gap was that nobody had checked this
-    specific store directly.
+    A search can return multiple documents (a plain name's own statement
+    *and* a salt/hydrate variant's -- "troriluzole" and "troriluzole
+    hydrochloride" are both real, separate USAN entries), and USAN's own
+    title field can contain a typo relative to the query ("PRADEMEGENE
+    ZAMIKERACEL" for a query of "prademagene zamikeracel" -- confirmed
+    directly against the real API response). An exact string match would
+    wrongly reject that typo'd hit and wrongly accept nothing for a query
+    like "wakix" (a brand, which returns its generic ingredient
+    pitolisant's document as the closest full-text match, not "wakix"'s
+    own -- USAN doesn't register brand names at all). Similarity scoring
+    handles both: the typo'd title still scores ~0.95 similar, "pitolisant"
+    to "wakix" scores far below the acceptance threshold.
     """
     from . import usan_stems  # local import: avoids a hard, one-way dependency
 
-    base, _ = usan_stems._split_fda_suffix(name.lower().replace(" ", "-"))
-    cache_key = f"usan-doc::{base}"
+    base_name, _ = usan_stems._split_fda_suffix(name.lower().replace(" ", "-"))
+    search_term = base_name.replace("-", " ")
+
+    cache_key = f"usan-pron::{base_name}"
     hit = _cached(cache_key)
     if hit is not None:
         return hit or None
 
+    target_norm = _norm_for_match(search_term)
+    candidates = _usan_search(search_term)
+    best = None
+    best_ratio = 0.0
+    for c in candidates:
+        ratio = difflib.SequenceMatcher(None, target_norm, _norm_for_match(c["title"])).ratio()
+        if ratio > best_ratio:
+            best_ratio, best = ratio, c
+
     result = None
-    for slug in (base, f"{base}-"):
-        url = f"{USAN_DOC_BASE}?uri=/unstructured/binary/usan/{slug}.pdf"
+    if best and best_ratio >= 0.85:
+        url = f"{USAN_DOC_BASE}?uri={urllib.parse.quote(best['document_uri'])}"
         try:
             req = urllib.request.Request(url, headers=UA)
             content = urllib.request.urlopen(req, timeout=TIMEOUT).read()
         except Exception:
-            continue
-        if not content.startswith(b"%PDF"):
-            continue
+            content = b""
 
-        try:
-            from pypdf import PdfReader
-            import io
+        if content.startswith(b"%PDF"):
+            try:
+                from pypdf import PdfReader
+                import io
 
-            reader = PdfReader(io.BytesIO(content))
-            text = "\n".join(p.extract_text() or "" for p in reader.pages[:2])
-        except Exception:
-            continue
-
-        m = _USAN_PRONUNCIATION.search(text)
-        if not m:
-            continue
-        raw = re.sub(r"\s+", " ", m.group(1)).strip()
-        if raw:
-            result = {"name": "usan-official", "raw": raw, "url": url}
-            break
+                reader = PdfReader(io.BytesIO(content))
+                text = "\n".join(p.extract_text() or "" for p in reader.pages[:2])
+                m = _USAN_PRONUNCIATION.search(text)
+                raw = re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
+            except Exception:
+                raw = ""
+            if raw:
+                result = {"name": "usan-official", "raw": raw, "url": url}
 
     _store(cache_key, result or {})
     return result

@@ -144,9 +144,33 @@ _TIGHT_PROMPT = (
     "say so instead of citing it. Tell me which page you found it on."
 )
 
+# Fallback for when sources.usan_pronunciation's own direct search of
+# searchusan.ama-assn.org's index finds nothing (a name spelled differently
+# than the query, a temporary API hiccup, a name genuinely missing from
+# that specific index despite existing) -- ask Gemini's web search to look
+# specifically for a USAN Statement on Adoption, on this domain or reported
+# by a secondary source that quotes one, rather than the open-ended web
+# search `_generate`'s normal prompt already tries.
+_USAN_PROMPT = (
+    'Search specifically for the official USAN (United States Adopted '
+    'Names) Council "Statement on Adoption" or "Statement on a '
+    'Nonproprietary Name" document for the drug "{name}" -- these are '
+    "published by the American Medical Association, usually hosted at "
+    "searchusan.ama-assn.org, and each one has a PRONUNCIATION field using "
+    "USAN's own stress-mark notation (a single prime like nap' for primary "
+    "stress, a double prime like nap\" for secondary stress). If you can't "
+    "find the document itself, a secondary source (a medical reference "
+    "site, a pharmacy database) that quotes the USAN pronunciation directly "
+    "is acceptable too -- but say so if all you find is a general web "
+    "pronunciation not sourced to USAN. Quote the PRONUNCIATION field "
+    "exactly as written and tell me which document or page you found it on."
+)
 
-def _generate(name: str, retries: int = 3, tight: bool = False) -> dict | None:
-    cache_key = f"raw-tight::{name}" if tight else f"raw::{name}"
+_PROMPTS = {"tight": _TIGHT_PROMPT, "usan": _USAN_PROMPT}
+
+
+def _generate(name: str, retries: int = 3, mode: str = "normal") -> dict | None:
+    cache_key = f"raw-{mode}::{name}" if mode != "normal" else f"raw::{name}"
     hit = _cached(cache_key)
     if hit is not None:
         return hit or None
@@ -154,8 +178,8 @@ def _generate(name: str, retries: int = 3, tight: bool = False) -> dict | None:
     token = _access_token()
     project = _project_id()
     prompt = (
-        _TIGHT_PROMPT.format(name=name)
-        if tight
+        _PROMPTS[mode].format(name=name)
+        if mode in _PROMPTS
         else (
             f'What is the phonetic pronunciation of the drug "{name}"? '
             "Search the web for it and tell me which page you found it on."
@@ -233,8 +257,8 @@ def _fetch_page_text(url: str) -> str | None:
     return text
 
 
-def grounded_answer(name: str, tight: bool = False) -> GroundedAnswer | None:
-    result = _generate(name, tight=tight)
+def grounded_answer(name: str, mode: str = "normal") -> GroundedAnswer | None:
+    result = _generate(name, mode=mode)
     if not result:
         return None
 
@@ -340,7 +364,7 @@ def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | 
     return matches[0] if matches else None
 
 
-_STRESS_MARK = r"(?:''|\"|”|″|['’′])"
+_STRESS_MARK = r"(?:''|\"|”|″|['’′‘])"
 _STRESS_TOKEN = re.compile(rf"^[a-zA-Z]{{1,8}}{_STRESS_MARK}?$")
 _STRESS_STOPWORDS = {
     "is", "a", "an", "the", "of", "or", "and", "in", "on", "at", "as",
@@ -352,7 +376,11 @@ _QUOTED_WORD = re.compile(r'"([a-zA-Z]+(?:\s+[a-zA-Z]+)*)"')
 def _stress_kind(token: str) -> str | None:
     """`"primary"` for a single prime -- the real Unicode prime `′` (as in
     "ten ek′ te plase" for tenecteplase, from MedlinePlus/SafeMedication),
-    an ASCII apostrophe `'`, or the curly `’` -- `"secondary"` for a double
+    an ASCII apostrophe `'`, or a curly quote in either direction (`’` or
+    `‘` -- pypdf renders a real USAN PDF's prime as whichever curly
+    direction its font happens to use, confirmed inconsistent even within
+    the same document set: "dem‘" in prademagene zamikeracel's own
+    Statement, "kiz’" in risankizumab's) -- `"secondary"` for a double
     prime, rendered as the real Unicode double prime `″`, a literal `"`,
     two ASCII apostrophes `''` (Gemini's own text output), or the curly
     right-double-quote `”` (pypdf extracting a real USAN PDF's double-prime
@@ -361,7 +389,7 @@ def _stress_kind(token: str) -> str | None:
     """
     if token.endswith("''") or token.endswith('"') or token.endswith("”") or token.endswith("″"):
         return "secondary"
-    if token.endswith("'") or token.endswith("’") or token.endswith("′"):
+    if token.endswith("'") or token.endswith("’") or token.endswith("′") or token.endswith("‘"):
         return "primary"
     return None
 
@@ -658,7 +686,7 @@ def _is_speculative(text: str) -> bool:
     return bool(_SPECULATION_PATTERN.search(text))
 
 
-def verified_claims(name: str, tight: bool = False) -> list[VerifiedClaim]:
+def verified_claims(name: str, mode: str = "normal") -> list[VerifiedClaim]:
     """Every grounded claim for `name` backed by a real Google Search
     grounding citation and passing the LLM format/plausibility check.
 
@@ -671,16 +699,24 @@ def verified_claims(name: str, tight: bool = False) -> list[VerifiedClaim]:
     can't personally re-fetch (drugs.com 403s here) is still a real,
     independently-retrieved source.
 
-    `tight=True` asks a second, differently-worded question (`_TIGHT_PROMPT`)
+    `mode="tight"` asks a second, differently-worded question (`_TIGHT_PROMPT`)
     that explicitly restricts Gemini's own search to official/institutional
     sources and tells it not to cite a crowdsourced site even as a last
-    resort. This is a second pass, run only when the normal query's claims
-    all turned out `third_party_unverified` (see `build._from_gemini_grounded`)
-    -- it does not replace the first query, it supplements it, and is cached
-    completely separately (`raw-tight::` vs `raw::`) so it costs nothing on
-    a rebuild once fetched.
+    resort. Run only when the normal query's claims all turned out
+    `third_party_unverified` (see `build._from_gemini_grounded`).
+
+    `mode="usan"` asks Gemini's web search to look specifically for a USAN
+    Statement on Adoption (`_USAN_PROMPT`). Run only when
+    `sources.usan_pronunciation`'s own direct search of the AMA's index
+    finds nothing for a generic name (see `build._resolve_word`) -- a
+    fallback for a name spelled differently than the query, a transient API
+    issue, or a name genuinely missing from that specific index.
+
+    Neither mode replaces the normal query, both supplement it, and each is
+    cached completely separately (`raw-tight::` / `raw-usan::` vs `raw::`)
+    so re-running costs nothing once fetched.
     """
-    answer = grounded_answer(name, tight=tight)
+    answer = grounded_answer(name, mode=mode)
     if not answer or not answer.chunks or _is_speculative(answer.text):
         return []
 

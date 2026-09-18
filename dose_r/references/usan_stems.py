@@ -402,7 +402,7 @@ BACKTEST_RESULTS: dict[str, dict] = {
     "vir": {"n": 3, "improvement": 0.6685},
     "ximab": {"n": 1, "improvement": 0.1120},
     "zole": {"n": 1, "improvement": -0.8583},
-    "zumab": {"n": 7, "improvement": 0.1824},
+    "zumab": {"n": 7, "improvement": 0.1681},
 }
 
 # Adding the AMA USAN Statement PDF as a directly-fetched, primary source
