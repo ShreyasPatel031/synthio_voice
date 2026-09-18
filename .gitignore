@@ -22,4 +22,13 @@ artifacts/
 # Cached source-pull responses; rebuildable, keyed per ingredient
 dose_r/references/.cache/
 dose_r/strata/.fda_cache.json
+
+# Raw browser-collected payloads: redundant once the audio is extracted, and
+# large, because they carry the same clips again as base64.
 data/collected/
+
+# The Drugs.com clips are the exception to the audio rules above. They were
+# collected by hand through a browser because the site refuses this network
+# entirely, so unlike the Merriam-Webster MP3s they cannot be re-fetched from
+# anywhere. They are tracked deliberately.
+!data/reference_audio/drugs_com/*.wav

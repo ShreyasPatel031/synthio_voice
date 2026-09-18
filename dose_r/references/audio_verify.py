@@ -9,6 +9,8 @@ clip (a whole sentence, a phrase entry) is flagged instead of silently kept.
 from __future__ import annotations
 
 import io
+import re
+import statistics
 import wave
 from dataclasses import dataclass
 
@@ -17,6 +19,8 @@ from mutagen.mp3 import error as MutagenMP3Error
 
 MIN_DURATION_S = 0.3
 MAX_DURATION_S = 4.0
+
+_VOWEL_GROUPS = re.compile(r"[aeiouy]+")
 
 
 @dataclass
@@ -77,3 +81,35 @@ def duration_flag(duration_s: float | None) -> str | None:
     if duration_s > MAX_DURATION_S:
         return f"duration {duration_s:.3f}s is above the {MAX_DURATION_S}s ceiling for a single name"
     return None
+
+
+def estimate_syllables(name: str) -> int:
+    """A crude vowel-group count, good enough to gauge relative clip length."""
+    words = re.findall(r"[a-zA-Z]+", name)
+    return sum(max(1, len(_VOWEL_GROUPS.findall(w.lower()))) for w in words) or 1
+
+
+def syllable_outliers(
+    durations: dict[str, float], low: float = 0.5, high: float = 2.0
+) -> dict[str, str]:
+    """Names whose seconds-per-syllable falls outside [low, high] x this batch's median.
+
+    A clip disproportionately long for its name's syllable count is the
+    signature of a page's audio actually pronouncing a related name (e.g. a
+    brand page's clip saying its generic) rather than the name it was
+    collected for. This flags candidates for a human ear check; it never
+    decides a clip is wrong on its own.
+    """
+    if not durations:
+        return {}
+    per_syllable = {name: d / estimate_syllables(name) for name, d in durations.items()}
+    median = statistics.median(per_syllable.values())
+    lo, hi = median * low, median * high
+    return {
+        name: (
+            f"{rate:.3f}s/syllable is outside [{lo:.3f}, {hi:.3f}]s/syllable "
+            f"for this batch (median {median:.3f})"
+        )
+        for name, rate in per_syllable.items()
+        if rate < lo or rate > hi
+    }
