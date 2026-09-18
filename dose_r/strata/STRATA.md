@@ -128,9 +128,9 @@ silently reproducing it or silently ignoring it.
 to minimize the summed absolute deviation from (63, 102, 109); see
 `build_strata.difficulty_sensitivity` for the search.
 
-**Result:** 55 easy / 102 medium /
-117 hard (target: 63 / 102 / 109; summed absolute
-deviation = 16).
+**Result:** 56 easy / 103 medium /
+115 hard (target: 63 / 102 / 109; summed absolute
+deviation = 14).
 This is a *materially worse* fit than the era split, and the search
 space is genuinely limited: raw phoneme/character counts on this
 dataset cluster too tightly to produce three well-separated,
@@ -151,18 +151,18 @@ label near these bands as a coin flip, not a fact.
 
 | length_weight | stem_bonus | easy | medium | hard |
 | --- | --- | --- | --- | --- |
-| 0.0 | 1.0 | 55 | 126 | 93 |
-| 0.0 | 2.0 | 55 | 121 | 98 |
-| 0.0 | 3.0 | 55 | 121 | 98 |
-| 0.01 | 1.0 | 55 | 125 | 94 |
-| 0.01 | 2.0 | 55 | 120 | 99 |
-| 0.01 | 3.0 | 55 | 120 | 99 |
-| 0.02 | 1.0 | 55 | 104 | 115 |
-| 0.02 | 2.0 | 55 | 102 | 117 |
-| 0.02 | 3.0 | 55 | 102 | 117 |
-| 0.05 | 1.0 | 17 | 138 | 119 |
-| 0.05 | 2.0 | 17 | 138 | 119 |
-| 0.05 | 3.0 | 17 | 138 | 119 |
+| 0.0 | 1.0 | 56 | 127 | 91 |
+| 0.0 | 2.0 | 56 | 122 | 96 |
+| 0.0 | 3.0 | 56 | 122 | 96 |
+| 0.01 | 1.0 | 56 | 126 | 92 |
+| 0.01 | 2.0 | 56 | 121 | 97 |
+| 0.01 | 3.0 | 56 | 121 | 97 |
+| 0.02 | 1.0 | 56 | 105 | 113 |
+| 0.02 | 2.0 | 56 | 103 | 115 |
+| 0.02 | 3.0 | 56 | 103 | 115 |
+| 0.05 | 1.0 | 18 | 139 | 117 |
+| 0.05 | 2.0 | 18 | 139 | 117 |
+| 0.05 | 3.0 | 18 | 139 | 117 |
 
 ## Reference-layer confidence, carried through per row
 
@@ -176,9 +176,9 @@ an earlier draft of this build did exactly that; see `test_strata.py`.
 
 | tier | rows |
 | --- | --- |
-| high | 18 |
-| medium | 76 |
-| low | 180 |
+| high | 27 |
+| medium | 77 |
+| low | 170 |
 
 This is the number the fidelity report's power analysis
 (`dose_r/report/power.py`) uses for `effective_sample_size` and for

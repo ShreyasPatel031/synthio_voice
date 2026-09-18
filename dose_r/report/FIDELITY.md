@@ -74,28 +74,37 @@ without real per-item scores from more than one system.
 
 ## The reference layer's uncertainty has to be propagated, not ignored
 
-185 of 284 gold pronunciation references — **180 of 274 rows**, once
-aggregated to the row's weakest ingredient — carry no external confirmation
-at all (`dose_r/references/COVERAGE.md`, `reference_confidence` in
-`strata.jsonl`). A pass/fail verdict on one of those rows depends on a
-rule-derived respelling nobody has checked. Two consequences, both
-implemented in `power.py`:
+As of this writing, 165-185 of 284 gold pronunciation references (the count
+has moved during this workstream as a parallel effort adds Wikipedia/
+Wiktionary sources -- see `COVERAGE.md`'s git history for the current figure)
+carry no external confirmation at all. Aggregated to each row's weakest
+ingredient (`reference_confidence` in `strata.jsonl`), that was 170 of 274
+rows at the time this document was last regenerated. A pass/fail verdict on
+one of those rows depends on a rule-derived respelling nobody has checked.
+Two consequences, both implemented in `power.py`, and both **re-derived from
+`strata.jsonl` at report-build time, not hardcoded** -- rerun
+`power.effective_sample_size` and `power.propagate_reference_uncertainty`
+against the current file rather than trusting the numbers quoted here as
+frozen:
 
 1. **Effective sample size.** Excluding every low-confidence row, this
-   benchmark's *externally verifiable* sample size is **94 of 274 items**
-   (34%), not 274. At n=94, the minimum detectable gap widens from ~11 to
-   **~19 percentage points**, and the single-pass-rate CI half-width widens
-   from ~±5.4 to **~±9.1 points**.
+   benchmark's *externally verifiable* sample size was **109 of 274 items**
+   (40%) at last count, not 274. At n=109, the minimum detectable gap widens
+   from ~11 to **~17 percentage points**, and the single-pass-rate CI
+   half-width widens from ~±5.4 to **~±8.5 points**. This share has been
+   improving as the reference layer gains sources and should be re-measured
+   before it is quoted in a final report.
 2. **Uncertainty in the labels themselves.** There is no measured error rate
    for the rule-derived low-confidence references — nothing in this project
    has checked how often they are actually wrong. `propagate_reference_uncertainty`
-   sweeps three illustrative assumed error rates instead of asserting one:
+   sweeps three illustrative assumed error rates instead of asserting one
+   (figures below at n_low=165):
 
    | assumed gold error rate | CI half-width, sampling only | CI half-width, with reference uncertainty |
    | --- | --- | --- |
    | 10% | ±5.4 pp | ±6.1 pp |
-   | 20% | ±5.4 pp | ±6.7 pp |
-   | 30% | ±5.4 pp | ±7.0 pp |
+   | 20% | ±5.4 pp | ±6.6 pp |
+   | 30% | ±5.4 pp | ±6.9 pp |
 
    This is a sensitivity bracket, not a calibrated correction — treat the
    right-hand column as "at least this wide," not as the true interval.

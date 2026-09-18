@@ -6,24 +6,26 @@
 
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
-| high | 19 | 6.7% | two independent sources agree |
-| medium | 80 | 28.2% | exactly one external source answered |
-| low | 185 | 65.1% | no external source; derived from spelling by rule |
+| high | 28 | 9.9% | two independent sources agree |
+| medium | 83 | 29.2% | exactly one external source answered |
+| low | 173 | 60.9% | no external source; derived from spelling by rule |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
-| high | 11 | 8 |
-| medium | 35 | 45 |
-| low | 97 | 88 |
+| high | 13 | 15 |
+| medium | 33 | 50 |
+| low | 97 | 76 |
 
 ## Sources that answered
 
 | Source | Ingredients |
 | --- | --- |
-| merriam-webster/medical | 102 |
-| cmudict | 19 |
+| merriam-webster/medical | 101 |
+| wikipedia | 22 |
+| cmudict | 18 |
+| wiktionary | 2 |
 
 ## Sources that did not answer
 
@@ -33,7 +35,7 @@
 
 ## Needs arbitration
 
-185 ingredients have no external source and are currently
+173 ingredients have no external source and are currently
 rule-derived. These are the layer's weak spot and must not be read as gold:
 
 - Adquey (brand)
@@ -144,7 +146,6 @@ rule-derived. These are the layer's weak spot and must not be read as gold:
 - bulevirtide-gmod (generic)
 - canakinumab (generic)
 - cariprazine (generic)
-- cefepime (generic)
 - centanafadine (generic)
 - cipepofol (generic)
 - concizumab (generic)
@@ -156,11 +157,9 @@ rule-derived. These are the layer's weak spot and must not be read as gold:
 - durvalumab (generic)
 - elexacaftor (generic)
 - elranatamab-bcmm (generic)
-- empagliflozin (generic)
 - ensartinib (generic)
 - ensitrelvir (generic)
 - exagamglogene autotemcel (generic)
-- exenatide (generic)
 - faricimab-svoa (generic)
 - fezolinetant (generic)
 - gadoquatrane (generic)
@@ -168,7 +167,6 @@ rule-derived. These are the layer's weak spot and must not be read as gold:
 - gepotidacin (generic)
 - icotrokinra (generic)
 - islatravir (generic)
-- ivacaftor (generic)
 - lebrikizumab-lbkz (generic)
 - lecanemab (generic)
 - linerixibat (generic)
@@ -182,8 +180,6 @@ rule-derived. These are the layer's weak spot and must not be read as gold:
 - oveporexton (generic)
 - pegvaliase-pqpz (generic)
 - pegzilarginase-nbln (generic)
-- perfluorohexyloctane (generic)
-- pitolisant (generic)
 - pivekimab sunirine-pvzy (generic)
 - prademagene zamikeracel (generic)
 - relacorilant (generic)
@@ -194,12 +190,7 @@ rule-derived. These are the layer's weak spot and must not be read as gold:
 - rilzabrutinib (generic)
 - rimegepant (generic)
 - risankizumab-rzaa (generic)
-- sacubitril (generic)
-- secukinumab (generic)
-- sonrotoclax (generic)
-- sotagliflozin (generic)
 - sotatercept-csrk (generic)
-- suzetrigine (generic)
 - talquetamab (generic)
 - tebipenem pivoxil (generic)
 - tenecteplase (generic)
@@ -215,7 +206,6 @@ rule-derived. These are the layer's weak spot and must not be read as gold:
 - veligrotug-vvze (generic)
 - vepdegestrant (generic)
 - vorasidenib (generic)
-- xanomeline (generic)
 - zenocutuzumab (generic)
 - zidebactam (generic)
 - zidesamtinib (generic)

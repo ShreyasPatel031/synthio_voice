@@ -32,12 +32,32 @@ coverage numbers in COVERAGE.md are reproducible without re-fetching.
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load_dotenv(path: Path = ROOT / ".env") -> None:
+    """Populate os.environ from a simple KEY=VALUE `.env`, without adding a
+    python-dotenv dependency. Never overwrites a variable already set."""
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip().strip("'\"")
+        os.environ.setdefault(key, value)
+
+
+_load_dotenv()
 
 CACHE = Path(__file__).resolve().parent / ".cache"
 MW_BASE = "https://www.merriam-webster.com"
@@ -85,25 +105,77 @@ def _scrape(name: str, section: str) -> str | None:
     return None
 
 
-def merriam_webster(name: str) -> dict | None:
-    """MW's respelling for `name`, with the section that answered."""
-    hit = _cached(f"mw::{name}")
+MW_API_BASE = "https://www.dictionaryapi.com/api/v3/references/medical/json"
+
+
+def _mw_medical_api(name: str) -> dict | None:
+    """MW's Medical Dictionary API, if `MW_MEDICAL_KEY` is set.
+
+    Response is a JSON list of entries (a miss is `[]`, or a list of plain
+    strings that are spelling suggestions -- both mean "no answer"). Real
+    entries carry `hwi.prs[i].mw`, in MW's own respelling notation, and can
+    have more than one `prs` item; every one found is kept, comma-joined, so
+    `notation.convert()` expands them exactly as it already does for the
+    scraped page.
+    """
+    key = os.environ.get("MW_MEDICAL_KEY")
+    if not key:
+        return None
+
+    cache_key = f"mw-api::{name}"
+    hit = _cached(cache_key)
     if hit is not None:
         return hit or None
 
-    for section in ("medical", "dictionary"):
-        raw = _scrape(name, section)
-        if raw:
-            result = {
-                "name": f"merriam-webster/{section}",
-                "raw": raw,
-                "url": f"{MW_BASE}/{section}/{urllib.parse.quote(name)}",
-            }
-            _store(f"mw::{name}", result)
-            return result
+    url = f"{MW_API_BASE}/{urllib.parse.quote(name)}?key={urllib.parse.quote(key)}"
+    try:
+        req = urllib.request.Request(url, headers=UA)
+        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
+        entries = json.loads(raw)
+    except Exception:
+        return None  # not cached: a transient failure shouldn't poison the cache
 
-    _store(f"mw::{name}", {})
-    return None
+    respellings = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue  # a bare string is a spelling suggestion, not an entry
+        for pr in entry.get("hwi", {}).get("prs", []):
+            mw = pr.get("mw")
+            if mw:
+                respellings.append(mw)
+
+    result = None
+    if respellings:
+        result = {
+            "name": "merriam-webster/medical-api",
+            "raw": ", ".join(respellings),
+            "url": f"{MW_BASE}/medical/{urllib.parse.quote(name)}",
+        }
+    _store(cache_key, result or {})
+    return result
+
+
+def merriam_webster(name: str) -> dict | None:
+    """MW's respelling for `name`: the Medical API first, then the general
+    dictionary's HTML page for names the medical reference does not list."""
+    api = _mw_medical_api(name)
+    if api:
+        return api
+
+    hit = _cached(f"mw-html::{name}")
+    if hit is not None:
+        return hit or None
+
+    raw = _scrape(name, "dictionary")
+    result = None
+    if raw:
+        result = {
+            "name": "merriam-webster/dictionary",
+            "raw": raw,
+            "url": f"{MW_BASE}/dictionary/{urllib.parse.quote(name)}",
+        }
+    _store(f"mw-html::{name}", result or {})
+    return result
 
 
 _WIKI_LOCK = threading.Lock()
