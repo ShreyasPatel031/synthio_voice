@@ -45,16 +45,43 @@ This is a proxy, not ground truth
   specifically tuned for pronunciation assessment; using it this way is
   standard in the SpeechBERTScore literature but not something this project
   has independently proven optimal.
-- Which layer's hidden states to use is a real, undocumented choice in the
-  wider literature (different layers encode different amounts of phonetic
-  vs. speaker information). This module uses the final hidden layer, chosen
-  for simplicity, not because it was swept and found best. Flagged as an
-  open tuning question, not resolved here.
-- This has NOT yet been validated -- see the module's companion validation
-  script before trusting any number it produces. In particular, the
-  voice-invariance property is a *claim from the literature*, not something
-  this codebase has confirmed on drug-name audio specifically, until that
-  validation is run and reported.
+- Which layer's hidden states to use matters a great deal and was NOT a safe
+  default: the first draft of this module used the final hidden layer and
+  it produced zero discrimination between correct and deliberately
+  mismatched audio/reference pairs (mismatched pairs scored as high as, or
+  higher than, correct ones). A layer sweep (see `_LAYER`'s comment) found
+  layers 10-12 uniformly broken and 6-9 all working; layer 9 is used. This
+  was found on a 5-item slice, not swept exhaustively -- treat it as a
+  validated starting point, not a proven optimum.
+- Also required a real fix, not just layer selection: comparing a full
+  synthesized SENTENCE's embeddings against an isolated ~1s reference WORD's
+  embeddings failed discrimination outright, because a 7-second sentence and
+  a 1-second word resemble each other in generic "this is speech" ways
+  regardless of content. `dose_r.audio_span.extract_drug_span` slices out
+  just the drug's audio from the sentence before any comparison happens --
+  skipping this step (as the first draft did) silently breaks the metric.
+- Validated on a small slice (`scripts/validate_speech_similarity.py`), with
+  an honest mixed result, not a clean pass on every check:
+  * Discrimination: PASS. 5 correct TTS/reference pairs (min score 2.65) all
+    scored above 3 deliberately mismatched pairs (max score 2.18) -- a clean
+    gap.
+  * Beats the naive baseline: on the same items, plain MFCC+DTW averaged 1.28
+    while this method averaged 2.99 -- real evidence the SSL approach is less
+    confounded by voice identity than raw acoustic distance, not just an
+    assumption from the literature.
+  * Voice-invariance (two different humans, same correct word): 4/5 pairs
+    scored reasonably (3.07-3.56); one, "Aspirin", scored 1.77, well below
+    the others. Duration mismatch was ruled out as the cause (Advil's two
+    clips differ in length by a similar ratio and still scored 3.18). The
+    leading hypothesis is a genuine American-English pronunciation variant
+    for "aspirin" (full middle syllable /ˈæspərɪn/ vs. elided /ˈæsprɪn/) --
+    i.e. the metric may be correctly detecting that the two "canonical"
+    human sources do not say the word identically, not failing. This is a
+    hypothesis, not confirmed, and the sample is one item out of five.
+  Net: usable with this caveat attached to every result, not a fully clean
+  validation. Not yet validated at corpus scale, and the voice-invariance
+  check should be re-run on a larger sample before this caveat is either
+  resolved or promoted to a known limitation.
 
 Cost
 ----
@@ -65,6 +92,7 @@ Local model, CPU inference, no network calls, no per-clip spend -- same as
 from __future__ import annotations
 
 from functools import lru_cache
+from io import BytesIO
 from pathlib import Path
 
 import librosa
@@ -72,6 +100,18 @@ import numpy as np
 
 MODEL_ID = "facebook/wav2vec2-base"
 _TARGET_SR = 16_000
+
+# Layer 9 of 12, chosen by a validation sweep (docs/EVALUATION_PATHS_PLAN.md /
+# the Path 2 validation script), not the paper's default or a guess. Layers
+# 10-12 (including the final layer, this module's first draft) showed ZERO
+# discrimination between correct and deliberately mismatched audio/reference
+# pairs on a 5-item slice -- late wav2vec2 layers drift toward something less
+# tied to phonetic identity, consistent with the SSL layer-probing literature
+# (e.g. SUPERB). Layers 6-9 all separated correctly; 9 had the widest margin
+# (correct-pair minimum 0.531 vs. mismatched-pair maximum 0.436 F1). This is
+# an empirical choice from one small slice, not a swept optimum -- revisit if
+# broader validation suggests a different layer generalizes better.
+_LAYER = 9
 
 
 @lru_cache(maxsize=1)
@@ -87,28 +127,36 @@ def _get_model():
     return torch, extractor, model
 
 
-def extract_frame_embeddings(audio_path_or_array, sample_rate: int | None = None) -> np.ndarray:
+def extract_frame_embeddings(audio_source, sample_rate: int | None = None) -> np.ndarray:
     """audio -> (T, 768) frame-level SSL hidden states (final layer).
 
-    Accepts a path (any librosa-readable format) or a raw float array (in
-    which case `sample_rate` is required for resampling to the model's 16kHz).
+    Accepts a path (any librosa-readable format), raw in-memory WAV bytes
+    (e.g. from `dose_r.audio_span.extract_drug_span`, which never touches
+    disk), or a raw float array (in which case `sample_rate` is required for
+    resampling to the model's 16kHz).
     """
     torch, extractor, model = _get_model()
 
-    if isinstance(audio_path_or_array, np.ndarray):
+    if isinstance(audio_source, np.ndarray):
         if sample_rate is None:
             raise ValueError("sample_rate is required when passing a raw array")
-        audio = audio_path_or_array
+        audio = audio_source
         if sample_rate != _TARGET_SR:
             audio = librosa.resample(audio.astype(np.float32), orig_sr=sample_rate,
                                      target_sr=_TARGET_SR)
+    elif isinstance(audio_source, (bytes, bytearray)):
+        import soundfile as sf
+        raw, sr = sf.read(BytesIO(bytes(audio_source)), dtype="float32")
+        audio = raw if raw.ndim == 1 else raw.mean(axis=1)  # downmix if stereo
+        if sr != _TARGET_SR:
+            audio = librosa.resample(audio, orig_sr=sr, target_sr=_TARGET_SR)
     else:
-        audio, _ = librosa.load(str(audio_path_or_array), sr=_TARGET_SR, mono=True)
+        audio, _ = librosa.load(str(audio_source), sr=_TARGET_SR, mono=True)
 
     inputs = extractor(audio, sampling_rate=_TARGET_SR, return_tensors="pt")
     with torch.no_grad():
-        out = model(inputs.input_values)
-    return out.last_hidden_state[0].numpy()  # (T, 768)
+        out = model(inputs.input_values, output_hidden_states=True)
+    return out.hidden_states[_LAYER][0].numpy()  # (T, 768) -- see _LAYER's comment
 
 
 def _cosine_similarity_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:

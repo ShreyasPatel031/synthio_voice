@@ -960,3 +960,95 @@ def test_llm_panel_tracks_token_usage_per_model():
 
     usage = scorer.usage_summary()["gemini-2.5-flash-lite"]
     assert usage == {"prompt_tokens": 221, "candidates_tokens": 8, "calls": 1}
+
+
+# --- speech similarity (Path 2: audio-to-audio) -----------------------------
+def test_speech_bertscore_identical_sequences_scores_one():
+    import numpy as np
+    from dose_r.scoring.speech_similarity import speech_bertscore
+
+    feats = np.random.RandomState(0).randn(10, 8)
+    result = speech_bertscore(feats, feats)
+    assert result["f1"] == pytest.approx(1.0, abs=1e-6)
+
+
+def test_speech_bertscore_empty_sequence_scores_zero():
+    import numpy as np
+    from dose_r.scoring.speech_similarity import speech_bertscore
+
+    empty = np.zeros((0, 8))
+    feats = np.random.RandomState(0).randn(5, 8)
+    result = speech_bertscore(empty, feats)
+    assert result == {"precision": 0.0, "recall": 0.0, "f1": 0.0}
+
+
+def test_speech_bertscore_orthogonal_sequences_score_low():
+    import numpy as np
+    from dose_r.scoring.speech_similarity import speech_bertscore
+
+    a = np.eye(4, 8)       # 4 orthogonal unit vectors
+    b = -np.eye(4, 8)      # their exact opposites
+    result = speech_bertscore(a, b)
+    assert result["f1"] < 0.1
+
+
+def test_score_speech_similarity_maps_f1_to_0_5_scale():
+    import numpy as np
+    from dose_r.scoring.speech_similarity import score_speech_similarity
+
+    feats = np.random.RandomState(1).randn(6, 8)
+    score, components = score_speech_similarity(feats, feats)
+    assert score == pytest.approx(5.0, abs=1e-3)
+    assert components["f1"] == pytest.approx(1.0, abs=1e-6)
+
+
+def test_cosine_similarity_matrix_shape_and_range():
+    import numpy as np
+    from dose_r.scoring.speech_similarity import _cosine_similarity_matrix
+
+    a = np.random.RandomState(2).randn(5, 8)
+    b = np.random.RandomState(3).randn(7, 8)
+    sim = _cosine_similarity_matrix(a, b)
+    assert sim.shape == (5, 7)
+    assert sim.max() <= 1.0 + 1e-6 and sim.min() >= -1.0 - 1e-6
+
+
+# --- audio_span (drug-name span extraction) ---------------------------------
+def test_extract_words_with_timing_parses_seconds_strings():
+    from dose_r.audio_span import _extract_words_with_timing
+
+    response = {"results": [{"alternatives": [{"words": [
+        {"word": "Take", "startTime": "0s", "endTime": "0.3s"},
+        {"word": "Advil", "startTime": "0.3s", "endTime": "0.9s"},
+    ]}]}]}
+    words = _extract_words_with_timing(response)
+    assert words == [
+        {"word": "Take", "start_s": 0.0, "end_s": 0.3},
+        {"word": "Advil", "start_s": 0.3, "end_s": 0.9},
+    ]
+
+
+def test_extract_words_with_timing_empty_on_no_results():
+    from dose_r.audio_span import _extract_words_with_timing
+
+    assert _extract_words_with_timing({"results": []}) == []
+
+
+def test_locate_span_with_timing_returns_none_when_drug_absent():
+    from dose_r.audio_span import _locate_span_with_timing
+
+    words = [{"word": "Take", "start_s": 0.0, "end_s": 0.3}]
+    result = _locate_span_with_timing("Take Advil now.", "Advil", words)
+    assert result is None
+
+
+def test_locate_span_with_timing_finds_matching_word():
+    from dose_r.audio_span import _locate_span_with_timing
+
+    words = [
+        {"word": "Take", "start_s": 0.0, "end_s": 0.3},
+        {"word": "Advil", "start_s": 0.3, "end_s": 0.9},
+        {"word": "now", "start_s": 0.9, "end_s": 1.1},
+    ]
+    result = _locate_span_with_timing("Take Advil now.", "Advil", words)
+    assert result == (0.3, 0.9)
