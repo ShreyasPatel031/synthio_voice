@@ -771,3 +771,192 @@ def test_score_phoneme_match_high_per_fails_low_per_passes():
     assert close_score >= PASS_THRESHOLD
     assert mangled_score < PASS_THRESHOLD
     assert close_score > mangled_score
+
+
+# --- audio-LLM panel scorer --------------------------------------------------
+class _FakeVertexResponse:
+    def __init__(self, status_code: int, text: str = "", json_data=None):
+        self.status_code = status_code
+        self.text = text
+        self._json = json_data or {}
+
+    def json(self):
+        return self._json
+
+
+def _vertex_ok(score, heard="Abilify", reason="clear", fence=False,
+              prompt_tokens=221, candidates_tokens=8):
+    body = f'{{"heard":"{heard}","score":{score},"reason":"{reason}"}}'
+    text = f"```json\n{body}\n```" if fence else body
+    return _FakeVertexResponse(200, json_data={
+        "candidates": [{"content": {"parts": [{"text": text}]}}],
+        "usageMetadata": {"promptTokenCount": prompt_tokens,
+                          "candidatesTokenCount": candidates_tokens},
+    })
+
+
+class _ScriptedVertexSession:
+    """One scripted response per model, keyed by call order across models
+    (the scorer calls judge_models in order for a single item)."""
+
+    def __init__(self, responses):
+        self._responses = list(responses)
+        self.calls = 0
+
+    def post(self, *args, **kwargs):
+        self.calls += 1
+        item = self._responses.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+
+def _mock_synth_result(item_id="abilify"):
+    from dose_r.adapters.base import SynthesisResult
+    return SynthesisResult(system_id="gtts-standard-c", item_id=item_id, ok=True,
+                           audio=b"RIFF" + b"\x00" * 40, sample_rate_hz=24000)
+
+
+@pytest.fixture(autouse=True)
+def _no_real_auth_llm_panel(monkeypatch):
+    monkeypatch.setattr("dose_r.scoring.llm_panel.auth.auth_headers", lambda: {})
+
+
+@pytest.fixture(autouse=True)
+def _no_real_sleep_llm_panel(monkeypatch):
+    monkeypatch.setattr("dose_r.scoring.llm_panel.time.sleep", lambda s: None)
+
+
+def test_llm_panel_single_judge_mode_scores_on_one_answer():
+    """The bug this guards: a hardcoded '>= 2 judges' threshold would make a
+    1-judge panel always unscoreable, even when its only judge succeeds."""
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer
+
+    session = _ScriptedVertexSession([_vertex_ok(5)])
+    scorer = AudioLLMPanelScorer(judge_models=("gemini-2.5-flash-lite",), session=session)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is True
+    assert result.score == 5.0
+    assert session.calls == 1
+    assert "one judge is configured" in result.notes
+
+
+def test_llm_panel_full_panel_takes_median_of_three():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer, JUDGE_MODELS
+
+    session = _ScriptedVertexSession([_vertex_ok(5), _vertex_ok(3), _vertex_ok(4)])
+    scorer = AudioLLMPanelScorer(judge_models=JUDGE_MODELS, session=session)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.score == 4.0  # median of 5, 3, 4
+    assert result.components["spread"] == 2.0
+    assert session.calls == 3
+
+
+def test_llm_panel_full_panel_tolerates_one_failure():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer, JUDGE_MODELS
+
+    session = _ScriptedVertexSession([
+        _vertex_ok(5), _FakeVertexResponse(500, text="server error"), _vertex_ok(4),
+    ])
+    scorer = AudioLLMPanelScorer(judge_models=JUDGE_MODELS, session=session,
+                                 max_attempts=1)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is True
+    assert result.score == 4.5  # median of the 2 that answered: 5, 4
+    assert "1 judge(s) failed" in result.notes
+
+
+def test_llm_panel_full_panel_two_failures_is_unscoreable():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer, JUDGE_MODELS
+
+    session = _ScriptedVertexSession([
+        _vertex_ok(5),
+        _FakeVertexResponse(500, text="err1"),
+        _FakeVertexResponse(500, text="err2"),
+    ])
+    scorer = AudioLLMPanelScorer(judge_models=JUDGE_MODELS, session=session,
+                                 max_attempts=1)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is False
+    assert result.score is None
+
+
+def test_llm_panel_single_judge_failure_is_unscoreable_not_zero():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer
+
+    session = _ScriptedVertexSession([_FakeVertexResponse(500, text="boom")])
+    scorer = AudioLLMPanelScorer(judge_models=("gemini-2.5-flash-lite",),
+                                 session=session, max_attempts=1)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is False
+    assert result.score is None  # never silently 0
+
+
+def test_llm_panel_parses_fenced_json():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer
+
+    session = _ScriptedVertexSession([_vertex_ok(5, fence=True)])
+    scorer = AudioLLMPanelScorer(judge_models=("gemini-2.5-flash-lite",), session=session)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.score == 5.0
+
+
+def test_llm_panel_discrimination_mismatched_audio_scores_low():
+    """Mirrors the manual check run before this scorer was built: mismatched
+    audio must not score as a pass."""
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer
+
+    session = _ScriptedVertexSession([
+        _vertex_ok(0, heard="abilify", reason="clearly says abilify, not the expected drug"),
+    ])
+    scorer = AudioLLMPanelScorer(judge_models=("gemini-2.5-flash-lite",), session=session)
+    item = dataset.load_items()[0]
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.score == 0.0
+    assert result.passed is False
+
+
+def test_llm_panel_synthesis_failure_scores_zero_not_none():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer
+    from dose_r.adapters.base import SynthesisResult
+
+    scorer = AudioLLMPanelScorer(judge_models=("gemini-2.5-flash-lite",),
+                                 session=_ScriptedVertexSession([Exception("must not be called")]))
+    item = dataset.load_items()[0]
+    failed = SynthesisResult(system_id="x", item_id=item.item_id, ok=False, error="boom")
+
+    result = scorer.score(item, failed)
+
+    assert result.score == 0.0 and result.scoreable is True
+
+
+def test_llm_panel_tracks_token_usage_per_model():
+    from dose_r.scoring.llm_panel import AudioLLMPanelScorer
+
+    session = _ScriptedVertexSession([_vertex_ok(5, prompt_tokens=221, candidates_tokens=8)])
+    scorer = AudioLLMPanelScorer(judge_models=("gemini-2.5-flash-lite",), session=session)
+    item = dataset.load_items()[0]
+    scorer.score(item, _mock_synth_result(item.item_id))
+
+    usage = scorer.usage_summary()["gemini-2.5-flash-lite"]
+    assert usage == {"prompt_tokens": 221, "candidates_tokens": 8, "calls": 1}
