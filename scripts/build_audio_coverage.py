@@ -7,6 +7,10 @@ generic (see `audio_sources.py`). Only "full" clips satisfy what DOSE scores
 -- the name as it appears in the carrier sentence -- so they are what this
 report calls "MW audio" everywhere it matters for scoring; "any coverage"
 (full + component) is reported alongside as the superset.
+
+Full-name coverage itself is computed generically across however many
+sources the manifest carries (`FULL_COVERAGE_SOURCES` below), not just two,
+so a fourth source needs only a label added there.
 """
 
 from __future__ import annotations
@@ -25,6 +29,13 @@ from dose_r.references import audio_manifest
 DATASET = ROOT / "data" / "dose_v1.jsonl"
 REFERENCES = ROOT / "dose_r" / "references" / "references.jsonl"
 OUT = ROOT / "data" / "reference_audio" / "AUDIO_COVERAGE.md"
+
+# source -> display label, in the order the headline table lists them.
+FULL_COVERAGE_SOURCES = {
+    "drugs.com": "Drugs.com",
+    "merriam-webster": "Merriam-Webster (full name)",
+    "umich": "UMich",
+}
 
 
 def ingredient_types() -> dict[str, str]:
@@ -55,46 +66,62 @@ def build() -> str:
     all_ingredients = set(types)
 
     dc = {r["ingredient"] for r in records if r["source"] == "drugs.com"}
-    dc_flagged = {r["ingredient"] for r in records if r["source"] == "drugs.com" and r["status"] == "flagged"}
     mw_full = {r["ingredient"] for r in records if r["source"] == "merriam-webster" and r["coverage"] == "full"}
     mw_component = {r["ingredient"] for r in records if r["source"] == "merriam-webster" and r["coverage"] == "component"}
     mw_any = mw_full | mw_component
 
-    union = dc | mw_full
-    both = dc & mw_full
-    only_dc = dc - mw_full
-    only_mw = mw_full - dc
+    full_coverage = {
+        "drugs.com": dc,
+        "merriam-webster": mw_full,
+        "umich": {r["ingredient"] for r in records if r["source"] == "umich"},
+    }
+    source_labels = {s: FULL_COVERAGE_SOURCES[s] for s in full_coverage}
+
+    union = set().union(*full_coverage.values())
+    hit_counts = Counter(i for s in full_coverage.values() for i in s)
+    cross_checkable = {i for i, n in hit_counts.items() if n >= 2}
+    all_sources = {i for i, n in hit_counts.items() if n == len(full_coverage)}
+    only = {
+        s: names - set().union(*(o for other, o in full_coverage.items() if other != s))
+        for s, names in full_coverage.items()
+    }
     none = all_ingredients - union
 
     dupes = audio_manifest.duplicate_groups(records)
-    mismatch_flags = [
-        r for r in records if r["status"] == "flagged" and r["source"] == "drugs.com"
-    ]
     partial_flags = [
         r for r in records if r["status"] == "flagged" and r["coverage"] == "component"
     ]
 
+    sources_prose = ", ".join(source_labels.values())
     lines = [
         "# Reference Audio -- Coverage",
         "",
         "Human-recorded pronunciation audio for the 284 unique ingredients across",
-        "the 274 DOSE rows, from two sources: Merriam-Webster's Medical API and",
-        "Drugs.com (collected by hand -- see `data/collected/HANDOFF_AUDIO_COLLECTION.md`,",
-        "drugs.com 403s this environment on every request). \"Coverage\" below means a",
-        "clip that pronounces the *whole* ingredient name, since that is what DOSE",
-        "scores; Merriam-Webster's word-level partial clips are reported separately.",
+        f"the 274 DOSE rows, from three sources: {sources_prose}.",
+        "Merriam-Webster's Medical API; Drugs.com collected by hand -- see",
+        "`data/collected/HANDOFF_AUDIO_COLLECTION.md`, drugs.com 403s this environment",
+        "on every request; UMich's student pronunciation page via the Wayback Machine,",
+        "since the live site 403s behind a Cloudflare challenge. \"Coverage\" below",
+        "means a clip that pronounces the *whole* ingredient name, since that is what",
+        "DOSE scores; Merriam-Webster's word-level partial clips are reported",
+        "separately.",
         "",
         "## Headline",
         "",
         *table(
             [
                 ("Total unique ingredients", len(all_ingredients), "100%"),
-                ("Drugs.com audio", len(dc), pct(len(dc), len(all_ingredients))),
-                ("Merriam-Webster audio (full name)", len(mw_full), pct(len(mw_full), len(all_ingredients))),
+                *[
+                    (f"{label} audio", len(full_coverage[s]), pct(len(full_coverage[s]), len(all_ingredients)))
+                    for s, label in source_labels.items()
+                ],
                 ("Union -- any audio", len(union), pct(len(union), len(all_ingredients))),
-                ("Both sources (cross-checkable)", len(both), pct(len(both), len(all_ingredients))),
-                ("Only Drugs.com", len(only_dc), pct(len(only_dc), len(all_ingredients))),
-                ("Only Merriam-Webster", len(only_mw), pct(len(only_mw), len(all_ingredients))),
+                ("2+ sources (cross-checkable)", len(cross_checkable), pct(len(cross_checkable), len(all_ingredients))),
+                ("All 3 sources", len(all_sources), pct(len(all_sources), len(all_ingredients))),
+                *[
+                    (f"Only {label}", len(only[s]), pct(len(only[s]), len(all_ingredients)))
+                    for s, label in source_labels.items()
+                ],
                 ("No audio anywhere", len(none), pct(len(none), len(all_ingredients))),
             ],
             ("Metric", "Count", "Share"),
@@ -111,9 +138,8 @@ def build() -> str:
                     len(group),
                 )
                 for label, group in [
-                    ("Both sources", both),
-                    ("Only Drugs.com", only_dc),
-                    ("Only Merriam-Webster", only_mw),
+                    ("2+ sources", cross_checkable),
+                    *[(f"Only {source_labels[s]}", only[s]) for s in full_coverage],
                     ("No audio anywhere", none),
                 ]
             ],
@@ -131,13 +157,41 @@ def build() -> str:
             [
                 (
                     tier,
-                    sum(1 for i in both if tiers.get(i) == tier),
-                    sum(1 for i in (only_dc | only_mw) if tiers.get(i) == tier),
+                    sum(1 for i in cross_checkable if tiers.get(i) == tier),
+                    sum(1 for i in (union - cross_checkable) if tiers.get(i) == tier),
                     sum(1 for i in none if tiers.get(i) == tier),
                 )
                 for tier in ("high", "medium", "low")
             ],
-            ("Tier", "both sources", "one source", "no audio"),
+            ("Tier", "2+ sources", "1 source", "no audio"),
+        ),
+        "",
+        "## Cross-source agreement",
+        "",
+        "Every ingredient with audio from 2 or more sources, with each source's",
+        "clip duration -- a rough plausibility check, not a substitute for an ear",
+        "check. UMich's clips run consistently longer than the other sources' for",
+        "the same name (roughly 1.3x-2x), which reads as a slower, more deliberate",
+        "teaching-recording pace rather than a name mismatch: `audio_verify`'s",
+        "syllable-outlier check, which flags a clip disproportionate to *its own*",
+        "batch, raised nothing for UMich because the lengthening is uniform across",
+        "its whole batch, not isolated to one name.",
+        "",
+        *table(
+            [
+                (
+                    ing,
+                    ", ".join(
+                        f"{source_labels[s]} {r['duration_s']:.3f}s"
+                        for s in full_coverage
+                        if ing in full_coverage[s]
+                        for r in records
+                        if r["ingredient"] == ing and r["source"] == s and r["coverage"] == "full"
+                    ),
+                )
+                for ing in sorted(cross_checkable)
+            ],
+            ("Ingredient", "Durations by source"),
         ),
         "",
         "## Merriam-Webster: reconciling row counts",
@@ -182,20 +236,28 @@ def build() -> str:
         "",
         "## Flagged clips",
         "",
-        "### Possible name mismatch (Drugs.com)",
+        "### Possible name mismatch (syllable-outlier check)",
         "",
-        "Duration-per-syllable outliers relative to their own batch's median (see",
-        "`audio_verify.syllable_outliers`) -- candidates for a human ear check, not",
-        "discarded. All 8 are brand-name clips running long, consistent with (but not",
-        "proof of) a brand page's audio actually pronouncing its generic, the failure",
-        "mode confirmed possible for Anktiva in the handoff doc.",
+        "Duration-per-syllable outliers relative to their own source's batch median",
+        "(see `audio_verify.syllable_outliers`) -- candidates for a human ear check,",
+        "not discarded. Every one so far is a brand-name clip running long, consistent",
+        "with (but not proof of) a brand page's audio actually pronouncing its",
+        "generic, the failure mode confirmed possible for Anktiva in the handoff doc.",
         "",
         *table(
             [
-                (r["ingredient"], r["duration_s"], r["flags"][-1])
-                for r in sorted(mismatch_flags, key=lambda r: r["ingredient"])
+                (source_labels[r["source"]], r["ingredient"], r["duration_s"], r["flags"][-1])
+                for r in sorted(
+                    (
+                        r
+                        for r in records
+                        if r["status"] == "flagged"
+                        and any("possible name mismatch" in f for f in r["flags"])
+                    ),
+                    key=lambda r: (r["source"], r["ingredient"]),
+                )
             ],
-            ("Ingredient", "Duration (s)", "Flag"),
+            ("Source", "Ingredient", "Duration (s)", "Flag"),
         ),
         "",
         "### Partial coverage (Merriam-Webster, word-level only)",
@@ -238,11 +300,12 @@ def build() -> str:
         "## What is still missing",
         "",
         f"{len(none)} ingredients ({pct(len(none), len(all_ingredients))}) have no audio",
-        "from either source: "
+        "from any source: "
         f"{sum(1 for i in none if types[i]=='generic')} generic, "
         f"{sum(1 for i in none if types[i]=='brand')} brand. The gap skews generic --",
-        "coined INN names are exactly what neither a general dictionary nor a",
-        "consumer drug-information site reliably records. See",
+        "coined INN names are exactly what neither a general dictionary, a consumer",
+        "drug-information site, nor an older pharmacy-school teaching list (UMich's,",
+        "which barely overlaps DOSE's newer names) reliably records. See",
         "`data/collected/HANDOFF_AUDIO_COLLECTION.md` for sources tried and the",
         "paid/licensed options (USP Dictionary of USAN, a citable MedlinePlus key,",
         "a Drugs.com data license) that would close the rest.",

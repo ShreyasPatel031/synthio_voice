@@ -12,8 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from dose_r.references import audio_manifest, audio_sources_drugscom, audio_verify
+from dose_r.references import audio_manifest, audio_sources_drugscom, audio_sources_umich, audio_verify
 from scripts import fetch_drugscom_reference_audio as fdr
+from scripts import fetch_umich_reference_audio as fum
 
 MANIFEST = ROOT / "data" / "reference_audio" / "manifest.jsonl"
 DATASET = ROOT / "data" / "dose_v1.jsonl"
@@ -237,6 +238,123 @@ def test_run_flags_a_syllable_outlier(tmp_path, audio_dir):
     assert by_ing["Advil"]["status"] == "ok"
 
 
+# --- audio_sources_umich -------------------------------------------------------
+
+
+SAMPLE_UMICH_HTML = (
+    '<source src="https://web.archive.org/web/20251018234448im_/'
+    'https://pharmacy.umich.edu/wp-content/uploads/cefepime.wav" type="audio/wav">'
+    '<source src="https://web.archive.org/web/20251018234448im_/'
+    'https://pharmacy.umich.edu/wp-content/uploads/Lipitor.wav" type="audio/wav">'
+)
+
+
+def test_parse_audio_urls_extracts_name_and_im_url():
+    urls = audio_sources_umich.parse_audio_urls(SAMPLE_UMICH_HTML)
+    assert urls == {
+        "cefepime": "https://web.archive.org/web/20251018234448im_/"
+        "https://pharmacy.umich.edu/wp-content/uploads/cefepime.wav",
+        "Lipitor": "https://web.archive.org/web/20251018234448im_/"
+        "https://pharmacy.umich.edu/wp-content/uploads/Lipitor.wav",
+    }
+
+
+def test_parse_audio_urls_ignores_non_source_tags():
+    html = '<a href="https://pharmacy.umich.edu/wp-content/uploads/cefepime.wav">cefepime</a>'
+    assert audio_sources_umich.parse_audio_urls(html) == {}
+
+
+# --- fetch_umich_reference_audio (the driver) -----------------------------------
+
+
+def test_match_ingredients_is_case_insensitive():
+    page_names = {"cefepime": "url1", "Lipitor": "url2", "Diamox": "url3"}
+    matches = fum.match_ingredients(page_names, ["Cefepime", "lipitor", "Aspirin"])
+    assert matches == {"Cefepime": ("cefepime", "url1"), "lipitor": ("Lipitor", "url2")}
+
+
+def test_match_ingredients_no_overlap():
+    assert fum.match_ingredients({"acebutolol": "url"}, ["Aspirin"]) == {}
+
+
+@pytest.fixture
+def umich_audio_dir(tmp_path, monkeypatch):
+    scratch = ROOT / "data" / "reference_audio" / f"_test_umich_scratch_{tmp_path.name}"
+    monkeypatch.setattr(fum, "AUDIO_DIR", scratch)
+    yield scratch
+    if scratch.exists():
+        import shutil
+
+        shutil.rmtree(scratch)
+
+
+def _umich_html_for(*names: str) -> str:
+    return "".join(
+        f'<source src="https://web.archive.org/web/20251018234448im_/'
+        f'https://pharmacy.umich.edu/wp-content/uploads/{name}.wav" type="audio/wav">'
+        for name in names
+    )
+
+
+def test_run_builds_a_clip_for_a_matching_ingredient(umich_audio_dir, monkeypatch):
+    calls = []
+
+    def fake_fetch(url, delay_s):
+        calls.append(url)
+        return make_wav(1.2, rate=22050)
+
+    monkeypatch.setattr(audio_sources_umich, "polite_fetch_audio", fake_fetch)
+    html = _umich_html_for("cefepime", "notarealdrug")
+
+    clips, misses = fum.run(html)
+
+    assert [c["ingredient"] for c in clips] == ["cefepime"]
+    assert clips[0]["source"] == "umich"
+    assert clips[0]["source_name"] == "umich/wayback-machine"
+    assert clips[0]["coverage"] == "full"
+    assert clips[0]["respelling"] is None
+    assert clips[0]["status"] == "ok"
+    assert misses == []
+    assert len(calls) == 1
+
+
+def test_run_is_idempotent_on_disk(umich_audio_dir, monkeypatch):
+    calls = []
+
+    def fake_fetch(url, delay_s):
+        calls.append(url)
+        return make_wav(1.2, rate=22050)
+
+    monkeypatch.setattr(audio_sources_umich, "polite_fetch_audio", fake_fetch)
+    html = _umich_html_for("cefepime")
+
+    fum.run(html)
+    written = umich_audio_dir / "cefepime.wav"
+    assert written.exists()
+
+    fum.run(html)
+    assert len(calls) == 1
+
+
+def test_run_records_a_miss_on_download_failure(umich_audio_dir, monkeypatch):
+    def failing_fetch(url, delay_s):
+        raise ConnectionError("connection reset by peer")
+
+    monkeypatch.setattr(audio_sources_umich, "polite_fetch_audio", failing_fetch)
+    html = _umich_html_for("cefepime")
+
+    clips, misses = fum.run(html)
+    assert clips == []
+    assert misses == [
+        {
+            "ingredient": "cefepime",
+            "name_type": "generic",
+            "reason": "download_failed",
+            "detail": "connection reset by peer",
+        }
+    ]
+
+
 # --- the real, checked-in manifest ---------------------------------------------
 
 
@@ -251,9 +369,9 @@ def dataset_ingredients():
         return {i for line in f for i in json.loads(line)["ingredients"]}
 
 
-def test_manifest_has_both_sources(manifest_records):
+def test_manifest_has_all_three_sources(manifest_records):
     sources = {r["source"] for r in manifest_records}
-    assert {"merriam-webster", "drugs.com"} <= sources
+    assert {"merriam-webster", "drugs.com", "umich"} <= sources
 
 
 def test_manifest_drugs_com_rows_are_unique_ingredients(manifest_records):
@@ -263,6 +381,18 @@ def test_manifest_drugs_com_rows_are_unique_ingredients(manifest_records):
     drugscom = [r for r in manifest_records if r["source"] == "drugs.com"]
     assert len(drugscom) >= 143
     assert len({r["ingredient"] for r in drugscom}) == len(drugscom)
+
+
+def test_manifest_umich_rows_match_the_known_overlap(manifest_records):
+    # UMich's list predates DOSE and is mostly unrelated drugs, so the overlap
+    # with DOSE's 284 ingredients is small and specific, not something that
+    # grows with future collection batches the way drugs.com's does.
+    umich = [r for r in manifest_records if r["source"] == "umich"]
+    assert {r["ingredient"] for r in umich} == {
+        "Crestor", "Lipitor", "Plavix", "atorvastatin", "clopidogrel", "valsartan", "cefepime",
+    }
+    assert all(r["coverage"] == "full" for r in umich)
+    assert len({r["ingredient"] for r in umich}) == len(umich)
 
 
 def test_manifest_no_duplicate_keys(manifest_records):
