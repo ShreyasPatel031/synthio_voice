@@ -7,7 +7,11 @@ ingredient):
      "sources", "confidence", "notes"}
 
 `ipa_variants` and `arpabet_variants` are parallel and ordered most-preferred
-first, and are never empty.
+first. Both are empty only for a `low`-confidence record with no ground truth
+at all (no external source, and no rule-based fallback stands in for one);
+`ReferenceSet.load` treats such a record as absent, not as a zero-length
+reference to score against, so it surfaces through `missing()` like any other
+ingredient nothing was ever found for.
 
 The reference is a variant SET, not a string. A system that says atorvastatin
 with the stress pattern of a different but clinically accepted variant has not
@@ -61,11 +65,15 @@ class ReferenceError(ValueError):
     pass
 
 
-def _reference_from_obj(obj: dict) -> Reference:
+def _reference_from_obj(obj: dict) -> Reference | None:
+    """`None` when the ingredient has no ground truth at all (empty
+    `arpabet_variants`) -- the caller skips such a row rather than loading a
+    `Reference` with nothing in it, since there is no variant to score
+    against."""
     arpabet = obj["arpabet_variants"]
-    ipa = obj.get("ipa_variants") or [""] * len(arpabet)
     if not arpabet:
-        raise ReferenceError(f"{obj.get('ingredient')!r}: empty arpabet_variants")
+        return None
+    ipa = obj.get("ipa_variants") or [""] * len(arpabet)
     if len(ipa) != len(arpabet):
         raise ReferenceError(
             f"{obj['ingredient']!r}: {len(ipa)} ipa variants vs "
@@ -107,7 +115,8 @@ class ReferenceSet:
             )
         with path.open() as f:
             objs = [json.loads(line) for line in f if line.strip()]
-        return cls([_reference_from_obj(o) for o in objs])
+        refs = [r for r in (_reference_from_obj(o) for o in objs) if r is not None]
+        return cls(refs)
 
     def __contains__(self, ingredient: str) -> bool:
         return ingredient.lower() in self._by_key

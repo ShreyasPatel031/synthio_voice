@@ -152,6 +152,11 @@ def _generate(name: str, retries: int = 3) -> dict | None:
         f"/locations/{LOCATION}/publishers/google/models/{MODEL}:generateContent"
     )
 
+    # A transient failure (rate limit exhausted, timeout, network hiccup) is
+    # never cached: caching `{}` here used to make it permanent, since a hit
+    # of `{}` short-circuits every future call for that name at the top of
+    # this function -- one bad network moment silently and irrecoverably
+    # zeroed out that word. Only a genuine answer is worth remembering.
     for attempt in range(retries):
         req = urllib.request.Request(
             url, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
@@ -165,10 +170,11 @@ def _generate(name: str, retries: int = 3) -> dict | None:
             if e.code == 429 and attempt < retries - 1:
                 time.sleep(2**attempt * 2)
                 continue
-            _store(cache_key, {})
             return None
         except Exception:
-            _store(cache_key, {})
+            if attempt < retries - 1:
+                time.sleep(2**attempt * 2)
+                continue
             return None
     return None
 
@@ -238,23 +244,121 @@ def grounded_answer(name: str) -> GroundedAnswer | None:
 
 
 _RESPELL_PATTERN = re.compile(
-    r'"([A-Za-z]{2,}(?:[-–][A-Za-z]{2,}){1,7})"|'  # quoted "bik-TEG-ra-vir"
-    r"\b([A-Za-z]{2,}(?:[-–][A-Za-z]{2,}){1,7})\b"  # bare bik-TEG-ra-vir
+    # A hyphenated syllable run: quoted, parenthesized, or bare. Syllables can
+    # be a single letter or a schwa ("a-TOE-je-pant", "ə-PREM-i-last"), so
+    # this is deliberately permissive on the regex side -- `_judge_format`
+    # is what actually screens out a false positive like "well-known", not
+    # a tighter regex.
+    r'"([\wÀ-ʯ\']+(?:[-–][\wÀ-ʯ\']+){1,7})"|'
+    r"\(([\wÀ-ʯ\' ]+(?:[-–][\wÀ-ʯ\']+){1,7})\)|"
+    r"\b(\w+(?:[-–]\w+){1,7})\b"
 )
 
+_IPA_PATTERN = re.compile(r"/([^/\s][^/]{1,40}[^/\s])/")
 
-def _extract_respelling(segment_text: str) -> str | None:
+
+def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | None:
     """Pull a hyphenated respelling candidate out of a claim segment.
 
     Stress is not always marked by capitalization ("ad-kee" is as valid a
     respelling as "bik-TEG-ra-vir") -- the only structural requirement is
     that it is spelled as hyphenated syllables, not a real English word.
+
+    Gemini's answer often echoes the input drug name in quotes right next to
+    the real respelling (`the drug "elranatamab-bcmm" is "El-rah-NAH-tah-
+    mab"`) -- when that echo itself has an FDA-suffix hyphen, it satisfies
+    this regex and, being first in the sentence, used to get returned ahead
+    of the actual respelling. `exclude` (the source word) drops that echo.
+
+    The comparison is case-insensitive but hyphen-preserving, not the loose
+    `_normalize()` (which also strips hyphens/spaces): a real respelling
+    like "VRAY-lar" normalizes to the same string as its source word
+    "Vraylar" purely because the hyphen and case differences wash out, and
+    that would wrongly exclude it as "just the name" -- an actual echo
+    reproduces the source word's own spelling verbatim (case aside), it
+    doesn't happen to collide with it after stripping punctuation.
     """
-    for m in _RESPELL_PATTERN.finditer(segment_text):
-        candidate = m.group(1) or m.group(2)
-        if candidate and "-" in candidate.replace("–", "-"):
-            return candidate.replace("–", "-")
+    text = segment_text.replace("*", "")
+    exclude_ci = exclude.strip().lower() if exclude else None
+    for m in _RESPELL_PATTERN.finditer(text):
+        candidate = m.group(1) or m.group(2) or m.group(3)
+        if not candidate or "-" not in candidate.replace("–", "-"):
+            continue
+        candidate = candidate.replace("–", "-").strip()
+        if exclude_ci and candidate.lower() == exclude_ci:
+            continue
+        return candidate
     return None
+
+
+_STRESS_TOKEN = re.compile(r"^[a-zA-Z]{1,8}[\"'‘’]?$")
+_STRESS_STOPWORDS = {
+    "is", "a", "an", "the", "of", "or", "and", "in", "on", "at", "as",
+    "to", "was", "were", "it", "be", "by", "for", "with",
+}
+
+
+def _extract_stress_respelling(text: str) -> str | None:
+    """Pull a USAN/USP-style pronunciation-key respelling: space-separated
+    syllables with a prime marking stress, e.g. `(dor" a vir' een)` or
+    `troe ril' ue zole` -- secondary stress marked with a double prime ("),
+    primary with a single prime ('). This is the official USAN adopted-name
+    pronunciation convention, not the drugs.com/WebMD hyphenated style
+    `_extract_respelling` handles, so it needs its own parser.
+
+    Requiring the stress mark to be the LAST character of its token (not
+    mid-token, as in a possessive like "Davis's") is what keeps this from
+    firing on ordinary prose.
+    """
+    text = text.replace("*", "")
+    for m in re.finditer(
+        r"(?:^|[\s(\"])((?:[a-zA-Z]{1,8}[\"'‘’]?\s+){1,5}[a-zA-Z]{1,8}[\"'‘’]?)(?=[\s.)\"]|$)",
+        text,
+    ):
+        tokens = m.group(1).split()
+        while tokens and re.sub(r"[^a-zA-Z]", "", tokens[0]).lower() in _STRESS_STOPWORDS:
+            tokens = tokens[1:]
+        if len(tokens) < 2 or not all(_STRESS_TOKEN.match(t) for t in tokens):
+            continue
+        if not any(t.endswith("'") or t.endswith("’") for t in tokens):
+            continue
+        syllables = []
+        for t in tokens:
+            primary = t.endswith("'") or t.endswith("’")
+            letters = re.sub(r"[^a-zA-Z]", "", t)
+            if not letters:
+                syllables = None
+                break
+            syllables.append(letters.upper() if primary else letters.lower())
+        if syllables:
+            return "-".join(syllables)
+    return None
+
+
+def _extract_caps_stress_respelling(text: str) -> str | None:
+    """Pull a parenthesized, space-separated respelling where stress is
+    marked by capitalizing the stressed syllable instead of hyphenating or
+    priming it, e.g. `(GAD oh KWA trane)` -- a Merriam-Webster-style
+    respelling rendered with spaces. Requiring parens plus a mix of upper-
+    and lower-case syllables is what keeps this off an ordinary acronym-
+    bearing sentence.
+    """
+    text = text.replace("*", "")
+    for m in re.finditer(r"\(([a-zA-Z]{1,10}(?:\s+[a-zA-Z]{1,10}){1,6})\)", text):
+        tokens = m.group(1).split()
+        if len(tokens) < 2:
+            continue
+        has_upper = any(t.isupper() for t in tokens)
+        has_lower = any(t.islower() for t in tokens)
+        if has_upper and has_lower:
+            return "-".join(tokens)
+    return None
+
+
+def _extract_ipa(segment_text: str) -> str | None:
+    """Pull an IPA transcription out of a claim segment (text between slashes)."""
+    m = _IPA_PATTERN.search(segment_text.replace("*", ""))
+    return m.group(1).strip() if m else None
 
 
 def _normalize(s: str) -> str:
@@ -263,41 +367,156 @@ def _normalize(s: str) -> str:
 
 @dataclass(frozen=True)
 class VerifiedClaim:
-    respelling: str
+    respelling: str | None
+    ipa: str | None
     source_url: str
     source_domain: str
+    page_verified: bool
+
+
+def _judge_format(word: str, respelling: str | None, ipa: str | None) -> bool:
+    """Gemini 2.5 Flash format/plausibility check, cached by (word, claim).
+
+    This is not the verification step -- the grounding citation itself (a
+    real Google Search result Gemini's tool actually retrieved) is that.
+    This is a cheap backstop against the extraction regex grabbing an
+    unrelated hyphenated phrase from the same sentence (e.g. "Uses-Dosage-
+    Warnings"), by asking whether the candidate is even a plausible,
+    correctly-formatted pronunciation guide for this specific word.
+    """
+    cache_key = f"judge::{word}::{respelling}::{ipa}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return bool(hit.get("valid"))
+
+    claim_desc = ", ".join(
+        x
+        for x in [
+            f'respelling "{respelling}"' if respelling else None,
+            f'IPA "{ipa}"' if ipa else None,
+        ]
+        if x
+    )
+    prompt = (
+        f'Drug name: "{word}". Candidate pronunciation: {claim_desc}. '
+        "Is this plausibly a real phonetic pronunciation guide for that "
+        "specific word -- correctly formatted (hyphenated syllables or IPA), "
+        "not an unrelated phrase, not a different word, not boilerplate page "
+        'text? Answer with exactly one word: "yes" or "no".'
+    )
+
+    try:
+        token = _access_token()
+        project = _project_id()
+        body = json.dumps(
+            {
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                # Extended thinking eats maxOutputTokens before any answer
+                # text is emitted (confirmed by a bare `MAX_TOKENS` response
+                # with no `content` at all) -- this is a one-word yes/no
+                # classification, not a reasoning task, so thinking is off.
+                "generationConfig": {
+                    "temperature": 0,
+                    "maxOutputTokens": 20,
+                    "thinkingConfig": {"thinkingBudget": 0},
+                },
+            }
+        ).encode()
+        url = (
+            f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{project}"
+            f"/locations/{LOCATION}/publishers/google/models/gemini-2.5-flash:generateContent"
+        )
+        req = urllib.request.Request(
+            url, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        )
+        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read()
+        result = json.loads(raw)
+        text = result["candidates"][0]["content"]["parts"][0]["text"].strip().lower()
+        valid = text.startswith("y")
+    except Exception:
+        valid = False
+
+    _store(cache_key, {"valid": valid})
+    return valid
 
 
 def verified_claims(name: str) -> list[VerifiedClaim]:
-    """Every grounded claim for `name` that independently verifies against
-    its own cited page's real, fetched content. An unverifiable claim is
-    dropped silently here; the caller decides what "no claims" means."""
+    """Every grounded claim for `name` backed by a real Google Search
+    grounding citation and passing the LLM format/plausibility check.
+
+    The citation IS the retrieval -- Gemini's `google_search` tool already
+    fetched the real page server-side to produce it, and the grounding
+    chunk's domain/URL is Google's own record of that, not a model guess.
+    Re-fetching the page ourselves afterward is opportunistic (it can
+    upgrade a claim to `page_verified` when the domain isn't blocked to
+    this sandbox), never a requirement: a real citation to a domain we
+    can't personally re-fetch (drugs.com 403s here) is still a real,
+    independently-retrieved source.
+    """
     answer = grounded_answer(name)
     if not answer or not answer.chunks:
         return []
 
     resolved = {i: _resolve_redirect(c.redirect_uri) for i, c in enumerate(answer.chunks)}
-
     out: list[VerifiedClaim] = []
-    seen: set[tuple[str, str]] = set()
-    for support in answer.supports:
-        respelling = _extract_respelling(support["segment_text"])
-        if not respelling:
-            continue
-        target = _normalize(respelling)
+    seen: set[tuple[str, str, str]] = set()
 
-        for idx in support["chunk_indices"]:
-            url = resolved.get(idx)
-            if not url:
-                continue
-            page_text = _fetch_page_text(url)
-            if not page_text:
-                continue
-            if target not in _normalize(page_text):
-                continue
-            key = (target, url)
+    def emit(respelling: str | None, ipa: str | None, indices) -> None:
+        if not respelling and not ipa:
+            return
+        if not _judge_format(name, respelling, ipa):
+            return
+        for idx in indices:
+            chunk = answer.chunks[idx]
+            resolved_url = resolved.get(idx)
+            url = resolved_url or chunk.redirect_uri
+            domain = chunk.domain or (urllib.parse.urlparse(resolved_url).netloc if resolved_url else "")
+
+            page_verified = False
+            if resolved_url:
+                page_text = _fetch_page_text(resolved_url)
+                if page_text:
+                    norm_page = _normalize(page_text)
+                    if (respelling and _normalize(respelling) in norm_page) or (
+                        ipa and ipa in page_text
+                    ):
+                        page_verified = True
+
+            key = (respelling or "", ipa or "", domain)
             if key in seen:
                 continue
             seen.add(key)
-            out.append(VerifiedClaim(respelling, url, answer.chunks[idx].domain))
+            out.append(VerifiedClaim(respelling, ipa, url, domain, page_verified))
+
+    # Precise pass: attribute each claim only to the chunks Gemini's own
+    # grounding actually cited for the sentence it appeared in.
+    for support in answer.supports:
+        segment = support["segment_text"]
+        respelling = (
+            _extract_respelling(segment, exclude=name)
+            or _extract_stress_respelling(segment)
+            or _extract_caps_stress_respelling(segment)
+        )
+        ipa = _extract_ipa(segment)
+        emit(respelling, ipa, support["chunk_indices"])
+
+    # Fallback: Gemini's segmentation sometimes doesn't attach a grounding
+    # support to the headline claim sentence itself (only to the trailing
+    # "found on X.com" sentence around it) -- confirmed by inspecting the
+    # raw response for dupilumab/valbenazine/doravirine, where the sentence
+    # stating the actual respelling had zero groundingSupports entries. When
+    # the precise pass finds nothing, fall back to the whole answer text and
+    # attribute to every citation in the response: safe here because the
+    # prompt is single-topic ("what is the phonetic pronunciation of X"), so
+    # every citation Google's search grounding chose is inherently about
+    # that one fact, not scattered unrelated ones.
+    if not out:
+        respelling = (
+            _extract_respelling(answer.text, exclude=name)
+            or _extract_stress_respelling(answer.text)
+            or _extract_caps_stress_respelling(answer.text)
+        )
+        ipa = _extract_ipa(answer.text)
+        emit(respelling, ipa, range(len(answer.chunks)))
+
     return out

@@ -47,7 +47,13 @@ def load_references(path: Path = REFERENCES_PATH) -> tuple[dict[str, str], dict[
             continue
         rec = json.loads(line)
         key = rec["ingredient"].lower()
-        arpabet[key] = rec["arpabet_variants"][0]
+        # A `low`-confidence ingredient can have no ground truth at all (no
+        # rule-based fallback stands in for one anymore) -- "" is the honest
+        # placeholder: phoneme_count("") is 0, so it silently doesn't add to
+        # this row's phoneme total rather than crashing on an index into an
+        # empty list. `confidence` already carries "low" for it, so anything
+        # downstream stratifying by reference confidence still sees it.
+        arpabet[key] = rec["arpabet_variants"][0] if rec["arpabet_variants"] else ""
         name_type[key] = rec["name_type"]
         confidence[key] = rec["confidence"]
     return arpabet, name_type, confidence

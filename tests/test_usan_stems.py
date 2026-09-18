@@ -1,11 +1,13 @@
-import json
-from pathlib import Path
-
 from dose_r.judge.phonemes import parse
-from dose_r.references import build, usan_stems
+from dose_r.references import usan_stems
 
-ROOT = Path(__file__).resolve().parents[1]
-REFERENCES = ROOT / "dose_r" / "references" / "references.jsonl"
+# `usan_stems.py` still exists and is still tested here as a standalone
+# module -- what changed is that `build.py` no longer calls it (or plain
+# g2p) as a fallback for an ingredient with no real source. That removal is
+# covered by tests/test_references.py; the build-integration tests that used
+# to live in this file (`build._from_usan(...)`, low-confidence notes
+# distinguishing "stem-rule applied" from plain fallback) tested code paths
+# that no longer exist and were deleted along with them.
 
 
 def test_match_stem_prefers_the_longest_suffix():
@@ -96,48 +98,15 @@ def test_resolve_note_names_the_stem_and_is_back_tested_when_measured():
 
 
 def test_resolve_note_says_untested_when_no_backtest_data():
-    hit = usan_stems.resolve("troriluzole")
+    # "-zole" (troriluzole's suffix) used to be this test's example, but
+    # Gemini-grounded retrieval (see gemini_grounded.py) has since sourced a
+    # real troriluzole pronunciation, so `-zole` now has backtest data (and
+    # measures negative -- see BACKTEST_RESULTS). "-pril" has no sourced
+    # example in this dataset yet, so it is still genuinely untested.
+    hit = usan_stems.resolve("lisinopril")
     assert hit is not None
     _, note = hit
-    assert "-zole" in note
+    assert "-pril" in note
     assert "not back-tested" in note
 
 
-def test_build_never_tries_a_stem_rule_on_a_brand():
-    # Even a brand name that happens to end in a recognized stem string must
-    # never take the USAN path -- USAN/INN stems are a generic-naming
-    # convention brand names are chosen specifically to avoid.
-    assert build._from_usan("somemab", "brand") is None
-
-
-def test_build_applies_the_stem_engine_for_a_recognized_generic():
-    result = build._from_usan("tofacitinib", "generic")
-    assert result is not None
-    variants, note = result
-    assert "-tinib" in note
-    assert variants and all(variants)
-
-
-def test_build_returns_none_for_a_generic_with_no_recognized_stem():
-    assert build._from_usan("acetaminophen", "generic") is None
-
-
-def test_low_confidence_generics_distinguish_stem_from_plain_fallback():
-    records = [json.loads(line) for line in REFERENCES.open()]
-    low_generics = [r for r in records if r["confidence"] == "low" and r["name_type"] == "generic"]
-    stem_tagged = [r for r in low_generics if "stem-rule applied" in r["notes"]]
-    plain = [r for r in low_generics if "stem-rule applied" not in r["notes"]]
-    assert stem_tagged and plain
-    for r in stem_tagged:
-        assert "TODO" in r["notes"]
-    for r in plain:
-        assert "TODO" in r["notes"]
-        assert "no recognized stem or source" in r["notes"] or "brand names do not follow" in r["notes"]
-
-
-def test_low_confidence_brands_never_carry_a_stem_tag():
-    records = [json.loads(line) for line in REFERENCES.open()]
-    low_brands = [r for r in records if r["confidence"] == "low" and r["name_type"] == "brand"]
-    assert low_brands
-    for r in low_brands:
-        assert "stem-rule applied" not in r["notes"]

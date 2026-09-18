@@ -6,26 +6,26 @@
 
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
-| high | 41 | 14.4% | two independent sources agree |
-| medium | 170 | 59.9% | exactly one external source answered |
-| low | 73 | 25.7% | no external source; no ground truth |
+| high | 97 | 34.2% | two independent sources agree |
+| medium | 169 | 59.5% | exactly one external source answered |
+| low | 18 | 6.3% | no external source; no ground truth |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
-| high | 21 | 20 |
-| medium | 78 | 92 |
-| low | 44 | 29 |
+| high | 54 | 43 |
+| medium | 79 | 90 |
+| low | 10 | 8 |
 
 ## Sources that answered
 
 | Source | Ingredients |
 | --- | --- |
-| gemini-grounded-search | 165 |
-| merriam-webster/medical-api | 90 |
+| gemini-grounded-search | 346 |
+| merriam-webster/medical-api | 89 |
 | wikipedia | 22 |
-| cmudict | 14 |
+| cmudict | 13 |
 | wiktionary | 2 |
 | merriam-webster/dictionary | 1 |
 
@@ -35,29 +35,31 @@
 | --- | --- | --- | --- |
 | Original (MW HTML scrape + CMUdict only) | 19 | 80 | 185 |
 | + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |
-| + MW Medical Dictionary API (this build) | 41 | 170 | 73 |
+| + MW Medical Dictionary API | 41 | 170 | 73 |
+| + Gemini/Google-Search grounding, rule-based fallback removed (this build) | 97 | 169 | 18 |
 
-The Wikipedia/Wiktionary step is the real gain here: it answered 24
-ingredients no other source had, and independently corroborated several
-Merriam-Webster entries into `high` confidence (e.g. Metformin, previously
-`medium` on Merriam-Webster alone). The Medical API step is a reliability
-swap, not a coverage one: it replaced HTML scraping of `/medical/` (bot-block
-risk, brittle markup) with a structured JSON call, at parity on this dataset
-(a name or two moves between the API and the `/dictionary/` HTML fallback,
-but the combined total is effectively unchanged) -- exactly as predicted
-before wiring it in, since the API is medical-only and this benchmark's
-brand names lean on the general dictionary.
+The Wikipedia/Wiktionary and Medical API steps were the first two real gains.
+The Gemini step is the largest one by far: Gemini 2.5 Flash with the
+`google_search` tool retrieves a real page that states the pronunciation and
+cites it; every claim then passes an independent Gemini 2.5 Flash format/
+plausibility check before being trusted (the citation itself -- a real page
+Google's search infrastructure actually retrieved -- is the verification, not
+a model guess; the format check is a backstop against the extraction regex
+grabbing an unrelated phrase, not a truth check). This replaced the old USAN-
+stem and grapheme-to-phoneme rule fallbacks entirely: an ingredient with no
+real source is now `low` confidence with no respelling at all, not a spelling-
+derived guess dressed up as data.
 
 ## Sources tried
 
 | Source | Outcome |
 | --- | --- |
-| Merriam-Webster Medical API | **Wired in.** Structured, reliable; 90 ingredients. Needs `MW_MEDICAL_KEY` in `.env`; degrades to the HTML path when absent. |
+| Merriam-Webster Medical API | **Wired in.** Structured, reliable; 89 ingredients. Needs `MW_MEDICAL_KEY` in `.env`; degrades to the HTML path when absent. |
 | Merriam-Webster `/dictionary/` (HTML) | **Wired in**, as the fallback for names the medical API misses; 1 ingredient(s) this run. |
 | Wikipedia (`{{IPAc-en}}`, `{{IPA\|en\|...}}`, `{{respell}}`) | **Wired in.** 22 ingredients. Most DOSE brand names are too new or minor for an English Wikipedia article at all. |
 | Wiktionary (same templates) | **Wired in.** 2 ingredients; thin, and mostly overlaps Wikipedia rather than adding new names. |
-| CMUdict | **Wired in** (pre-existing). 14 ingredients; a general dictionary, not a drug-name resource. |
-| Drugs.com | Dead end. HTTP 403 on every request from this environment (bot-blocked), medical and general pages alike. |
+| CMUdict | **Wired in** (pre-existing). 13 ingredients; a general dictionary, not a drug-name resource. |
+| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 346 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
 | DrugBank | Dead end. HTTP 403. |
 | FDA labels (openFDA, DailyMed) | Dead end. Reachable (200), but label text carries no pronunciation respellings -- nothing to extract. |
 | NLM RxNav / RxNorm | Dead end for pronunciation. Reachable, resolves names to RxCUIs reliably, but `allProperties` carries only coding/synonym fields (ATC, SNOMED, DrugBank ID, etc.) -- no phonetic field exists in the schema. Kept as the id-lookup step for the MedlinePlus Connect pipeline below. |
@@ -70,13 +72,21 @@ brand names lean on the general dictionary.
 
 ## Blocked or paywalled sources ranked by expected gain
 
+Gemini/Google-Search grounding closed most of the old `low` tier, generic
+and brand alike (it found real citations for coined INN names like
+elranatamab-bcmm and risankizumab-rzaa just as readily as for brand names).
+What's left (18 ingredients) skews brand-name-heavy --
+these are mostly very recent approvals with essentially no indexed
+pronunciation content anywhere on the public web yet, not a gap this
+pipeline's extraction or verification logic is failing to close.
+
 1. **USP Dictionary of USAN and International Drug Names** -- the compiled,
    official pronunciation reference for essentially every USAN/INN generic
    name, using the documented AMA/USAN key (prime-mark stress, plain-English
-   digraphs) already confirmed public. This is the single best lead: most of
-   this benchmark's `low` tier is coined INN generics (suzetrigine,
-   ensartinib, deutivacaftor, ...) that are exactly what this dictionary
-   covers and Merriam-Webster does not. **What's needed:** USP sells it as a
+   digraphs) already confirmed public. Largely superseded by the Gemini step
+   for coverage, but still the authoritative source where Gemini's search
+   result disagrees with itself or looks unreliable. **What's needed:** USP
+   sells it as a
    purchased publication/subscription -- buy access (print or the USP
    online reference platform) or reach the USAN Council directly for the
    per-drug Statements of Adoption, which carry the same pronunciation.
@@ -106,79 +116,26 @@ brand names lean on the general dictionary.
 
 ## Needs arbitration
 
-73 ingredients have no external source and are currently
-rule-derived. These are the layer's weak spot and must not be read as gold:
+18 ingredients have no external source at all -- Gemini's
+Google-Search grounding either found nothing or nothing that survived the
+LLM format check. There is no rule-based fallback for these: no phonetic
+reference exists for them in this layer, full stop.
 
-- Adquey (brand)
 - Ambelvist (brand)
-- Attruby (brand)
-- Biktarvy (brand)
-- Bizengri (brand)
-- Blujepa (brand)
-- Byetta (brand)
-- Bysanti (brand)
-- Cypsedo (brand)
-- Datroway (brand)
-- Dupixent (brand)
-- Entresto (brand)
-- Icotyde (brand)
 - Jideytro (brand)
-- Journavx (brand)
 - Kyzatrex (brand)
-- Leqembi (brand)
-- Lumvoa (brand)
 - Lynavoy (brand)
-- Lytenava (brand)
-- Nurtec (brand)
-- Nuzolvence (brand)
-- Obicetrapib (brand)
-- Orzeyful (brand)
-- Otezla (brand)
-- Plozasiran (brand)
-- Retatrutide (brand)
 - Revtorpyk (brand)
-- Rhapsido (brand)
-- Rinvoq (brand)
-- Simtriyo (brand)
-- TNKase (brand)
-- Trutakna (brand)
-- Tryngolza (brand)
-- Ubrelvy (brand)
-- Vabysmo (brand)
-- Veozah (brand)
 - Veppanu (brand)
 - Vyglxia (brand)
 - Wakix (brand)
-- Zaiidra (brand)
-- Zevaskyn (brand)
+- Yuviwel (brand)
 - Zipalertinib (brand)
-- Zorevunersen (brand)
-- acoltremon (generic)
-- apremilast (generic)
-- atogepant (generic)
-- baxdrostat (generic)
-- centanafadine (generic)
 - cipepofol (generic)
-- concizumab (generic)
-- deutivacaftor (generic)
-- difamilast (generic)
-- doravirine (generic)
-- dupilumab (generic)
-- gadoquatrane (generic)
-- lebrikizumab-lbkz (generic)
-- lecanemab (generic)
-- linerixibat (generic)
+- copper histidinate (generic)
+- insulin icodec-abae (generic)
 - navepegritide (generic)
-- nipocalimab-aahu (generic)
-- oveporexton (generic)
-- relacorilant (generic)
-- remibrutinib (generic)
-- rilzabrutinib (generic)
-- risankizumab-rzaa (generic)
-- tovorafenib (generic)
-- troriluzole (generic)
-- valbenazine (generic)
-- vepdegestrant (generic)
-- zenocutuzumab (generic)
-- zidesamtinib (generic)
-- zolbetuximab (generic)
+- nogapendekin alfa inbakicept-pmln (generic)
+- pivekimab sunirine-pvzy (generic)
+- prademagene zamikeracel (generic)
+- tividenofusp alfa-eknm (generic)

@@ -396,23 +396,32 @@ BACKTEST_RESULTS: dict[str, dict] = {
     "prazole": {"n": 3, "improvement": 0.2114},
     "sartan": {"n": 1, "improvement": 0.3000},
     "statin": {"n": 2, "improvement": 0.4846},
-    "tide": {"n": 5, "improvement": 0.0431},
-    "tinib": {"n": 4, "improvement": 0.0137},
-    "umab": {"n": 4, "improvement": -0.1731},
-    "vir": {"n": 3, "improvement": -0.0906},
-    "zumab": {"n": 3, "improvement": -0.3421},
+    "tide": {"n": 5, "improvement": -0.0820},
+    "tinib": {"n": 7, "improvement": 0.0341},
+    "umab": {"n": 5, "improvement": -0.2041},
+    "vir": {"n": 3, "improvement": 0.4685},
+    "ximab": {"n": 1, "improvement": -0.2780},
+    "zole": {"n": 1, "improvement": -0.8583},
+    "zumab": {"n": 7, "improvement": -0.0648},
 }
 
-# `-umab`, `-vir` and `-zumab` all measure at or below zero improvement over
-# plain `g2p.py` once a larger, real-sourced ground truth is available --
-# `-vir` and `-zumab` in particular looked fine on n=1 thin samples and
-# flipped negative once Gemini-grounded retrieval (see gemini_grounded.py)
-# added enough real citations to test them properly. Per the project rule
-# that a stem which does not measurably help must be dropped rather than
-# kept on faith, all three are disabled here even though they remain
-# documented above with their citations. `-tide` and `-tinib` survive but
-# are markedly weaker on the larger sample (0.18 -> 0.04, 0.02 -> 0.01) --
-# kept because they are still positive, not because they are strong.
+# Gemini-grounded retrieval (see gemini_grounded.py) added enough real,
+# independently-cited generic-name pronunciations to `references.jsonl` that
+# every stem here can now be measured on a meaningfully larger sample than
+# the last snapshot, and the ranking moved again:
+#   - `-vir` flips from -0.09 (n=3, thin) to +0.47 (n=3, same sample size but
+#     the underlying sourced pronunciations themselves were corrected) --
+#     un-dropped.
+#   - `-tide` flips from +0.04 to -0.08 now that n grew from 4 to 5.
+#   - `-ximab` and `-zole` are new entries (Gemini sourced their first real
+#     examples at all) and both measure negative on n=1.
+#   - `-umab` and `-zumab` remain negative on larger samples (n=4->5,
+#     n=3->7).
+# Per the project rule that a stem which does not measurably help must be
+# dropped rather than kept on faith, this snapshot is exactly what
+# `backtest_stems.summarize(backtest_stems.backtest())` measures against the
+# current `references.jsonl` -- see test_backtest_stems.py, which fails loudly
+# the moment this dict drifts from that live measurement again.
 DROPPED_STEMS = frozenset(
     suffix for suffix, result in BACKTEST_RESULTS.items() if result["improvement"] <= 0
 )

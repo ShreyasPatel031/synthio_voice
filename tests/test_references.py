@@ -25,16 +25,37 @@ def records():
         return [json.loads(line) for line in f if line.strip()]
 
 
-def test_every_dose_ingredient_has_a_reference():
+def test_every_dose_ingredient_has_a_row(records):
+    """Every DOSE ingredient gets a references.jsonl row, sourced or not --
+    nothing is silently dropped from the build. Whether that row is
+    *scoreable* (non-empty arpabet_variants) is a separate question, covered
+    by test_reference_set_missing_is_exactly_the_unsourced_ingredients."""
     with DATASET.open() as f:
         ingredients = {i for line in f for i in json.loads(line)["ingredients"]}
-    assert ReferenceSet.load(REFERENCES).missing(ingredients) == []
+    known = {r["ingredient"].lower() for r in records}
+    dropped = sorted(i for i in ingredients if i.lower() not in known)
+    assert dropped == [], f"missing from references.jsonl entirely: {dropped}"
 
 
-def test_variant_lists_are_parallel_and_non_empty(records):
+def test_reference_set_missing_is_exactly_the_unsourced_ingredients(records):
+    """A `low`-confidence ingredient with no ground truth (empty
+    arpabet_variants) has no rule-based fallback standing in for it anymore
+    -- ReferenceSet.load skips it, so it surfaces via missing() exactly like
+    an ingredient that was never looked up at all. This pins down that the
+    loader isn't silently dropping (or silently keeping) anything beyond
+    that known set."""
+    with DATASET.open() as f:
+        ingredients = {i for line in f for i in json.loads(line)["ingredients"]}
+    expected_missing = sorted(r["ingredient"] for r in records if not r["arpabet_variants"])
+    assert ReferenceSet.load(REFERENCES).missing(ingredients) == expected_missing
+
+
+def test_variant_lists_are_parallel_and_empty_only_when_unsourced(records):
     for r in records:
-        assert r["arpabet_variants"], r["ingredient"]
         assert len(r["ipa_variants"]) == len(r["arpabet_variants"]), r["ingredient"]
+        if not r["arpabet_variants"]:
+            assert r["confidence"] == "low", r["ingredient"]
+            assert not r["sources"], r["ingredient"]
 
 
 def test_every_variant_is_valid_arpabet(records):
@@ -60,7 +81,7 @@ def test_unsourced_records_are_flagged_low_and_noted(records):
     for r in records:
         if not r["sources"]:
             assert r["confidence"] == "low", r["ingredient"]
-            assert "TODO" in r["notes"], r["ingredient"]
+            assert r["notes"], r["ingredient"]
 
 
 def test_no_duplicate_ingredients(records):
