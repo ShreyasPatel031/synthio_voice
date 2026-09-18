@@ -1,0 +1,13 @@
+====================================================================================================
+DOSE-R run gemini-flash-tts-v1-speech-similarity-v3-fixed   scorer=speech-similarity-v3
+====================================================================================================
+system                        ok  fail   pass%  brand%   gen%    p50ms    p90ms       $/utt    $total
+-----------------------------------------------------------------------------------------------------
+gemini-2.5-flash-tts         274     0     0.6     1.0    0.0     7497     9039  0.00193653    0.5306
+
+Score distribution (retained, not collapsed to pass/fail):
+  system                        mean  median     p10     n
+  gemini-2.5-flash-tts          2.91    2.91    2.34   159
+
+Cost note: figures are list-price estimates, not billing-export
+verified (see config.Pricing.verified).
