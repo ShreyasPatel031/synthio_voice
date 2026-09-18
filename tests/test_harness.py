@@ -685,3 +685,89 @@ def test_score_against_reference_flags_genuine_mismatch():
                               asr_recognizable=True, recognizable_score=5.0)
     result = score_against_reference(ref, "unrelated garbage")
     assert result["passed_vs_reference"] is False
+
+
+# --- phoneme_scorer: pure PER + score-mapping, no model loading -----------
+
+from dose_r.scoring.phoneme_scorer import (  # noqa: E402
+    phoneme_distance, score_phoneme_match,
+)
+
+
+def test_phoneme_distance_identical_sequences_is_zero():
+    assert phoneme_distance("ɐ b ɪ l ʌ f aɪ", "ɐ b ɪ l ʌ f aɪ") == 0.0
+
+
+def test_phoneme_distance_completely_different_is_one():
+    # No tokens shared between the two sequences at all, same length -> every
+    # position must be substituted, so distance equals the full length.
+    dist = phoneme_distance("t oʊ f ə s aɪ t ɪ n ɪ b", "k æ d ɡ h aʊ w ɔː v m z")
+    assert dist == 1.0
+
+
+def test_phoneme_distance_partial_overlap_is_between_zero_and_one():
+    # One vowel swapped ("ʌ" -> "ɐ") out of seven tokens.
+    dist = phoneme_distance("ɐ b ɪ l ʌ f aɪ", "ɐ b ɪ l ɐ f aɪ")
+    assert 0.0 < dist < 1.0
+    assert dist == pytest.approx(1 / 7)
+
+
+def test_phoneme_distance_normalizes_by_the_longer_sequence():
+    # Recognized has one extra inserted phoneme relative to expected (5 vs 6
+    # tokens) -- one edit, normalized by the longer (6-token) sequence.
+    dist = phoneme_distance("æ d v ɪ l", "æ d v ɪ l z")
+    assert dist == pytest.approx(1 / 6)
+
+
+def test_phoneme_distance_both_empty_is_zero_not_undefined():
+    assert phoneme_distance("", "") == 0.0
+
+
+def test_phoneme_distance_one_empty_is_total_miss():
+    assert phoneme_distance("ɐ b ɪ l ʌ f aɪ", "") == 1.0
+    assert phoneme_distance("", "ɐ b ɪ l ʌ f aɪ") == 1.0
+
+
+def test_phoneme_distance_tokenizes_on_whitespace_not_characters():
+    # "aɪ" is a single diphthong token; splitting on characters would score
+    # this as a mismatch even though the phoneme sequences are identical.
+    assert phoneme_distance("f aɪ", "f aɪ") == 0.0
+
+
+def test_score_phoneme_match_identical_scores_five():
+    score, components = score_phoneme_match("ɐ b ɪ l ʌ f aɪ", "ɐ b ɪ l ʌ f aɪ")
+    assert score == 5.0
+    assert components["phoneme_error_rate"] == 0.0
+
+
+def test_score_phoneme_match_completely_different_scores_low():
+    score, _ = score_phoneme_match("t oʊ f ə s aɪ t ɪ n ɪ b", "k æ d ɡ h aʊ w ɔː v m z")
+    assert score == 0.0
+
+
+def test_score_phoneme_match_partial_overlap_lands_in_between():
+    # One vowel of seven wrong: neither a perfect 5.0 nor a floor 0.0.
+    score, _ = score_phoneme_match("ɐ b ɪ l ʌ f aɪ", "ɐ b ɪ l ɐ f aɪ")
+    assert 0.0 < score < 5.0
+
+
+def test_score_phoneme_match_never_exceeds_scale():
+    score, _ = score_phoneme_match("x", "x")
+    assert score <= 5.0
+
+
+def test_score_phoneme_match_is_monotonic_in_distance():
+    # More edits -> strictly lower score, never a reversal.
+    good, _ = score_phoneme_match("ɐ b ɪ l ʌ f aɪ", "ɐ b ɪ l ɐ f aɪ")       # 1/7 wrong
+    bad, _ = score_phoneme_match("ɐ b ɪ l ʌ f aɪ", "z z z z ʌ f aɪ")        # 4/7 wrong
+    assert good > bad
+
+
+def test_score_phoneme_match_high_per_fails_low_per_passes():
+    """The whole point of this scorer: a badly-mangled rendering must fail and
+    a near-perfect one must pass, using the project's shared PASS_THRESHOLD."""
+    close_score, _ = score_phoneme_match("t oʊ f ə s aɪ t ɪ n ɪ b", "t oʊ f ə s aɪ t ɪ n ɪ b")
+    mangled_score, _ = score_phoneme_match("t oʊ f ə s aɪ t ɪ n ɪ b", "t oʊ f uː s ɪ d n iː")
+    assert close_score >= PASS_THRESHOLD
+    assert mangled_score < PASS_THRESHOLD
+    assert close_score > mangled_score
