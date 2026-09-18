@@ -117,6 +117,19 @@ def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
         return []
 
 
+def _dailymed_variant(raw: str) -> tuple[str, str] | None:
+    """A DailyMed source dict's raw USAN prime-stress text (`"am bel' vist"`)
+    -> an (ARPABET, IPA) pair, via the same stress-token conversion the
+    Gemini-grounded path uses for the identical notation."""
+    respelling = gemini_grounded.stress_tokens_to_respelling(raw.split())
+    if not respelling:
+        return None
+    try:
+        return respell_to_arpabet_ipa(respelling.split("-"))
+    except WikiNotationError:
+        return None
+
+
 def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], list[dict], str, str]:
     """Variants, sources, tier and (for `low`) a note, for a single word."""
     found = []
@@ -145,6 +158,13 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
 
         arpa = cmu["raw"]
         found.append(([(arpa, to_ipa(arpa.split()))], cmu))
+
+    if name_type == "brand":
+        dm = sources.dailymed_pronunciation(word)
+        if dm:
+            variant = _dailymed_variant(dm["raw"])
+            if variant:
+                found.append(([variant], dm))
 
     if not found:
         gemini_hit = _from_gemini_grounded(word)
@@ -265,7 +285,8 @@ def coverage_report(records: list[dict]) -> str:
         "| Original (MW HTML scrape + CMUdict only) | 19 | 80 | 185 |",
         "| + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |",
         "| + MW Medical Dictionary API | 41 | 170 | 73 |",
-        "| + Gemini/Google-Search grounding, rule-based fallback removed (this build) "
+        "| + Gemini/Google-Search grounding, rule-based fallback removed | 98 | 171 | 15 |",
+        "| + DailyMed Medication Guide respellings (this build) "
         f"| {len(by_tier['high'])} | {len(by_tier['medium'])} | {len(by_tier['low'])} |",
         "",
         "The Wikipedia/Wiktionary and Medical API steps were the first two real gains.",
@@ -279,6 +300,15 @@ def coverage_report(records: list[dict]) -> str:
         "stem and grapheme-to-phoneme rule fallbacks entirely: an ingredient with no",
         "real source is now `low` confidence with no respelling at all, not a spelling-",
         "derived guess dressed up as data.",
+        "",
+        "DailyMed closed a handful more the Gemini step missed: many FDA Medication",
+        "Guides state the brand's own phonetic respelling right in their title line",
+        "(`AMBELVIST (am bel' vist)`), which Gemini's default two-query web search",
+        "didn't happen to surface even though the source is real, free, and reachable",
+        "from this environment. A regex-based extraction like this needs its own",
+        "false-positive guard -- a table cell like `YUVIWEL (gross content per vial)`",
+        "also has the shape \"NAME (something with a space)\" -- so every candidate is",
+        "checked against the same Gemini format-plausibility judge before acceptance.",
         "",
         "## Sources tried",
         "",
@@ -299,6 +329,14 @@ def coverage_report(records: list[dict]) -> str:
         "| CMUdict | **Wired in** (pre-existing). "
         f"{by_source.get('cmudict', 0)} ingredients; a general dictionary, not a "
         "drug-name resource. |",
+        "| DailyMed (FDA Medication Guides) | **Wired in.** "
+        f"{by_source.get('dailymed', 0)} ingredients (brands only). Reachable from "
+        "this environment (unlike drugs.com), and a real find caught by manual "
+        "spot-checking after this build shipped: many Medication Guides state the "
+        "brand's own respelling right in the title line (`AMBELVIST (am bel' "
+        "vist)`), in the same USAN prime-stress notation the Gemini-grounded path "
+        "already parses. Not every label includes one, so this doesn't close "
+        "every remaining gap. |",
         "| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from "
         "this environment, medical and general pages alike. **Reached indirectly**: "
         "Gemini's `google_search` tool retrieves and cites Drugs.com pages server-"
@@ -308,8 +346,11 @@ def coverage_report(records: list[dict]) -> str:
         "ingredients answered via Gemini-grounded search overall (drugs.com and "
         "otherwise). |",
         "| DrugBank | Dead end. HTTP 403. |",
-        "| FDA labels (openFDA, DailyMed) | Dead end. Reachable (200), but label text "
-        "carries no pronunciation respellings -- nothing to extract. |",
+        "| FDA labels via openFDA (structured JSON) | Dead end for pronunciation. "
+        "Reachable (200), but the structured label JSON does not carry the "
+        "Medication Guide's free-text title line, which is where a respelling (if "
+        "present at all) actually lives -- see DailyMed above, which serves the "
+        "rendered guide text instead of the structured fields. |",
         "| NLM RxNav / RxNorm | Dead end for pronunciation. Reachable, resolves names "
         "to RxCUIs reliably, but `allProperties` carries only coding/synonym fields "
         "(ATC, SNOMED, DrugBank ID, etc.) -- no phonetic field exists in the schema. "

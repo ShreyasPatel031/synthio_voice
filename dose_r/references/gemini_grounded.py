@@ -310,6 +310,33 @@ def _stress_kind(token: str) -> str | None:
     return None
 
 
+def stress_tokens_to_respelling(tokens: list[str]) -> str | None:
+    """USAN/USP prime-stress syllable tokens (e.g. `["am", "bel'", "vist"]`,
+    from `"am bel' vist"`) -> a hyphenated respelling with the primary-
+    stressed syllable uppercased (`"am-BEL-vist"`), the same shape
+    `respell_to_arpabet_ipa` expects. `None` if the tokens don't actually
+    carry a stress mark or don't clean down to letters -- e.g. a bare repeat
+    of the drug's own name with no internal structure at all.
+
+    Shared between `_extract_stress_respelling` (pulling a candidate out of
+    Gemini's free-form prose) and `sources.dailymed_pronunciation` (an FDA
+    Medication Guide's title line already isolates the respelling in
+    parentheses, so there is no prose to search, just tokens to convert).
+    """
+    if len(tokens) < 2 or not all(_STRESS_TOKEN.match(t) for t in tokens):
+        return None
+    if not any(_stress_kind(t) == "primary" for t in tokens):
+        return None
+    syllables = []
+    for t in tokens:
+        primary = _stress_kind(t) == "primary"
+        letters = re.sub(r"[^a-zA-Z]", "", t)
+        if not letters:
+            return None
+        syllables.append(letters.upper() if primary else letters.lower())
+    return "-".join(syllables)
+
+
 def _extract_stress_respelling(text: str) -> str | None:
     """Pull a USAN/USP-style pronunciation-key respelling: space-separated
     syllables with a prime marking stress, e.g. `(dor" a vir' een)` or
@@ -330,20 +357,9 @@ def _extract_stress_respelling(text: str) -> str | None:
         tokens = m.group(1).split()
         while tokens and re.sub(r"[^a-zA-Z]", "", tokens[0]).lower() in _STRESS_STOPWORDS:
             tokens = tokens[1:]
-        if len(tokens) < 2 or not all(_STRESS_TOKEN.match(t) for t in tokens):
-            continue
-        if not any(_stress_kind(t) == "primary" for t in tokens):
-            continue
-        syllables = []
-        for t in tokens:
-            primary = _stress_kind(t) == "primary"
-            letters = re.sub(r"[^a-zA-Z]", "", t)
-            if not letters:
-                syllables = None
-                break
-            syllables.append(letters.upper() if primary else letters.lower())
-        if syllables:
-            return "-".join(syllables)
+        respelling = stress_tokens_to_respelling(tokens)
+        if respelling:
+            return respelling
     return None
 
 

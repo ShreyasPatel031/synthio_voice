@@ -22,8 +22,19 @@ assumed:
 - CMUdict covers 13 ingredients. Almost every DOSE name is a coined trade or INN
   name that no general dictionary lists, so a pronunciation dictionary is a
   rounding error here, not a backbone.
-- Everything left over falls to the rule-based G2P in `judge/fixtures/g2p.py`,
-  which is explicitly not an authority and is recorded as low confidence.
+- DailyMed (NLM's public mirror of FDA-approved Structured Product Labeling)
+  turns out NOT to be a dead end after all, correcting an earlier claim in
+  this docstring: many Medication Guides state the brand's own phonetic
+  respelling right in their title line, e.g. `AMBELVIST (am bel' vist)`, in
+  the same USAN prime-stress notation `gemini_grounded.py` already parses.
+  openFDA's structured label JSON and the raw SPL XML do not carry this line
+  (it is only in the rendered guide text), which is presumably why the
+  earlier openFDA-only check missed it; DailyMed's own rendered HTML does,
+  and unlike drugs.com/DrugBank it is reachable from this environment.
+- Everything left over has no rule-based fallback standing in for it: an
+  ingredient no source above (or Gemini-grounded search, see
+  `gemini_grounded.py`) answers for is `low` confidence with no
+  respelling at all, not a guess dressed up as data.
 
 Network responses are cached on disk so a rebuild costs nothing and so the
 coverage numbers in COVERAGE.md are reproducible without re-fetching.
@@ -333,3 +344,88 @@ def _cmudict_table():
 
         _TABLE = cmudict.dict()
     return _TABLE
+
+
+DAILYMED_SEARCH = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json"
+DAILYMED_LOOKUP = "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm"
+
+# The respelling always sits in parentheses right after the drug's own name
+# in a Medication Guide's title line, e.g. "AMBELVIST (am bel' vist)" --
+# match the name, then require the parenthetical to have *some* internal
+# structure (a space, or a stress prime) so a bare repeat of the generic
+# name in parens right after ("AMBELVIST (gadoquatrane)") isn't mistaken
+# for one.
+def _dailymed_respell_pattern(name: str) -> re.Pattern:
+    return re.compile(
+        rf"\b{re.escape(name)}\s*\(\s*([a-zA-Z][a-zA-Z\"'’ ]{{1,60}}?)\s*\)",
+        re.IGNORECASE,
+    )
+
+
+def _dailymed_setids(name: str) -> list[str]:
+    cache_key = f"dailymed-search::{name}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit.get("setids", [])
+
+    setids: list[str] = []
+    try:
+        url = f"{DAILYMED_SEARCH}?drug_name={urllib.parse.quote(name)}"
+        req = urllib.request.Request(url, headers=UA)
+        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
+        setids = [d["setid"] for d in json.loads(raw).get("data", []) if d.get("setid")]
+    except Exception:
+        pass
+    _store(cache_key, {"setids": setids})
+    return setids
+
+
+def dailymed_pronunciation(name: str) -> dict | None:
+    """The phonetic respelling many FDA Medication Guides state right after
+    the drug's own name (`AMBELVIST (am bel' vist)`), pulled from DailyMed.
+
+    Only tried for brand names: a Medication Guide's title line is
+    `BRAND (respelling)` followed by `(generic name)` on its own line --
+    matching a generic name here would just find that second, unrelated
+    parenthetical, not a pronunciation of the generic itself.
+
+    The "has a space or a prime" structural filter alone isn't enough: a
+    table cell like `YUVIWEL (gross content per vial)` also has a space and
+    would otherwise pass. Every structurally-plausible candidate is checked
+    against `gemini_grounded._judge_format`, the same LLM plausibility
+    backstop the Gemini-grounded path uses, before being accepted.
+    """
+    cache_key = f"dailymed-pron::{name}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit or None
+
+    from . import gemini_grounded  # local import: keeps this a soft, in-package dependency
+
+    pattern = _dailymed_respell_pattern(name)
+    result = None
+    for setid in _dailymed_setids(name):
+        url = f"{DAILYMED_LOOKUP}?setid={setid}"
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            html = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
+        except Exception:
+            continue
+
+        # The brand name alone (no respelling) recurs throughout the body
+        # text ("AMBELVIST (gadoquatrane) injection is..."), so the FIRST
+        # match in the document is usually not the one with a respelling --
+        # that one lives in the Medication Guide's title line, further
+        # down. Scan every match with real structure and judge each one.
+        for m in pattern.finditer(html):
+            respelling = m.group(1).strip()
+            if " " not in respelling and "'" not in respelling and "’" not in respelling:
+                continue
+            if gemini_grounded._judge_format(name, respelling, None):
+                result = {"name": "dailymed", "raw": respelling, "url": url}
+                break
+        if result:
+            break
+
+    _store(cache_key, result or {})
+    return result
