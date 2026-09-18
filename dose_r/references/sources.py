@@ -3,10 +3,14 @@
 Coverage reality, measured against the 284 unique DOSE ingredients rather than
 assumed:
 
-- Merriam-Webster (medical, then general) carries real lexicographer-assigned
-  pronunciations and often several accepted variants. Drugs.com and DrugBank
-  return 403, and FDA labels via openFDA and DailyMed turn out to carry no
-  pronunciation respellings at all.
+- Merriam-Webster Medical Dictionary API (structured, needs `MW_MEDICAL_KEY`
+  in the environment/`.env`) first, then the HTML `/dictionary/` (general)
+  page as a fallback for brand names that only the general dictionary lists.
+  The API alone answers fewer names than the old HTML scraper (it is
+  medical-only, so it misses brand names that entered common usage and only
+  show up in the general dictionary), but the two combined beat either alone.
+  Drugs.com and DrugBank return 403, and FDA labels via openFDA and DailyMed
+  turn out to carry no pronunciation respellings at all.
 - Wikipedia and Wiktionary carry real pronunciations too, but not in the
   plaintext extract -- they live in the wikitext as `{{IPAc-en|...}}` /
   `{{IPA|en|...}}` templates (raw IPA) or `{{respell|...}}` templates

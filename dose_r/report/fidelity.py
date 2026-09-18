@@ -125,7 +125,7 @@ def rank_correlation(observed: dict[str, float], published: dict[str, float]) ->
 
 
 def attribution_by_reference_confidence(
-    rows: dict[str, RowResult], strata: dict[str, dict], confidence_key: str = "era_confidence"
+    rows: dict[str, RowResult], strata: dict[str, dict], confidence_key: str = "reference_confidence"
 ) -> dict:
     """Does this system's pass rate move with reference-layer confidence?
 

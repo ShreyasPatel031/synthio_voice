@@ -144,7 +144,14 @@ def test_classify_row_all_unresolved_is_heuristic_new():
 
 def test_build_records_is_deterministic():
     rows = load_dataset()
-    arpabet, name_type = load_references()
-    a = build_records(rows, arpabet, name_type)
-    b = build_records(rows, arpabet, name_type)
+    arpabet, name_type, reference_confidence = load_references()
+    a = build_records(rows, arpabet, name_type, reference_confidence)
+    b = build_records(rows, arpabet, name_type, reference_confidence)
     assert a == b
+
+
+def test_reference_confidence_is_distinct_from_era_confidence(records):
+    assert any(r["reference_confidence"] == "low" for r in records)
+    tiers = {"high", "medium", "low"}
+    for r in records:
+        assert r["reference_confidence"] in tiers

@@ -51,7 +51,7 @@ def build(run_paths: dict[str, Path], strata_path: Path = STRATA_PATH) -> dict:
         }
 
     n_total = len(strata)
-    n_low_confidence = sum(1 for s in strata.values() if s.get("era_confidence") == "low")
+    n_low_confidence = sum(1 for s in strata.values() if s.get("reference_confidence") == "low")
 
     return {
         "systems": by_system,

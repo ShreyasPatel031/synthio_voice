@@ -24,7 +24,8 @@ def synthetic_strata(n: int = 274, seed: int = 0) -> dict[str, dict]:
         out[row_id] = {
             "id": row_id,
             "era": rng.choices(ERAS, weights=[0.47, 0.53])[0],
-            "era_confidence": rng.choices(CONFIDENCES, weights=[0.15, 0.2, 0.65])[0],
+            "era_confidence": rng.choices(CONFIDENCES, weights=[0.88, 0.07, 0.05])[0],
+            "reference_confidence": rng.choices(CONFIDENCES, weights=[0.15, 0.2, 0.65])[0],
             "difficulty": rng.choices(DIFFICULTIES, weights=[0.23, 0.37, 0.4])[0],
         }
     return out

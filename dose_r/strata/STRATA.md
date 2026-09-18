@@ -164,6 +164,28 @@ label near these bands as a coin flip, not a fact.
 | 0.05 | 2.0 | 17 | 138 | 119 |
 | 0.05 | 3.0 | 17 | 138 | 119 |
 
+## Reference-layer confidence, carried through per row
+
+Each row also carries `reference_confidence`: the *pronunciation* gold
+layer's own confidence tier (`dose_r/references/references.jsonl`,
+built and documented separately in `COVERAGE.md`), taken as the
+weakest tier across the row's ingredient(s). This is unrelated to
+`era_confidence` above -- one grades an openFDA lookup, the other
+grades a pronunciation source -- and the two must not be conflated;
+an earlier draft of this build did exactly that; see `test_strata.py`.
+
+| tier | rows |
+| --- | --- |
+| high | 18 |
+| medium | 76 |
+| low | 180 |
+
+This is the number the fidelity report's power analysis
+(`dose_r/report/power.py`) uses for `effective_sample_size` and for
+propagating reference uncertainty into a pass-rate confidence
+interval -- not the era-confidence heuristic bucket, which is much
+smaller and answers a different question.
+
 ## Bottom line
 
 The era split reproduces DOSE's marginal counts closely (off by 1 in

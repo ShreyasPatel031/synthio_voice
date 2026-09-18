@@ -147,7 +147,8 @@ def test_attribution_by_confidence_flags_a_planted_low_tier_penalty():
     rng = random.Random(8)
     rows = {}
     for row_id, s in strata.items():
-        p = 0.9 if s["era_confidence"] == "high" else (0.75 if s["era_confidence"] == "medium" else 0.5)
+        tier = s["reference_confidence"]
+        p = 0.9 if tier == "high" else (0.75 if tier == "medium" else 0.5)
         passed = rng.random() < p
         rows[row_id] = fid.RowResult(row_id, 4 if passed else 2, "brand", False)
 

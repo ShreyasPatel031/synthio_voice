@@ -29,9 +29,19 @@ def load_dataset(path: Path = DATASET_PATH) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def load_references(path: Path = REFERENCES_PATH) -> tuple[dict[str, str], dict[str, str]]:
-    """ingredient(lower) -> best arpabet variant, ingredient(lower) -> name_type."""
-    arpabet, name_type = {}, {}
+REFERENCE_TIER_ORDER = {"low": 0, "medium": 1, "high": 2}
+
+
+def load_references(path: Path = REFERENCES_PATH) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
+    """ingredient(lower) -> best arpabet variant / name_type / gold-layer confidence.
+
+    That confidence tier ("high"/"medium"/"low", from `references.py`'s two-
+    source-agree / one-source / rule-derived contract) is a different thing
+    from `era_confidence` below, which grades an *openFDA lookup*, not a
+    *pronunciation*. Keeping the names distinct matters: conflating them was
+    an actual bug caught by this build's own tests.
+    """
+    arpabet, name_type, confidence = {}, {}, {}
     for line in path.read_text().splitlines():
         if not line.strip():
             continue
@@ -39,10 +49,16 @@ def load_references(path: Path = REFERENCES_PATH) -> tuple[dict[str, str], dict[
         key = rec["ingredient"].lower()
         arpabet[key] = rec["arpabet_variants"][0]
         name_type[key] = rec["name_type"]
-    return arpabet, name_type
+        confidence[key] = rec["confidence"]
+    return arpabet, name_type, confidence
 
 
-def build_records(rows: list[dict[str, Any]], arpabet: dict[str, str], name_type: dict[str, str]) -> list[dict]:
+def build_records(
+    rows: list[dict[str, Any]],
+    arpabet: dict[str, str],
+    name_type: dict[str, str],
+    reference_confidence: dict[str, str],
+) -> list[dict]:
     lookups = lookup_all(name_type)
 
     records = []
@@ -53,6 +69,9 @@ def build_records(rows: list[dict[str, Any]], arpabet: dict[str, str], name_type
         era = classify_row(lower_ings, lookups)
         features = diff.features_for_row(
             row["name"], lower_ings, {k: arpabet[k] for k in lower_ings}
+        )
+        row_reference_confidence = min(
+            (reference_confidence[k] for k in lower_ings), key=REFERENCE_TIER_ORDER.__getitem__
         )
 
         records.append(
@@ -66,6 +85,7 @@ def build_records(rows: list[dict[str, Any]], arpabet: dict[str, str], name_type
                 "era_source": era.era_source,
                 "max_approval_date": era.max_approval_date,
                 "unresolved_ingredients": era.unresolved_ingredients,
+                "reference_confidence": row_reference_confidence,
                 "difficulty": features.tier,
                 "difficulty_score": round(features.score, 4),
                 "phoneme_count": features.phoneme_count,
@@ -147,6 +167,7 @@ def write_doc(
     era_counts = Counter(r["era"] for r in records)
     era_conf = Counter(r["era_confidence"] for r in records)
     diff_counts = Counter(r["difficulty"] for r in records)
+    ref_conf_counts = Counter(r["reference_confidence"] for r in records)
     heuristic_rows = sorted(r["id"] for r in records if r["era_source"] == "heuristic_no_fda_match")
 
     usan_counts = {
@@ -301,6 +322,29 @@ def write_doc(
 
     lines += [
         "",
+        "## Reference-layer confidence, carried through per row",
+        "",
+        "Each row also carries `reference_confidence`: the *pronunciation* gold",
+        "layer's own confidence tier (`dose_r/references/references.jsonl`,",
+        "built and documented separately in `COVERAGE.md`), taken as the",
+        "weakest tier across the row's ingredient(s). This is unrelated to",
+        "`era_confidence` above -- one grades an openFDA lookup, the other",
+        "grades a pronunciation source -- and the two must not be conflated;",
+        "an earlier draft of this build did exactly that; see `test_strata.py`.",
+        "",
+        "| tier | rows |",
+        "| --- | --- |",
+    ]
+    for tier in ("high", "medium", "low"):
+        lines.append(f"| {tier} | {ref_conf_counts[tier]} |")
+    lines += [
+        "",
+        "This is the number the fidelity report's power analysis",
+        "(`dose_r/report/power.py`) uses for `effective_sample_size` and for",
+        "propagating reference uncertainty into a pass-rate confidence",
+        "interval -- not the era-confidence heuristic bucket, which is much",
+        "smaller and answers a different question.",
+        "",
         "## Bottom line",
         "",
         "The era split reproduces DOSE's marginal counts closely (off by 1 in",
@@ -323,9 +367,9 @@ def write_doc(
 
 def main() -> int:
     rows = load_dataset()
-    arpabet, name_type = load_references()
+    arpabet, name_type, reference_confidence = load_references()
 
-    records = build_records(rows, arpabet, name_type)
+    records = build_records(rows, arpabet, name_type, reference_confidence)
     era_sens = era_sensitivity(rows, arpabet, name_type)
     diff_sens = difficulty_sensitivity(rows, arpabet)
     unique_ingredients = sorted(name_type.keys())
