@@ -12,22 +12,22 @@ scores; Merriam-Webster's word-level partial clips are reported separately.
 | Metric | Count | Share |
 | --- | --- | --- |
 | Total unique ingredients | 284 | 100% |
-| Drugs.com audio | 171 | 60% |
+| Drugs.com audio | 176 | 62% |
 | Merriam-Webster audio (full name) | 82 | 29% |
-| Union -- any audio | 174 | 61% |
+| Union -- any audio | 179 | 63% |
 | Both sources (cross-checkable) | 79 | 28% |
-| Only Drugs.com | 92 | 32% |
+| Only Drugs.com | 97 | 34% |
 | Only Merriam-Webster | 3 | 1% |
-| No audio anywhere | 110 | 39% |
+| No audio anywhere | 105 | 37% |
 
 ## By name type
 
 | Group | brand | generic | total |
 | --- | --- | --- | --- |
 | Both sources | 45 | 34 | 79 |
-| Only Drugs.com | 55 | 37 | 92 |
+| Only Drugs.com | 57 | 40 | 97 |
 | Only Merriam-Webster | 0 | 3 | 3 |
-| No audio anywhere | 43 | 67 | 110 |
+| No audio anywhere | 41 | 64 | 105 |
 
 ## By reference-layer confidence tier
 
@@ -39,8 +39,8 @@ independent verification helps most.
 | Tier | both sources | one source | no audio |
 | --- | --- | --- | --- |
 | high | 21 | 5 | 2 |
-| medium | 58 | 13 | 12 |
-| low | 0 | 77 | 96 |
+| medium | 58 | 15 | 10 |
+| low | 0 | 80 | 93 |
 
 ## Merriam-Webster: reconciling row counts
 
@@ -87,19 +87,22 @@ mode confirmed possible for Anktiva in the handoff doc.
 
 | Ingredient | Duration (s) | Flag |
 | --- | --- | --- |
-| Advair | 1.6659 | possible name mismatch: 0.833s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Journavx | 1.7692 | possible name mismatch: 0.885s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Motrin | 1.6254 | possible name mismatch: 0.813s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Nurtec | 1.9505 | possible name mismatch: 0.975s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Rinvoq | 1.4861 | possible name mismatch: 0.743s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Talvey | 1.5986 | possible name mismatch: 0.799s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Toujeo | 2.2523 | possible name mismatch: 1.126s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Vyloy | 1.6626 | possible name mismatch: 0.831s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Vyvgart | 1.4921 | possible name mismatch: 0.746s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| Zepbound | 1.5557 | possible name mismatch: 0.778s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
+| Advair | 1.6659 | possible name mismatch: 0.833s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Journavx | 1.7692 | possible name mismatch: 0.885s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Meibo | 1.5325 | possible name mismatch: 0.766s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Motrin | 1.6254 | possible name mismatch: 0.813s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Nurtec | 1.9505 | possible name mismatch: 0.975s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Rinvoq | 1.4861 | possible name mismatch: 0.743s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Talvey | 1.5986 | possible name mismatch: 0.799s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Toujeo | 2.2523 | possible name mismatch: 1.126s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Vyloy | 1.6626 | possible name mismatch: 0.831s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Vyvgart | 1.4921 | possible name mismatch: 0.746s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| Zepbound | 1.5557 | possible name mismatch: 0.778s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| fluticasone propionate | 1.2781 | possible name mismatch: 0.142s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| formoterol fumarate dihydrate | 1.0257 | possible name mismatch: 0.085s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
 | nogapendekin alfa inbakicept-pmln | 4.3483 | duration 4.348s is above the 4.0s ceiling for a single name |
-| tenofovir alafenamide | 1.1796 | possible name mismatch: 0.118s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
-| testosterone undecanoate | 1.1736 | possible name mismatch: 0.117s/syllable is outside [0.183, 0.733]s/syllable for this batch (median 0.366) |
+| tenofovir alafenamide | 1.1796 | possible name mismatch: 0.118s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
+| testosterone undecanoate | 1.1736 | possible name mismatch: 0.117s/syllable is outside [0.183, 0.730]s/syllable for this batch (median 0.365) |
 
 ### Partial coverage (Merriam-Webster, word-level only)
 
@@ -136,8 +139,8 @@ one shared word, which is the correct behavior, not a bug.
 
 ## What is still missing
 
-110 ingredients (39%) have no audio
-from either source: 67 generic, 43 brand. The gap skews generic --
+105 ingredients (37%) have no audio
+from either source: 64 generic, 41 brand. The gap skews generic --
 coined INN names are exactly what neither a general dictionary nor a
 consumer drug-information site reliably records. See
 `data/collected/HANDOFF_AUDIO_COLLECTION.md` for sources tried and the

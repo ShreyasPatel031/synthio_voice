@@ -41,11 +41,21 @@ AUDIO_DIR = ROOT / "data" / "reference_audio" / "drugs_com"
 SOURCE = "drugs.com"
 SOURCE_NAME = "drugs.com"
 
-DEFAULT_INPUTS = [
-    ROOT / "data" / "collected" / "drugscom_246.json",
-    ROOT / "data" / "collected" / "62a75a68-drugscom_284.json",
-    ROOT / "data" / "collected" / "drugscom_found_28.json",
-]
+COLLECTED_DIR = ROOT / "data" / "collected"
+
+
+def default_inputs() -> list[Path]:
+    """Every collected drugs.com batch, oldest first by filesystem mtime.
+
+    New batches just need to land in data/collected/ -- no file list to edit
+    here. Order only matters for which record "wins" a same-ingredient
+    collision inside audio_sources_drugscom.merge_records, so oldest-first
+    means a later, presumably re-verified batch takes precedence.
+    """
+    files = sorted(COLLECTED_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime)
+    if not files:
+        raise FileNotFoundError(f"no collected batches found in {COLLECTED_DIR}")
+    return files
 
 
 def name_types() -> dict[str, str]:
@@ -108,7 +118,7 @@ def build_miss(name: str, name_type: str, record: dict) -> dict:
 
 def run(paths: list[Path] | None = None) -> tuple[list[dict], list[dict], list[str]]:
     """(clips, misses, audio_conflicts) across the union of `paths`."""
-    paths = paths or DEFAULT_INPUTS
+    paths = paths or default_inputs()
     merged = audio_sources_drugscom.merge_records(paths)
     conflicts = audio_sources_drugscom.audio_conflicts(paths)
     types = name_types()
