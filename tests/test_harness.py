@@ -998,14 +998,35 @@ def test_speech_bertscore_orthogonal_sequences_score_low():
     assert result["f1"] < 0.1
 
 
-def test_score_speech_similarity_maps_f1_to_0_5_scale():
+def test_score_speech_similarity_maps_precision_not_f1_to_0_5_scale():
+    """The paper (Saeki et al.) found precision alone outperforms F1 and uses
+    it as SpeechBERTScore's actual metric -- this project's first draft used
+    F1 by mistake. Construct a case where they genuinely differ (a candidate
+    fully covered by a longer, more varied reference: high precision, lower
+    recall) and confirm the score tracks precision, not F1."""
+    import numpy as np
+    from dose_r.scoring.speech_similarity import score_speech_similarity
+
+    rng = np.random.RandomState(1)
+    candidate = rng.randn(3, 8)          # short candidate
+    reference = np.vstack([candidate, rng.randn(20, 8)])  # candidate + lots extra
+
+    score, components = score_speech_similarity(candidate, reference)
+
+    assert components["precision"] == pytest.approx(1.0, abs=1e-6)  # every candidate frame matches perfectly
+    assert components["recall"] < 0.5    # most reference frames have no good match
+    assert components["f1"] < 0.7        # F1 would be dragged down by recall
+    assert score == pytest.approx(5.0, abs=1e-3)  # but the score follows precision, not F1
+
+
+def test_score_speech_similarity_identical_sequences_scores_five():
     import numpy as np
     from dose_r.scoring.speech_similarity import score_speech_similarity
 
     feats = np.random.RandomState(1).randn(6, 8)
     score, components = score_speech_similarity(feats, feats)
     assert score == pytest.approx(5.0, abs=1e-3)
-    assert components["f1"] == pytest.approx(1.0, abs=1e-6)
+    assert components["precision"] == pytest.approx(1.0, abs=1e-6)
 
 
 def test_cosine_similarity_matrix_shape_and_range():
