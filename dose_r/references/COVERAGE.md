@@ -22,10 +22,11 @@
 
 | Source | Ingredients |
 | --- | --- |
-| merriam-webster/medical | 101 |
+| merriam-webster/medical-api | 100 |
 | wikipedia | 22 |
 | cmudict | 18 |
 | wiktionary | 2 |
+| merriam-webster/dictionary | 1 |
 
 ## Sources that did not answer
 
