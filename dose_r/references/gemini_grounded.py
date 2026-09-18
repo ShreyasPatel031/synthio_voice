@@ -128,8 +128,25 @@ class GroundedAnswer:
     supports: list[dict]  # {segment_text, chunk_indices}
 
 
-def _generate(name: str, retries: int = 3) -> dict | None:
-    cache_key = f"raw::{name}"
+_TIGHT_PROMPT = (
+    'What is the phonetic pronunciation of the drug "{name}"? Search the '
+    "web for it, but this time restrict yourself to official or "
+    "institutional sources only: a government health agency or regulator "
+    "(fda.gov, dailymed.nlm.nih.gov, medlineplus.gov, cancer.gov, who.int, "
+    "ema.europa.eu), the drug naming body (ama-assn.org / USAN), the "
+    "manufacturer's own official prescribing information or medication "
+    "guide, or a major medical institution/academic reference (a "
+    "university hospital, a professional drug reference like Davis's Drug "
+    "Guide, a national cancer charity). Do not cite a crowdsourced or "
+    "user-submitted pronunciation site (howtopronounce.com, Forvo, a "
+    "YouTube video or its comments/captions, a blog, social media, a "
+    "generic name-meaning site) even if one is the only result you find -- "
+    "say so instead of citing it. Tell me which page you found it on."
+)
+
+
+def _generate(name: str, retries: int = 3, tight: bool = False) -> dict | None:
+    cache_key = f"raw-tight::{name}" if tight else f"raw::{name}"
     hit = _cached(cache_key)
     if hit is not None:
         return hit or None
@@ -137,8 +154,12 @@ def _generate(name: str, retries: int = 3) -> dict | None:
     token = _access_token()
     project = _project_id()
     prompt = (
-        f'What is the phonetic pronunciation of the drug "{name}"? '
-        "Search the web for it and tell me which page you found it on."
+        _TIGHT_PROMPT.format(name=name)
+        if tight
+        else (
+            f'What is the phonetic pronunciation of the drug "{name}"? '
+            "Search the web for it and tell me which page you found it on."
+        )
     )
     body = json.dumps(
         {
@@ -212,8 +233,8 @@ def _fetch_page_text(url: str) -> str | None:
     return text
 
 
-def grounded_answer(name: str) -> GroundedAnswer | None:
-    result = _generate(name)
+def grounded_answer(name: str, tight: bool = False) -> GroundedAnswer | None:
+    result = _generate(name, tight=tight)
     if not result:
         return None
 
@@ -319,7 +340,7 @@ def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | 
     return matches[0] if matches else None
 
 
-_STRESS_MARK = r"(?:''|\"|['’])"
+_STRESS_MARK = r"(?:''|\"|”|″|['’′])"
 _STRESS_TOKEN = re.compile(rf"^[a-zA-Z]{{1,8}}{_STRESS_MARK}?$")
 _STRESS_STOPWORDS = {
     "is", "a", "an", "the", "of", "or", "and", "in", "on", "at", "as",
@@ -329,12 +350,18 @@ _QUOTED_WORD = re.compile(r'"([a-zA-Z]+(?:\s+[a-zA-Z]+)*)"')
 
 
 def _stress_kind(token: str) -> str | None:
-    """`"primary"` for a single prime (' or the curly '), `"secondary"` for
-    a double prime (a real `"`, or the two-ASCII-apostrophe `''` Gemini's
-    text output renders it as), `None` for no stress mark at all."""
-    if token.endswith("''") or token.endswith('"'):
+    """`"primary"` for a single prime -- the real Unicode prime `′` (as in
+    "ten ek′ te plase" for tenecteplase, from MedlinePlus/SafeMedication),
+    an ASCII apostrophe `'`, or the curly `’` -- `"secondary"` for a double
+    prime, rendered as the real Unicode double prime `″`, a literal `"`,
+    two ASCII apostrophes `''` (Gemini's own text output), or the curly
+    right-double-quote `”` (pypdf extracting a real USAN PDF's double-prime
+    glyph, confirmed against the risankizumab and zolbetuximab documents:
+    `ris" an kiz' ue mab`) -- `None` for no stress mark at all.
+    """
+    if token.endswith("''") or token.endswith('"') or token.endswith("”") or token.endswith("″"):
         return "secondary"
-    if token.endswith("'") or token.endswith("’"):
+    if token.endswith("'") or token.endswith("’") or token.endswith("′"):
         return "primary"
     return None
 
@@ -451,6 +478,43 @@ class VerifiedClaim:
     page_verified: bool
 
 
+def _flash_text(prompt: str, max_tokens: int = 20) -> str | None:
+    """A single Gemini 2.5 Flash call, thinking disabled, returning the raw
+    text response (stripped) or None on any failure. Shared by every small
+    fast classification call in this module (`_judge_format`,
+    `classify_source_trust`) -- none of them are reasoning tasks, they're
+    one-word or one-phrase classifications, and extended thinking silently
+    eats the whole `maxOutputTokens` budget before emitting an answer at
+    all if left on (confirmed by a bare `MAX_TOKENS` response with no
+    `content` whatsoever).
+    """
+    try:
+        token = _access_token()
+        project = _project_id()
+        body = json.dumps(
+            {
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0,
+                    "maxOutputTokens": max_tokens,
+                    "thinkingConfig": {"thinkingBudget": 0},
+                },
+            }
+        ).encode()
+        url = (
+            f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{project}"
+            f"/locations/{LOCATION}/publishers/google/models/gemini-2.5-flash:generateContent"
+        )
+        req = urllib.request.Request(
+            url, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        )
+        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read()
+        result = json.loads(raw)
+        return result["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except Exception:
+        return None
+
+
 def _judge_format(word: str, respelling: str | None, ipa: str | None) -> bool:
     """Gemini 2.5 Flash format/plausibility check, cached by (word, claim).
 
@@ -481,67 +545,120 @@ def _judge_format(word: str, respelling: str | None, ipa: str | None) -> bool:
         "not an unrelated phrase, not a different word, not boilerplate page "
         'text? Answer with exactly one word: "yes" or "no".'
     )
-
-    try:
-        token = _access_token()
-        project = _project_id()
-        body = json.dumps(
-            {
-                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                # Extended thinking eats maxOutputTokens before any answer
-                # text is emitted (confirmed by a bare `MAX_TOKENS` response
-                # with no `content` at all) -- this is a one-word yes/no
-                # classification, not a reasoning task, so thinking is off.
-                "generationConfig": {
-                    "temperature": 0,
-                    "maxOutputTokens": 20,
-                    "thinkingConfig": {"thinkingBudget": 0},
-                },
-            }
-        ).encode()
-        url = (
-            f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{project}"
-            f"/locations/{LOCATION}/publishers/google/models/gemini-2.5-flash:generateContent"
-        )
-        req = urllib.request.Request(
-            url, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-        )
-        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read()
-        result = json.loads(raw)
-        text = result["candidates"][0]["content"]["parts"][0]["text"].strip().lower()
-        valid = text.startswith("y")
-    except Exception:
-        valid = False
-
+    text = _flash_text(prompt)
+    valid = bool(text) and text.strip().lower().startswith("y")
     _store(cache_key, {"valid": valid})
     return valid
 
 
+TRUST_TIERS = ("official_medical", "verified_secondary", "third_party_unverified")
+
+# Deliberately a handful of illustrative examples per bucket, not an
+# exhaustive or hardcoded domain->tier map -- the point of asking Gemini is
+# that it generalizes to a domain that isn't in this list (a hospital
+# system's own site, a national medicines agency other than the FDA, a
+# pharmacy chain's drug-info page) the way a fixed lookup table can't.
+_TRUST_TIER_PROMPT = """Classify the website domain "{domain}" into exactly \
+one of these three trust tiers for citing a drug's official phonetic \
+pronunciation, then answer with only the tier name, nothing else.
+
+official_medical: a government health agency, national regulator, or the \
+official naming body for drug names. Examples: fda.gov, \
+dailymed.nlm.nih.gov, medlineplus.gov, cancer.gov, who.int, \
+ama-assn.org (USAN Council), ema.europa.eu, a drug manufacturer's own \
+official prescribing information or medication guide.
+
+verified_secondary: an editorially-maintained medical reference, \
+professional dictionary, academic institution, or major hospital system -- \
+not a primary regulator, but not open to arbitrary public submissions \
+either. Examples: drugs.com, webmd.com, merriam-webster.com, Wikipedia, \
+Wiktionary, a university hospital's patient-education site (e.g. \
+oncolink.org, a .edu cancer center), a professional nursing/pharmacy \
+reference (e.g. Davis's Drug Guide), Medscape, a national cancer charity \
+(e.g. cancerresearchuk.org).
+
+third_party_unverified: crowdsourced or user-generated content with no \
+editorial review of accuracy -- literally anyone can post anything, \
+including a wrong guess at how to say a word. Examples: \
+howtopronounce.com, forvo.com, YouTube video comments or auto-generated \
+captions, a personal blog or Substack, social media (Facebook, Reddit, \
+X/Twitter), a generic "baby names" or "name meaning" site (e.g. names.org).
+
+Answer with exactly one of: official_medical, verified_secondary, \
+third_party_unverified"""
+
+
+def classify_source_trust(domain: str) -> str:
+    """Which of TRUST_TIERS `domain` belongs in, per Gemini 2.5 Flash --
+    cached by domain (a domain's trust classification doesn't depend on
+    which drug it's cited for, so this is a one-time cost per distinct
+    domain, not per citation).
+
+    Unrecognized Gemini output or a failed call defaults to
+    "third_party_unverified": an unclassifiable source should never be
+    silently trusted as if it had been vetted.
+    """
+    domain = domain.strip().lower()
+    cache_key = f"trust::{domain}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit.get("tier", "third_party_unverified")
+
+    text = _flash_text(_TRUST_TIER_PROMPT.format(domain=domain), max_tokens=15)
+    tier = "third_party_unverified"
+    if text:
+        cleaned = text.strip().lower()
+        for candidate in TRUST_TIERS:
+            if candidate in cleaned:
+                tier = candidate
+                break
+
+    _store(cache_key, {"tier": tier})
+    return tier
+
+
 _SPECULATION_PATTERN = re.compile(
-    r"was not found|not found in the search|no direct pronunciation|"
-    r"highly probable|would likely be|is likely (?:to be|pronounced)|"
-    r"probably (?:pronounced|follows)|could not find|couldn't find|"
-    r"unable to find|does not appear to have|no specific pronunciation|"
-    r"i couldn't find",
+    r"was not (?:\w+\s+){0,2}found|not found in the search|"
+    r"no direct pronunciation|highly probable|would likely be|"
+    r"is likely (?:to be|pronounced)|probably (?:pronounced|follows)|"
+    r"could not find|couldn't find|unable to find|"
+    r"does not appear to have|no specific pronunciation|i couldn't find|"
+    r"was not available|not available within|did not list|"
+    r"was not (?:\w+\s+){0,2}available",
     re.IGNORECASE,
 )
 
 
 def _is_speculative(text: str) -> bool:
-    """True when Gemini's own answer admits it found no direct source and
-    is instead guessing by analogy -- confirmed on a real case: asked about
-    "histidinate", it answered by inferring from "histidine" (a different,
-    if related, word) with "It is highly probable that... would likely be
-    **HIS-ti-dih-nate**", citing sources that were for "histidine", not
-    "histidinate". The citations were real, but the claim they were made to
-    support was not what they said -- this pipeline's whole premise is
-    retrieval, not inference, so an answer that admits to inferring must
-    never be treated as if it cited something.
+    """True when Gemini's own answer admits it found no direct source for
+    the specific word asked about and is instead guessing by analogy, or
+    reporting a DIFFERENT word's pronunciation as if it answered the
+    question.
+
+    Confirmed on two real cases:
+    - "histidinate": answered by inferring from "histidine" (a different,
+      if related, word) with "It is highly probable that... would likely
+      be **HIS-ti-dih-nate**", citing sources that were for "histidine".
+    - "Wakix" (tight mode): "a phonetic pronunciation for the drug 'Wakix'
+      was not explicitly found... the phonetic pronunciation for the brand
+      name 'Wakix' was not available" -- but mentioned in passing that
+      WebMD gives its generic ingredient pitolisant's pronunciation, which
+      the extraction regex duly grabbed and the format judge, only checking
+      "is this a plausible phonetic guide" and not "is this a guide *for
+      this specific word*", didn't catch. `was not (?:\w+\s+){0,2}found`
+      tolerates the paraphrase ("not explicitly found") the original
+      literal `was not found` phrase missed.
+
+    In both cases the citations were real; the claim they were cited for
+    was not what they said. This pipeline's whole premise is retrieval, not
+    inference or substitution, so an answer that admits to either must
+    never be treated as if it cited something for the word actually asked
+    about.
     """
     return bool(_SPECULATION_PATTERN.search(text))
 
 
-def verified_claims(name: str) -> list[VerifiedClaim]:
+def verified_claims(name: str, tight: bool = False) -> list[VerifiedClaim]:
     """Every grounded claim for `name` backed by a real Google Search
     grounding citation and passing the LLM format/plausibility check.
 
@@ -553,8 +670,17 @@ def verified_claims(name: str) -> list[VerifiedClaim]:
     this sandbox), never a requirement: a real citation to a domain we
     can't personally re-fetch (drugs.com 403s here) is still a real,
     independently-retrieved source.
+
+    `tight=True` asks a second, differently-worded question (`_TIGHT_PROMPT`)
+    that explicitly restricts Gemini's own search to official/institutional
+    sources and tells it not to cite a crowdsourced site even as a last
+    resort. This is a second pass, run only when the normal query's claims
+    all turned out `third_party_unverified` (see `build._from_gemini_grounded`)
+    -- it does not replace the first query, it supplements it, and is cached
+    completely separately (`raw-tight::` vs `raw::`) so it costs nothing on
+    a rebuild once fetched.
     """
-    answer = grounded_answer(name)
+    answer = grounded_answer(name, tight=tight)
     if not answer or not answer.chunks or _is_speculative(answer.text):
         return []
 

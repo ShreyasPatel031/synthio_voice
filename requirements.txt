@@ -5,6 +5,7 @@ google-auth>=2.30
 numpy>=1.26
 pandas
 pyarrow
+pypdf>=6
 pytest>=8
 PyYAML>=6
 requests>=2.31

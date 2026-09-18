@@ -396,27 +396,27 @@ BACKTEST_RESULTS: dict[str, dict] = {
     "prazole": {"n": 3, "improvement": 0.2114},
     "sartan": {"n": 1, "improvement": 0.3000},
     "statin": {"n": 2, "improvement": 0.4846},
-    "tide": {"n": 6, "improvement": -0.0855},
-    "tinib": {"n": 7, "improvement": 0.0626},
-    "umab": {"n": 5, "improvement": -0.2041},
-    "vir": {"n": 3, "improvement": 0.4685},
-    "ximab": {"n": 1, "improvement": -0.2780},
+    "tide": {"n": 6, "improvement": 0.0019},
+    "tinib": {"n": 7, "improvement": 0.1755},
+    "umab": {"n": 5, "improvement": -0.1086},
+    "vir": {"n": 3, "improvement": 0.6685},
+    "ximab": {"n": 1, "improvement": 0.1120},
     "zole": {"n": 1, "improvement": -0.8583},
-    "zumab": {"n": 7, "improvement": -0.0648},
+    "zumab": {"n": 7, "improvement": 0.1824},
 }
 
-# Gemini-grounded retrieval (see gemini_grounded.py) added enough real,
-# independently-cited generic-name pronunciations to `references.jsonl` that
-# every stem here can now be measured on a meaningfully larger sample than
-# the last snapshot, and the ranking moved again:
-#   - `-vir` flips from -0.09 (n=3, thin) to +0.47 (n=3, same sample size but
-#     the underlying sourced pronunciations themselves were corrected) --
-#     un-dropped.
-#   - `-tide` flips from +0.04 to -0.08 now that n grew from 4 to 5.
-#   - `-ximab` and `-zole` are new entries (Gemini sourced their first real
-#     examples at all) and both measure negative on n=1.
-#   - `-umab` and `-zumab` remain negative on larger samples (n=4->5,
-#     n=3->7).
+# Adding the AMA USAN Statement PDF as a directly-fetched, primary source
+# (see sources.usan_pronunciation) rather than hoping Gemini's web search
+# surfaces it moved this measurement again, mostly upward: `-ximab` and
+# `-zumab` flip from measured-harmful to positive, `-tinib` and `-vir`
+# strengthen substantially. This makes sense rather than looking like noise
+# -- USAN's own Statement is where these stem rules were reverse-engineered
+# from in the first place, so measuring the stem engine against USAN's own
+# adopted-name pronunciation (now the primary source for these words,
+# displacing a secondhand citation of it) is measuring the rule against the
+# convention it was built to follow. `-zole` remains a sample of one
+# (troriluzole) and still measures harmful; `-umab` remains harmful on a
+# larger sample (n=5) despite the general upward trend elsewhere.
 # Per the project rule that a stem which does not measurably help must be
 # dropped rather than kept on faith, this snapshot is exactly what
 # `backtest_stems.summarize(backtest_stems.backtest())` measures against the

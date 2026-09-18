@@ -77,6 +77,29 @@ def test_sourced_records_carry_provenance(records):
                 assert s["name"] and s["url"]
 
 
+def test_every_source_is_trust_tagged(records):
+    valid = {"official_medical", "verified_secondary", "third_party_unverified"}
+    for r in records:
+        for s in r["sources"]:
+            assert s.get("trust_tier") in valid, (r["ingredient"], s)
+
+
+def test_no_source_is_third_party_unverified(records):
+    """A third_party_unverified citation (a crowdsourced pronunciation
+    site, a YouTube upload, a blog) must never make it into the final
+    data at all -- build._variants_from_claims drops one before a
+    respelling is even extracted from it, the same treatment as a claim
+    that fails the format-plausibility check. This test is the guarantee,
+    not a report: it should never need updating to tolerate an exception.
+    """
+    for r in records:
+        for s in r["sources"]:
+            assert s.get("trust_tier") != "third_party_unverified", (
+                r["ingredient"],
+                s,
+            )
+
+
 def test_unsourced_records_are_flagged_low_and_noted(records):
     for r in records:
         if not r["sources"]:

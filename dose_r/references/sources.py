@@ -43,6 +43,7 @@ coverage numbers in COVERAGE.md are reproducible without re-fetching.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import threading
@@ -50,6 +51,11 @@ import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+# pypdf logs a "fontTools is required..." warning per unusual font per page
+# for USAN's PDFs -- harmless (extract_text() still works without it), but
+# floods build output otherwise.
+logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -449,6 +455,78 @@ def dailymed_pronunciation(name: str) -> dict | None:
                 result = {"name": "dailymed", "raw": respelling, "url": url}
                 break
         if result:
+            break
+
+    _store(cache_key, result or {})
+    return result
+
+
+USAN_DOC_BASE = "https://searchusan.ama-assn.org/usan/documentDownload"
+
+# "PRONUNCIATION" is followed by the respelling and then the next section
+# header, reliably "THERAPEUTIC CLAIM" in every USAN Statement on file --
+# confirmed directly against real documents for cipepofol and copper
+# histidinate (see the PDFs this source is built from).
+_USAN_PRONUNCIATION = re.compile(
+    r"PRONUNCIATION\s*\n?\s*(.+?)\s*\n?\s*THERAPEUTIC CLAIM", re.DOTALL
+)
+
+
+def usan_pronunciation(name: str) -> dict | None:
+    """The official USAN Statement's own PRONUNCIATION field, fetched
+    directly from AMA's document store rather than hoping a web search
+    surfaces it.
+
+    Generic names only: this is the USAN Council's own per-drug adopted-
+    name record (`si pep' oh fol` for cipepofol, `kop' er his' ti di nate`
+    for copper histidinate -- both confirmed by fetching the actual PDF, at
+    a predictable URL keyed by the base INN name with any FDA biosimilar
+    suffix stripped, e.g. "risankizumab" not "risankizumab-rzaa"). The
+    document store answers HTTP 200 whether or not a name exists, with a
+    small JSON error body on a miss and a real PDF (`%PDF` magic bytes) on
+    a hit -- the body has to be checked, the status code can't be trusted.
+
+    This exists because Google/Gemini's web search doesn't reliably surface
+    these documents even though they are public, free, and the single most
+    authoritative source for a USAN generic name's pronunciation -- cipepofol
+    and copper histidinate were both still `low` confidence after the
+    Gemini-grounded pass, and the actual gap was that nobody had checked this
+    specific store directly.
+    """
+    from . import usan_stems  # local import: avoids a hard, one-way dependency
+
+    base, _ = usan_stems._split_fda_suffix(name.lower().replace(" ", "-"))
+    cache_key = f"usan-doc::{base}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit or None
+
+    result = None
+    for slug in (base, f"{base}-"):
+        url = f"{USAN_DOC_BASE}?uri=/unstructured/binary/usan/{slug}.pdf"
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            content = urllib.request.urlopen(req, timeout=TIMEOUT).read()
+        except Exception:
+            continue
+        if not content.startswith(b"%PDF"):
+            continue
+
+        try:
+            from pypdf import PdfReader
+            import io
+
+            reader = PdfReader(io.BytesIO(content))
+            text = "\n".join(p.extract_text() or "" for p in reader.pages[:2])
+        except Exception:
+            continue
+
+        m = _USAN_PRONUNCIATION.search(text)
+        if not m:
+            continue
+        raw = re.sub(r"\s+", " ", m.group(1)).strip()
+        if raw:
+            result = {"name": "usan-official", "raw": raw, "url": url}
             break
 
     _store(cache_key, result or {})

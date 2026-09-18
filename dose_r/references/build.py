@@ -80,15 +80,48 @@ def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict],
     sandbox's outbound requests, and that is an environment limitation, not
     a reason to discard a real citation. `page_verified` on the source dict
     records whether the opportunistic re-fetch happened to succeed too.
-    """
-    claims = gemini_grounded.verified_claims(word)
-    if not claims:
-        return None
 
+    A citation is also gated on trust tier -- see `_variants_from_claims` --
+    and a query whose only claims are `third_party_unverified` gets a
+    second, more restrictive attempt before giving up entirely.
+    """
+    result = _variants_from_claims(gemini_grounded.verified_claims(word))
+    if result is None:
+        # Every claim from the normal query was third-party-only (or there
+        # were no claims at all) -- try again with a differently-worded
+        # question that restricts Gemini's own search to official/
+        # institutional sources and tells it not to fall back to a
+        # crowdsourced one. Genuinely separate query, separate cache entry;
+        # this is a second pass in addition to the first, not a replacement.
+        result = _variants_from_claims(gemini_grounded.verified_claims(word, tight=True))
+    return result
+
+
+def _variants_from_claims(
+    claims: list,
+) -> tuple[list[tuple[str, str]], list[dict], str] | None:
+    """`claims` -> (variants, sources, tier), or None if nothing in them
+    both converts to a valid respelling and clears the trust-tier gate.
+
+    A `third_party_unverified` citation never counts on its own: it is
+    dropped before conversion is even attempted, same treatment as a claim
+    that failed the format judge. A crowdsourced site quoting a guess is
+    not a source just because Google's search infrastructure happened to
+    index the page; this pipeline's citations are meant to be checkable
+    authorities, not popularity.
+    """
     variants: list[tuple[str, str]] = []
     srcs: list[dict] = []
     seen_norm: set[str] = set()
     for claim in claims:
+        trust = (
+            gemini_grounded.classify_source_trust(claim.source_domain)
+            if claim.source_domain
+            else "third_party_unverified"
+        )
+        if trust == "third_party_unverified":
+            continue
+
         variant = None
         raw_label = None
         if claim.respelling:
@@ -117,6 +150,7 @@ def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict],
                 "url": claim.source_url,
                 "domain": claim.source_domain,
                 "page_verified": claim.page_verified,
+                "trust_tier": trust,
             }
         )
 
@@ -138,14 +172,16 @@ def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
         return []
 
 
-def _dailymed_variant(raw: str) -> tuple[str, str] | None:
-    """A DailyMed source dict's raw respelling text -> an (ARPABET, IPA)
-    pair. Medication Guides use two different notations for this and
-    `dailymed_pronunciation` doesn't distinguish them, so both are tried
-    here: the drugs.com/WebMD-style hyphenated form, already stress-marked
+def _respelling_text_to_variant(raw: str) -> tuple[str, str] | None:
+    """Raw respelling text in either of the two notations this project's
+    non-Gemini direct sources return -> an (ARPABET, IPA) pair. Shared by
+    DailyMed (`dailymed_pronunciation`) and the AMA USAN Statement PDF
+    (`usan_pronunciation`), which don't distinguish which notation they
+    found: the drugs.com/WebMD-style hyphenated form, already stress-marked
     by capitalization (`"ky-ZAH-treks"`, `"YOU-vih-well"`), and the USAN
-    prime-stress form (`"am bel' vist"`), which needs the same stress-token
-    conversion the Gemini-grounded path uses for that notation.
+    prime-stress form (`"am bel' vist"`, `"si pep' oh fol"`), which needs
+    the same stress-token conversion the Gemini-grounded path uses for that
+    notation.
     """
     if "-" in raw and "'" not in raw and "’" not in raw:
         try:
@@ -162,41 +198,79 @@ def _dailymed_variant(raw: str) -> tuple[str, str] | None:
         return None
 
 
+# These five sources are each a single, known, fixed kind of site -- no
+# per-citation Gemini call is needed to classify them the way an arbitrary
+# Gemini-grounded web citation needs (see classify_source_trust in
+# gemini_grounded.py). DailyMed and the AMA USAN Statement are the naming/
+# regulatory bodies' own record; the rest are editorially-maintained
+# references, not primary authorities but not open to public submission
+# either.
+_STATIC_TRUST_TIER = {
+    "merriam-webster/medical-api": "verified_secondary",
+    "merriam-webster/dictionary": "verified_secondary",
+    "wikipedia": "verified_secondary",
+    "wiktionary": "verified_secondary",
+    "cmudict": "verified_secondary",
+    "dailymed": "official_medical",
+    "usan-official": "official_medical",
+}
+
+
+def _tagged(source: dict) -> dict:
+    """`source`, plus its trust_tier per `_STATIC_TRUST_TIER`."""
+    return {**source, "trust_tier": _STATIC_TRUST_TIER[source["name"]]}
+
+
 def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], list[dict], str, str]:
     """Variants, sources, tier and (for `low`) a note, for a single word."""
     found = []
+
+    # Tried first, generics only: the USAN Council's own Statement on
+    # Adoption is the single most authoritative pronunciation record that
+    # exists for a coined INN/USAN generic name -- it is the naming body's
+    # own adopted-name record, not a secondhand citation of it. Web search
+    # (Gemini-grounded or otherwise) doesn't reliably surface these PDFs
+    # even though they are public and free, so this fetches the document
+    # store directly rather than hoping a search engine ranks it. Brand
+    # names are never filed here; USAN registers generic names only.
+    if name_type == "generic":
+        usan = sources.usan_pronunciation(word)
+        if usan:
+            variant = _respelling_text_to_variant(usan["raw"])
+            if variant:
+                found.append(([variant], _tagged(usan)))
 
     mw = sources.merriam_webster(word)
     if mw:
         variants = convert(mw["raw"])
         if variants:
-            found.append((variants, mw))
+            found.append((variants, _tagged(mw)))
 
     wp = sources.wikipedia_pronunciation(word)
     if wp:
         variants = _wiki_variants(wp)
         if variants:
-            found.append((variants, {k: v for k, v in wp.items() if k != "kind"}))
+            found.append((variants, _tagged({k: v for k, v in wp.items() if k != "kind"})))
 
     wikt = sources.wiktionary_pronunciation(word)
     if wikt:
         variants = _wiki_variants(wikt)
         if variants:
-            found.append((variants, {k: v for k, v in wikt.items() if k != "kind"}))
+            found.append((variants, _tagged({k: v for k, v in wikt.items() if k != "kind"})))
 
     cmu = sources.cmudict_lookup(word)
     if cmu:
         from ..judge.fixtures.g2p import to_ipa
 
         arpa = cmu["raw"]
-        found.append(([(arpa, to_ipa(arpa.split()))], cmu))
+        found.append(([(arpa, to_ipa(arpa.split()))], _tagged(cmu)))
 
     if name_type == "brand":
         dm = sources.dailymed_pronunciation(word)
         if dm:
-            variant = _dailymed_variant(dm["raw"])
+            variant = _respelling_text_to_variant(dm["raw"])
             if variant:
-                found.append(([variant], dm))
+                found.append(([variant], _tagged(dm)))
 
     if not found:
         gemini_hit = _from_gemini_grounded(word)
@@ -275,9 +349,13 @@ def build(workers: int = 8) -> list[dict]:
 def coverage_report(records: list[dict]) -> str:
     by_tier = {t: [r for r in records if r["confidence"] == t] for t in TIERS}
     by_source: dict[str, int] = {}
+    by_trust: dict[str, int] = {}
     for r in records:
         for s in r["sources"]:
             by_source[s["name"]] = by_source.get(s["name"], 0) + 1
+            trust = s.get("trust_tier")
+            if trust:
+                by_trust[trust] = by_trust.get(trust, 0) + 1
 
     lines = [
         "# Gold Reference Layer — Coverage",
@@ -309,6 +387,41 @@ def coverage_report(records: list[dict]) -> str:
         lines.append(f"| {name} | {n} |")
 
     lines += [
+        "",
+        "## Trust tiers",
+        "",
+        "Every citation (not just Gemini-grounded ones) is classified into one of",
+        "three buckets, and a `third_party_unverified` one is never counted as a",
+        "citation at all -- it is dropped before a respelling is even extracted from",
+        "it, the same treatment as a claim that fails the format-plausibility check.",
+        "MW/Wikipedia/Wiktionary/CMUdict/DailyMed/the AMA USAN Statement are each a",
+        "single known kind of source and are tagged directly; only an arbitrary",
+        "Gemini-grounded web citation is classified per-domain, by asking Gemini 2.5",
+        "Flash to bucket the domain with a few worked examples per bucket (not a",
+        "hardcoded domain list) -- see `classify_source_trust` in gemini_grounded.py.",
+        "",
+        "| Tier | Meaning | Ingredients citing at least one |",
+        "| --- | --- | --- |",
+        f"| official_medical | Government health agency, national regulator, or the "
+        f"drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | "
+        f"{by_trust.get('official_medical', 0)} |",
+        f"| verified_secondary | Editorially-maintained reference, not a primary "
+        f"authority but not open to public submission either (Drugs.com, WebMD, "
+        f"Wikipedia, Merriam-Webster, a university hospital's patient site) | "
+        f"{by_trust.get('verified_secondary', 0)} |",
+        f"| third_party_unverified | Crowdsourced/user-generated, no editorial review "
+        f"(howtopronounce.com, a YouTube upload, a blog) -- **excluded**, never "
+        f"counted | {by_trust.get('third_party_unverified', 0)} |",
+        "",
+        "That last row should always read 0: it is what `_variants_from_claims` in",
+        "build.py exists to guarantee, not a live count of something still present in",
+        "the data. 7 ingredients (Avlayah, Blujepa, Simtriyo, TNKase, Toujeo, Zaiidra,",
+        "tenecteplase) had their *only* source turn out to be `third_party_unverified`",
+        "once this classification was added -- 5 (Blujepa, Simtriyo, TNKase, Zaiidra,",
+        "tenecteplase) were recovered by a second, more restrictive Gemini query that",
+        "explicitly excludes crowdsourced sites (`verified_claims(..., tight=True)`),",
+        "and 2 (Avlayah, Toujeo) had no official/secondary source to find at all even",
+        "under that restriction and reverted to `low`.",
         "",
         "## Baseline comparison",
         "",
@@ -401,15 +514,18 @@ def coverage_report(records: list[dict]) -> str:
         "a React SPA (`drug-dictionary-app`) with no server-rendered content; its "
         "bundled config points at `webapis-dev.cancer.gov`, which does not resolve "
         "(NXDOMAIN) -- the backing API is not public from this environment. |",
-        "| AMA USAN pronunciation guide (key) | Found and reachable, not paywalled "
-        "(`\"gating_state\":\"not gated\"`). It is the **notation key** the USAN "
-        "Council uses (prime/double-prime stress marks, documented digraphs), not a "
-        "per-drug lookup -- it explains how to read a pronunciation, it doesn't "
-        "supply one. |",
-        "| AMA USAN Drug Finder (searchusan.ama-assn.org) | Dead end as scraped: an "
-        "Angular SPA; the string `pronun` does not appear anywhere in its main JS "
-        "bundle, so the finder itself does not appear to expose pronunciation, only "
-        "naming/adoption-status data. |",
+        "| AMA USAN Statement PDFs (searchusan.ama-assn.org) | **Wired in as the "
+        "primary source for generics** (`sources.usan_pronunciation`), correcting an "
+        "earlier claim in this table that this was only a notation key, not a "
+        "per-drug lookup. The Angular search UI (`/usan/`) is indeed a dead end as "
+        "scraped, but each drug's own Statement on Adoption is a real, individually "
+        "fetchable PDF at a predictable URL (`documentDownload?uri=/unstructured/"
+        "binary/usan/{name}.pdf`, base INN name, FDA biosimilar suffix stripped), "
+        "with its own PRONUNCIATION field in the USAN prime-stress notation -- "
+        f"{by_source.get('usan-official', 0)} ingredients this build. The document "
+        "store answers HTTP 200 whether or not a name exists (a small JSON error "
+        "body on a miss, a real PDF on a hit), so the body has to be checked, not "
+        "the status code. |",
         "| WHO INN lists (who.int) | Reachable (200), but the published INN list "
         "documents are name/CAS-number registries, not phonetic dictionaries; no "
         "pronunciation field found. |",
@@ -419,35 +535,32 @@ def coverage_report(records: list[dict]) -> str:
         "",
         "## Blocked or paywalled sources ranked by expected gain",
         "",
-        "Gemini/Google-Search grounding plus DailyMed closed all but a handful of the",
-        "old `low` tier, generic and brand alike (real citations turned up for coined",
-        "INN names like elranatamab-bcmm and risankizumab-rzaa just as readily as for",
-        f"brand names). What's left ({len(by_tier['low'])} ingredients) was checked",
-        "individually, not just left to the pipeline's word: Vyglxia (troriluzole)",
-        "has no FDA approval at all yet (a Complete Response Letter, not approval, as",
-        "of this build) so no official pronunciation can exist; Wakix's full FDA label",
-        "text contains no pronunciation anywhere (confirmed by a direct openFDA",
-        "full-text search), and the only web hit is an unreliable YouTube auto-",
-        "caption (\"wake cakes\"), correctly discarded rather than recorded as data;",
-        "cipepofol's only hit is actually Cypsedo's (its own brand name's)",
-        "pronunciation mislabeled, correctly rejected as not describing this word; and",
-        "\"histidinate\" (half of copper histidinate) has no source of its own --",
-        "Gemini's one attempt explicitly inferred it by analogy from \"histidine\" (a",
-        "related but different word) rather than citing anything for \"histidinate\"",
-        "itself, and is discarded for saying so (see `_is_speculative` in",
-        "gemini_grounded.py). These four are a genuine absence of published",
-        "pronunciation, not a pipeline gap.",
+        "Gemini/Google-Search grounding, DailyMed, and directly fetching the AMA USAN",
+        "Statement PDFs closed all but a handful of the old `low` tier, generic and",
+        "brand alike. cipepofol and copper histidinate in particular were both wrongly",
+        "written off in an earlier version of this report as needing a **purchased**",
+        "USP Dictionary subscription -- the actual per-drug USAN Statement (the same",
+        "record USP compiles from) is a free, individually fetchable PDF at a",
+        "predictable URL, confirmed directly and now the primary source for both.",
+        f"What's left ({len(by_tier['low'])} ingredients) was checked individually,",
+        "not just left to the pipeline's word: Vyglxia (troriluzole) has no FDA",
+        "approval at all yet (a Complete Response Letter, not approval, as of this",
+        "build) so no official pronunciation can exist; Wakix's full FDA label text",
+        "contains no pronunciation anywhere (confirmed by a direct openFDA full-text",
+        "search) and its USAN Statement doesn't state one either, so the only web hit",
+        "-- an unreliable YouTube auto-caption (\"wake cakes\") -- is correctly",
+        "discarded rather than recorded as data; Avlayah and Toujeo have no",
+        "official/verified-secondary source even under a second, more restrictive",
+        "query that explicitly excludes crowdsourced sites (`verified_claims(...,",
+        "tight=True)`) -- the only hits for both are third_party_unverified (a",
+        "crowdsourced pronunciation site), correctly excluded rather than counted",
+        "as a citation (see the Trust tiers section above).",
         "",
-        "1. **USP Dictionary of USAN and International Drug Names** -- the compiled,",
-        "   official pronunciation reference for essentially every USAN/INN generic",
-        "   name, using the documented AMA/USAN key (prime-mark stress, plain-English",
-        "   digraphs) already confirmed public. Largely superseded by the Gemini step",
-        "   for coverage, but still the authoritative source where Gemini's search",
-        "   result disagrees with itself or looks unreliable. **What's needed:** USP",
-        "   sells it as a",
-        "   purchased publication/subscription -- buy access (print or the USP",
-        "   online reference platform) or reach the USAN Council directly for the",
-        "   per-drug Statements of Adoption, which carry the same pronunciation.",
+        "1. **USP Dictionary of USAN and International Drug Names** -- superseded for",
+        "   this benchmark: it compiles the same per-drug USAN Statements this build",
+        "   fetches directly and for free, so there is no remaining gain from buying",
+        "   access to it specifically. Kept as a reference for anyone reproducing this",
+        "   layer without hitting AMA's document store directly.",
         "2. **A source key for MedlinePlus's own respelling notation** -- the",
         "   monograph pages themselves are free and already reachable (pipeline",
         "   above); only the notation-to-ARPABET converter is missing, and it needs a",
