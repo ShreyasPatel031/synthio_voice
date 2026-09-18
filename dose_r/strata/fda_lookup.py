@@ -148,10 +148,33 @@ def base_forms(name: str) -> list[str]:
 
 
 def candidate_queries(name: str, name_type: str) -> list[str]:
+    """Query fields, `openfda.*` first then the raw `products.*` fallback.
+
+    `openfda.*` is a harmonized enrichment block that openFDA computes after
+    the fact, and it is missing on a surprising number of real, long-approved
+    applications -- Eliquis, Benadryl, Biktarvy, Ubrelvy and Wegovy all miss
+    every `openfda.*` field despite being unambiguously approved. `products.*`
+    is the raw application data and finds all five. Trusting `openfda.*` alone
+    would misclassify well-established drugs as "not found" and, under the
+    obvious fallback heuristic, as newly-approved -- the opposite of correct.
+    """
+
     fields = (
-        ["openfda.brand_name", "openfda.generic_name", "openfda.substance_name"]
+        [
+            "openfda.brand_name",
+            "openfda.generic_name",
+            "openfda.substance_name",
+            "products.brand_name",
+            "products.active_ingredients.name",
+        ]
         if name_type == "brand"
-        else ["openfda.generic_name", "openfda.substance_name", "openfda.brand_name"]
+        else [
+            "openfda.generic_name",
+            "openfda.substance_name",
+            "openfda.brand_name",
+            "products.active_ingredients.name",
+            "products.brand_name",
+        ]
     )
     queries = []
     for form in base_forms(name):
