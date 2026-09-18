@@ -58,6 +58,14 @@ GOOGLE_TTS_PRICING = {
     "polyglot": Pricing(16.00, "cloud.google.com/text-to-speech/pricing", verified=False),
     "casual": Pricing(16.00, "cloud.google.com/text-to-speech/pricing", verified=False),
     "mock": Pricing(0.00, "n/a -- mock backend", verified=True),
+    # Gemini TTS is actually billed per-token (input + output audio tokens), not
+    # per-character. This is a rough character-based approximation for the
+    # runner's cost field, NOT a real price -- flagged unverified like everything
+    # else here, but doubly approximate: even a "verified" number would need the
+    # Pricing model to carry a token-based mode before it could be trusted.
+    "gemini-tts": Pricing(15.00, "rough char-based approximation of Gemini API "
+                          "per-token audio pricing -- NOT reconciled, see comment",
+                          verified=False),
 }
 
 
@@ -91,8 +99,20 @@ CHEAP_TIER: dict[str, VoiceSpec] = {
         VoiceSpec("gtts-neural2-c", "en-US-Neural2-C", "neural2",
                   notes="Mid tier.", tags=("cheap",)),
         VoiceSpec("gtts-chirp3hd-achernar", "en-US-Chirp3-HD-Achernar", "chirp3-hd",
-                  notes="Gemini-family LLM-based voice; closest cheap proxy to the "
-                        "Gemini TTS system DOSE scores at 74.5%.",
+                  notes="Gemini-family LLM-based voice on the Cloud TTS API. Used "
+                        "as a proxy for real Gemini TTS before the latter was "
+                        "confirmed reachable; kept for comparison.",
+                  tags=("cheap", "gemini-family")),
+        # The actual system this project's DOSE-overlap point is about: DOSE
+        # reports gemini-3.1-flash-tts-preview at 74.5%. That exact model id
+        # is not available in this project; gemini-2.5-flash-preview-tts is
+        # the version confirmed reachable via Vertex generateContent (verified
+        # manually: HTTP 200, real 24kHz PCM audio, see adapters/gemini_tts.py).
+        VoiceSpec("gemini-2.5-flash-tts", "gemini-2.5-flash-preview-tts", "gemini-tts",
+                  notes="Real Gemini TTS via Vertex AI generateContent. Nearest "
+                        "available version to the gemini-3.1-flash-tts-preview "
+                        "system DOSE scores at 74.5% -- not the same model id, "
+                        "so treat any comparison as indicative, not equivalent.",
                   tags=("cheap", "gemini-family", "dose-overlap-proxy")),
     ]
 }
