@@ -12,12 +12,26 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from dose_r.references import audio_manifest, audio_sources_drugscom, audio_sources_umich, audio_verify
+from dose_r.references import (
+    audio_manifest,
+    audio_sources_clincalc,
+    audio_sources_drugscom,
+    audio_sources_umich,
+    audio_verify,
+)
+from scripts import fetch_clincalc_reference_audio as fcc
 from scripts import fetch_drugscom_reference_audio as fdr
 from scripts import fetch_umich_reference_audio as fum
 
 MANIFEST = ROOT / "data" / "reference_audio" / "manifest.jsonl"
 DATASET = ROOT / "data" / "dose_v1.jsonl"
+
+
+def make_mp3(duration_s: float, bitrate_kbps: int = 128, samplerate: int = 44100) -> bytes:
+    frame_size = (144 * bitrate_kbps * 1000) // samplerate
+    frame = bytes([0xFF, 0xFB, 0x90, 0xC0]) + bytes(frame_size - 4)
+    n_frames = max(1, round(duration_s / (1152 / samplerate)))
+    return frame * n_frames
 
 
 def make_wav(duration_s: float, rate: int = 16000, channels: int = 1) -> bytes:
@@ -355,6 +369,225 @@ def test_run_records_a_miss_on_download_failure(umich_audio_dir, monkeypatch):
     ]
 
 
+# --- audio_sources_clincalc ------------------------------------------------
+
+
+def _clincalc_page_html(generic=None, generic_file=None, brand=None, brand_file=None):
+    parts = []
+    if generic:
+        parts.append(
+            f"<h2 class=\"pTitle\">The generic name '{generic}' is pronounced:</h2>"
+            f'<audio><source src="../mp3/{generic_file}.ogg" type="audio/ogg">'
+            f'<source src="../mp3/{generic_file}.mp3" type="audio/mpeg"></audio>'
+        )
+    if brand:
+        parts.append(
+            f"<h2 class=\"pTitle\">The brand name '{brand}' is pronounced:</h2>"
+            f'<audio><source src="../mp3/{brand_file}.ogg" type="audio/ogg">'
+            f'<source src="../mp3/{brand_file}.mp3" type="audio/mpeg"></audio>'
+        )
+    return "\n".join(parts)
+
+
+def test_split_names_strips_many_more_suffixes():
+    assert audio_sources_clincalc.split_names("Vicodin; Norco; Lortab (many more)") == [
+        "Vicodin", "Norco", "Lortab",
+    ]
+    assert audio_sources_clincalc.split_names("Cardizem CD (and many more)") == ["Cardizem CD"]
+    assert audio_sources_clincalc.split_names("atorvastatin") == ["atorvastatin"]
+
+
+def test_strip_route_annotation():
+    assert audio_sources_clincalc.strip_route_annotation("Fluticasone (inhaled)") == "Fluticasone"
+    assert audio_sources_clincalc.strip_route_annotation("Advil") == "Advil"
+
+
+def test_name_matches_exact_case_insensitive():
+    assert audio_sources_clincalc.name_matches("Advair", "advair")
+
+
+def test_name_matches_salt_suffix_prefix():
+    assert audio_sources_clincalc.name_matches("fluticasone", "fluticasone propionate")
+    assert audio_sources_clincalc.name_matches("Fluticasone (inhaled)", "fluticasone propionate")
+
+
+def test_name_matches_rejects_word_boundary_crossing_prefix():
+    assert not audio_sources_clincalc.name_matches("form", "formoterol fumarate dihydrate")
+    assert not audio_sources_clincalc.name_matches("albuterol", "atorvastatin")
+
+
+def test_name_matches_does_not_match_a_longer_clincalc_name():
+    assert not audio_sources_clincalc.name_matches("fluticasone propionate", "fluticasone")
+
+
+def test_parse_index_simple_entry():
+    html = '<a href="HowToPronounce/atorvastatin">atorvastatin (Lipitor)</a>'
+    [entry] = audio_sources_clincalc.parse_index(html)
+    assert entry.slug == "atorvastatin"
+    assert entry.generics == ["atorvastatin"]
+    assert entry.brands == ["Lipitor"]
+
+
+def test_parse_index_combo_with_many_brands():
+    html = (
+        '<a href="HowToPronounce/acetaminophenhydrocodone">'
+        "acetaminophen; hydrocodone (Vicodin; Norco; Lortab (many more))</a>"
+    )
+    [entry] = audio_sources_clincalc.parse_index(html)
+    assert entry.generics == ["acetaminophen", "hydrocodone"]
+    assert entry.brands == ["Vicodin", "Norco", "Lortab"]
+
+
+def test_parse_index_route_annotation_before_brand_group():
+    # The brand group is the *last* top-level "(...)", not the first -- a
+    # route-annotated generic ("(inhaled)") must not be mistaken for it.
+    html = '<a href="HowToPronounce/fluticasone">fluticasone (inhaled) (Flovent)</a>'
+    [entry] = audio_sources_clincalc.parse_index(html)
+    assert entry.generics == ["fluticasone (inhaled)"]
+    assert entry.brands == ["Flovent"]
+
+
+def test_merge_by_slug_unions_two_labels_for_the_same_page():
+    html = (
+        '<a href="HowToPronounce/fluticasone">fluticasone (inhaled) (Flovent)</a>'
+        '<a href="HowToPronounce/fluticasone">fluticasone (nasal) (Flonase)</a>'
+    )
+    merged = audio_sources_clincalc.merge_by_slug(audio_sources_clincalc.parse_index(html))
+    assert merged["fluticasone"].brands == ["Flovent", "Flonase"]
+
+
+def test_candidate_slugs_filters_to_matching_ingredients():
+    html = (
+        '<a href="HowToPronounce/atorvastatin">atorvastatin (Lipitor)</a>'
+        '<a href="HowToPronounce/acyclovir">acyclovir (Zovirax)</a>'
+    )
+    entries = audio_sources_clincalc.parse_index(html)
+    slugs = audio_sources_clincalc.candidate_slugs(entries, ["Lipitor"])
+    assert set(slugs) == {"atorvastatin"}
+
+
+def test_parse_page_extracts_both_blocks_with_resolved_urls():
+    html = _clincalc_page_html("Atorvastatin", "atorvastatin", "Lipitor", "lipitor")
+    page = audio_sources_clincalc.parse_page(html, audio_sources_clincalc.page_url("atorvastatin"))
+    assert page.generic_name == "Atorvastatin"
+    assert page.generic_url == "https://clincalc.com/pronouncetop200drugs/mp3/atorvastatin.mp3"
+    assert page.brand_name == "Lipitor"
+    assert page.brand_url == "https://clincalc.com/pronouncetop200drugs/mp3/lipitor.mp3"
+
+
+def test_parse_page_handles_generic_only():
+    html = _clincalc_page_html(generic="Acyclovir", generic_file="acyclovir")
+    page = audio_sources_clincalc.parse_page(html, audio_sources_clincalc.page_url("acyclovir"))
+    assert page.brand_name is None
+    assert page.brand_url is None
+
+
+# --- fetch_clincalc_reference_audio (the driver) -----------------------------
+
+
+@pytest.fixture
+def clincalc_audio_dir(tmp_path, monkeypatch):
+    scratch = ROOT / "data" / "reference_audio" / f"_test_clincalc_scratch_{tmp_path.name}"
+    monkeypatch.setattr(fcc, "AUDIO_DIR", scratch)
+    yield scratch
+    if scratch.exists():
+        import shutil
+
+        shutil.rmtree(scratch)
+
+
+def test_run_builds_generic_and_brand_clips_as_separate_rows(clincalc_audio_dir, monkeypatch):
+    index_html = '<a href="HowToPronounce/atorvastatin">atorvastatin (Lipitor)</a>'
+    page_html = _clincalc_page_html("Atorvastatin", "atorvastatin", "Lipitor", "lipitor")
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch", lambda url, delay_s: page_html)
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch_audio", lambda url, delay_s: make_mp3(1.0))
+
+    clips, misses = fcc.run(index_html)
+    by_ing = {c["ingredient"]: c for c in clips}
+
+    assert set(by_ing) == {"atorvastatin", "Lipitor"}
+    assert by_ing["atorvastatin"]["name_type"] == "generic"
+    assert by_ing["Lipitor"]["name_type"] == "brand"
+    assert by_ing["atorvastatin"]["coverage"] == "full"
+    assert by_ing["atorvastatin"]["status"] == "ok"
+    assert "Lipitor" in by_ing["atorvastatin"]["respelling"]
+    assert "atorvastatin" in by_ing["Lipitor"]["respelling"]
+    assert misses == []
+
+
+def test_run_flags_component_coverage_for_a_multi_name_clip(clincalc_audio_dir, monkeypatch):
+    index_html = '<a href="HowToPronounce/ibuprofen">ibuprofen (Advil; Motrin)</a>'
+    page_html = _clincalc_page_html("Ibuprofen", "ibuprofen", "Advil; Motrin", "advilmotrin")
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch", lambda url, delay_s: page_html)
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch_audio", lambda url, delay_s: make_mp3(1.0))
+
+    clips, _ = fcc.run(index_html)
+    by_ing = {c["ingredient"]: c for c in clips}
+
+    assert by_ing["Advil"]["coverage"] == "component"
+    assert by_ing["Motrin"]["coverage"] == "component"
+    assert by_ing["Advil"]["status"] == "flagged"
+    assert any("partial coverage" in f for f in by_ing["Advil"]["flags"])
+    assert by_ing["ibuprofen"]["coverage"] == "full"
+
+
+def test_run_reports_index_page_mismatch_as_a_miss(clincalc_audio_dir, monkeypatch):
+    # The index lists this page under two labels (inhaled/Flovent and
+    # nasal/Flonase) but the page itself only ever names Flovent -- Flonase
+    # must come back as a miss, not a silently-wrong clip.
+    index_html = (
+        '<a href="HowToPronounce/fluticasone">fluticasone (inhaled) (Flovent)</a>'
+        '<a href="HowToPronounce/fluticasone">fluticasone (nasal) (Flonase)</a>'
+    )
+    page_html = _clincalc_page_html("Fluticasone (inhaled)", "fluticasone", "Flovent", "flovent")
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch", lambda url, delay_s: page_html)
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch_audio", lambda url, delay_s: make_mp3(1.0))
+
+    clips, misses = fcc.run(index_html)
+
+    assert "Flonase" not in {c["ingredient"] for c in clips}
+    assert any(
+        m["ingredient"] == "Flonase" and m["reason"] == "index_page_mismatch" for m in misses
+    )
+
+
+def test_run_dedupes_the_same_clip_named_on_both_sides(clincalc_audio_dir, monkeypatch):
+    # aspirin's own page heads both its generic and brand block "Aspirin",
+    # linking the same file -- one recording, one row, not two.
+    index_html = '<a href="HowToPronounce/aspirin">aspirin (Aspirin)</a>'
+    page_html = _clincalc_page_html("Aspirin", "aspirin", "Aspirin", "aspirin")
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch", lambda url, delay_s: page_html)
+    calls = []
+
+    def fake_audio(url, delay_s):
+        calls.append(url)
+        return make_mp3(1.0)
+
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch_audio", fake_audio)
+
+    clips, _ = fcc.run(index_html)
+    assert [c["ingredient"] for c in clips] == ["Aspirin"]
+    assert len(calls) == 1
+
+
+def test_run_is_idempotent_on_disk(clincalc_audio_dir, monkeypatch):
+    index_html = '<a href="HowToPronounce/atorvastatin">atorvastatin (Lipitor)</a>'
+    page_html = _clincalc_page_html("Atorvastatin", "atorvastatin", "Lipitor", "lipitor")
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch", lambda url, delay_s: page_html)
+    calls = []
+
+    def fake_audio(url, delay_s):
+        calls.append(url)
+        return make_mp3(1.0)
+
+    monkeypatch.setattr(audio_sources_clincalc, "polite_fetch_audio", fake_audio)
+
+    fcc.run(index_html)
+    assert len(calls) == 2
+    fcc.run(index_html)
+    assert len(calls) == 2
+
+
 # --- the real, checked-in manifest ---------------------------------------------
 
 
@@ -369,9 +602,9 @@ def dataset_ingredients():
         return {i for line in f for i in json.loads(line)["ingredients"]}
 
 
-def test_manifest_has_all_three_sources(manifest_records):
+def test_manifest_has_all_four_sources(manifest_records):
     sources = {r["source"] for r in manifest_records}
-    assert {"merriam-webster", "drugs.com", "umich"} <= sources
+    assert {"merriam-webster", "drugs.com", "umich", "clincalc"} <= sources
 
 
 def test_manifest_drugs_com_rows_are_unique_ingredients(manifest_records):
@@ -393,6 +626,23 @@ def test_manifest_umich_rows_match_the_known_overlap(manifest_records):
     }
     assert all(r["coverage"] == "full" for r in umich)
     assert len({r["ingredient"] for r in umich}) == len(umich)
+
+
+def test_manifest_clincalc_rows_have_no_key_collisions_from_shared_pages(manifest_records):
+    # A page's audio can name several DOSE ingredients at once (a combo's
+    # generics, or several brands on one clip) -- each still needs its own
+    # unique (ingredient, query) key, not a silently-overwritten duplicate.
+    clincalc = [r for r in manifest_records if r["source"] == "clincalc"]
+    keys = [(r["ingredient"], r["query"]) for r in clincalc]
+    assert len(keys) == len(set(keys))
+    assert len(clincalc) > 0
+
+
+def test_manifest_clincalc_component_rows_are_flagged(manifest_records):
+    for r in manifest_records:
+        if r["source"] == "clincalc" and r["coverage"] == "component":
+            assert r["status"] == "flagged"
+            assert any("partial coverage" in f for f in r["flags"])
 
 
 def test_manifest_no_duplicate_keys(manifest_records):

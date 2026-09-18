@@ -16,6 +16,7 @@ so a fourth source needs only a label added there.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -35,6 +36,7 @@ FULL_COVERAGE_SOURCES = {
     "drugs.com": "Drugs.com",
     "merriam-webster": "Merriam-Webster (full name)",
     "umich": "UMich",
+    "clincalc": "ClinCalc (full name)",
 }
 
 
@@ -65,15 +67,28 @@ def build() -> str:
     tiers = confidence_tiers()
     all_ingredients = set(types)
 
-    dc = {r["ingredient"] for r in records if r["source"] == "drugs.com"}
     mw_full = {r["ingredient"] for r in records if r["source"] == "merriam-webster" and r["coverage"] == "full"}
     mw_component = {r["ingredient"] for r in records if r["source"] == "merriam-webster" and r["coverage"] == "component"}
     mw_any = mw_full | mw_component
 
+    cc_full = {r["ingredient"] for r in records if r["source"] == "clincalc" and r["coverage"] == "full"}
+    cc_component = {r["ingredient"] for r in records if r["source"] == "clincalc" and r["coverage"] == "component"}
+    cc_any = cc_full | cc_component
+    cc_rows = [r for r in records if r["source"] == "clincalc"]
+
+    cc_urls = {r["source_url"] for r in cc_rows}
+    cc_paired = {
+        r["ingredient"]
+        for r in cc_rows
+        if r["respelling"] and (m := re.search(r"\((https://[^)]+)\)$", r["respelling"]))
+        and m.group(1) in cc_urls
+    }
+
     full_coverage = {
-        "drugs.com": dc,
+        "drugs.com": {r["ingredient"] for r in records if r["source"] == "drugs.com"},
         "merriam-webster": mw_full,
         "umich": {r["ingredient"] for r in records if r["source"] == "umich"},
+        "clincalc": cc_full,
     }
     source_labels = {s: FULL_COVERAGE_SOURCES[s] for s in full_coverage}
 
@@ -93,18 +108,21 @@ def build() -> str:
     ]
 
     sources_prose = ", ".join(source_labels.values())
+    n_sources = len(source_labels)
     lines = [
         "# Reference Audio -- Coverage",
         "",
         "Human-recorded pronunciation audio for the 284 unique ingredients across",
-        f"the 274 DOSE rows, from three sources: {sources_prose}.",
+        f"the 274 DOSE rows, from {n_sources} sources: {sources_prose}.",
         "Merriam-Webster's Medical API; Drugs.com collected by hand -- see",
         "`data/collected/HANDOFF_AUDIO_COLLECTION.md`, drugs.com 403s this environment",
         "on every request; UMich's student pronunciation page via the Wayback Machine,",
-        "since the live site 403s behind a Cloudflare challenge. \"Coverage\" below",
-        "means a clip that pronounces the *whole* ingredient name, since that is what",
-        "DOSE scores; Merriam-Webster's word-level partial clips are reported",
-        "separately.",
+        "since the live site 403s behind a Cloudflare challenge; ClinCalc's Top 250",
+        "Drugs pronunciation pages, fetched live -- the only source that records a",
+        "generic name and a brand name as two separate clips instead of one page's",
+        "one recording. \"Coverage\" below means a clip that pronounces the *whole*",
+        "ingredient name, since that is what DOSE scores; Merriam-Webster's and",
+        "ClinCalc's word-/name-level partial clips are reported separately.",
         "",
         "## Headline",
         "",
@@ -117,7 +135,7 @@ def build() -> str:
                 ],
                 ("Union -- any audio", len(union), pct(len(union), len(all_ingredients))),
                 ("2+ sources (cross-checkable)", len(cross_checkable), pct(len(cross_checkable), len(all_ingredients))),
-                ("All 3 sources", len(all_sources), pct(len(all_sources), len(all_ingredients))),
+                (f"All {n_sources} sources", len(all_sources), pct(len(all_sources), len(all_ingredients))),
                 *[
                     (f"Only {label}", len(only[s]), pct(len(only[s]), len(all_ingredients)))
                     for s, label in source_labels.items()
@@ -234,6 +252,82 @@ def build() -> str:
             for ing in sorted(mw_component)
         ],
         "",
+        "## ClinCalc: reconciling row counts",
+        "",
+        f"The manifest carries {len(cc_rows)} ClinCalc rows for {len(cc_any)} unique",
+        f"ingredients. Of those, {len(cc_full)} carry a clip that is the *only* name",
+        "in its audio block (`coverage: full`) and "
+        f"{len(cc_component)} share a block's one",
+        "recording with one or more other names -- a combination product's several",
+        "generic components, or several brands sold for one generic, e.g. ClinCalc's",
+        "one `ibuprofen` brand clip says \"Advil, Motrin\" together, not either alone",
+        "(`coverage: component`, flagged as partial, listed below).",
+        "",
+        f"{len(cc_paired)} of the {len(cc_any)} carry a `respelling` note pointing to",
+        "a second ClinCalc clip on the same page for the paired generic or brand name,",
+        "where that paired name is itself another DOSE ingredient with its own row --",
+        "e.g. `atorvastatin`'s row notes ClinCalc's separate `Lipitor` clip, and",
+        "`Lipitor`'s row notes the `atorvastatin` one back. Every ClinCalc row carries",
+        "such a note when the page has both a generic and a brand block, whether or",
+        "not the other name happens to be its own DOSE ingredient -- see the",
+        "manifest's `respelling` field for the rest.",
+        "",
+        "Component-only ClinCalc ingredients (partial, not full-name, audio):",
+        "",
+        *[
+            f"- `{ing}` -- shares its clip with "
+            + ", ".join(
+                sorted(
+                    {
+                        n
+                        for r in cc_rows
+                        if r["ingredient"] == ing and r["coverage"] == "component"
+                        for n in r["headword"].split("; ")
+                        if n.lower() != ing.lower()
+                    }
+                )
+            )
+            for ing in sorted(cc_component)
+        ],
+        "",
+        "## ClinCalc cross-check of previously flagged clips",
+        "",
+        "ClinCalc is the first source that records a brand and a generic name as two",
+        "separate clips, so where it covers a flagged ingredient its own clip (or a",
+        "same-source sibling, like a clean single-word Merriam-Webster clip) gives an",
+        "unambiguous duration to compare the flagged clip's duration against, instead",
+        "of only a within-batch syllable estimate.",
+        "",
+        "- `Advair` (Drugs.com, 1.666s, flagged) -- ClinCalc's dedicated single-name",
+        "  `Advair` brand clip runs 2.214s and Merriam-Webster's unflagged `Advair`",
+        "  clip runs 1.857s. Drugs.com's duration sits at or below both independent",
+        "  clean-word recordings, not anywhere near ClinCalc's own combined",
+        "  `Fluticasone; salmeterol` clip (2.893s) a mispronunciation as the generic",
+        "  would have to resemble. **Resolved**: the flag was a within-Drugs.com-batch",
+        "  artifact; the clip's duration is consistent with genuinely saying \"Advair\".",
+        "- `Motrin` (Drugs.com, 1.625s, flagged) -- ClinCalc never recorded `Motrin`",
+        "  alone (its ibuprofen page's one brand clip says \"Advil, Motrin\" together,",
+        "  2.736s), but Merriam-Webster's unflagged, unambiguous single-word `Motrin`",
+        "  clip runs only 0.605s. Drugs.com's `Motrin` (1.625s) is also 2.2x its own",
+        "  `Advil` clip (0.734s) despite both being two-syllable brand names recorded",
+        "  in the same batch. **Confirmed suspicious**: nothing here contradicts the",
+        "  original flag, and the size of the gap from Merriam-Webster's clean word",
+        "  makes a wrong-name clip (most likely the generic, \"ibuprofen\") more likely",
+        "  than a slow reading of \"Motrin\" alone.",
+        "- `fluticasone propionate` (Drugs.com, 1.278s, flagged) -- ClinCalc's clean,",
+        "  unflagged single-name generic clip, headed \"Fluticasone (inhaled)\", runs",
+        "  1.149s -- 11% off Drugs.com's duration for what both would then be the same",
+        "  bare word. **Resolved**: consistent with Drugs.com's clip pronouncing only",
+        "  the base name \"fluticasone\" and omitting the \"propionate\" salt, not with a",
+        "  different drug; the flag's syllable estimate over-counted using the full",
+        "  ingredient name's syllables against a clip that likely never spoke them all.",
+        "- `formoterol fumarate dihydrate` (Drugs.com, 1.026s, flagged) -- ClinCalc's",
+        "  clean standalone `Formoterol` clip runs 1.848s and Merriam-Webster's clean",
+        "  `formoterol` word-clip runs 1.300s; Drugs.com's 1.026s is the *shortest* of",
+        "  the three bare-\"formoterol\" measurements, not the longest a wrong, longer",
+        "  name would produce. **Resolved**: same reading as `fluticasone propionate`",
+        "  -- a clip of the base generic name only, not a name mismatch.",
+        "",
         "## Flagged clips",
         "",
         "### Possible name mismatch (syllable-outlier check)",
@@ -290,7 +384,10 @@ def build() -> str:
             "",
             "`dimethyl fumarate` and `formoterol fumarate dihydrate` share the word",
             "\"fumarate\" -- both resolved to the same Merriam-Webster audio file for that",
-            "one shared word, which is the correct behavior, not a bug.",
+            "one shared word, which is the correct behavior, not a bug. Likewise every",
+            "ClinCalc pair here (`Advil`/`Motrin`, `Metformin`/`sitagliptin`, and the rest)",
+            "shares one page's one `coverage: component` clip that names both -- also",
+            "correct, not a bug; see the ClinCalc reconciliation section above.",
         ]
     else:
         lines.append("None found.")
@@ -304,8 +401,10 @@ def build() -> str:
         f"{sum(1 for i in none if types[i]=='generic')} generic, "
         f"{sum(1 for i in none if types[i]=='brand')} brand. The gap skews generic --",
         "coined INN names are exactly what neither a general dictionary, a consumer",
-        "drug-information site, nor an older pharmacy-school teaching list (UMich's,",
-        "which barely overlaps DOSE's newer names) reliably records. See",
+        "drug-information site, an older pharmacy-school teaching list (UMich's,",
+        "which barely overlaps DOSE's newer names), nor a commonly-prescribed-drugs",
+        "pronunciation page (ClinCalc's, which skews the same way) reliably records.",
+        "See",
         "`data/collected/HANDOFF_AUDIO_COLLECTION.md` for sources tried and the",
         "paid/licensed options (USP Dictionary of USAN, a citable MedlinePlus key,",
         "a Drugs.com data license) that would close the rest.",
