@@ -48,6 +48,27 @@ def ingredients() -> dict[str, str]:
     return out
 
 
+def _respelling_span_to_variant(raw: str) -> tuple[str, str]:
+    """A respelling from Gemini -> an (ARPABET, IPA) pair.
+
+    Usually `raw` is one hyphenated word ("bik-TEG-ra-vir"). For a
+    multi-word ingredient, Gemini often answers with one hyphen-group per
+    word, space-separated ("pra-DEM-a-jeen ZAM-i-KER-a-sel" for
+    "prademagene zamikeracel") -- `_extract_all_respellings` in
+    gemini_grounded.py captures that whole run as a single candidate
+    specifically so this doesn't happen, but converting it needs each
+    word's hyphen-group run through `respell_to_arpabet_ipa` on its own and
+    the results concatenated, the same way `_join` does for a name resolved
+    word by word. Splitting the whole string on "-" instead would collapse
+    two words' syllables into one nonsense chain.
+    """
+    parts = raw.split()
+    variants = [respell_to_arpabet_ipa(p.split("-")) for p in parts]
+    if len(variants) == 1:
+        return variants[0]
+    return " ".join(v[0] for v in variants), "".join(v[1] for v in variants)
+
+
 def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict], str] | None:
     """Gemini-retrieved, Google-Search-grounded respellings for `word`.
 
@@ -72,7 +93,7 @@ def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict],
         raw_label = None
         if claim.respelling:
             try:
-                variant = respell_to_arpabet_ipa(claim.respelling.split("-"))
+                variant = _respelling_span_to_variant(claim.respelling)
                 raw_label = claim.respelling
             except WikiNotationError:
                 variant = None
@@ -118,9 +139,20 @@ def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
 
 
 def _dailymed_variant(raw: str) -> tuple[str, str] | None:
-    """A DailyMed source dict's raw USAN prime-stress text (`"am bel' vist"`)
-    -> an (ARPABET, IPA) pair, via the same stress-token conversion the
-    Gemini-grounded path uses for the identical notation."""
+    """A DailyMed source dict's raw respelling text -> an (ARPABET, IPA)
+    pair. Medication Guides use two different notations for this and
+    `dailymed_pronunciation` doesn't distinguish them, so both are tried
+    here: the drugs.com/WebMD-style hyphenated form, already stress-marked
+    by capitalization (`"ky-ZAH-treks"`, `"YOU-vih-well"`), and the USAN
+    prime-stress form (`"am bel' vist"`), which needs the same stress-token
+    conversion the Gemini-grounded path uses for that notation.
+    """
+    if "-" in raw and "'" not in raw and "’" not in raw:
+        try:
+            return respell_to_arpabet_ipa(raw.split("-"))
+        except WikiNotationError:
+            return None
+
     respelling = gemini_grounded.stress_tokens_to_respelling(raw.split())
     if not respelling:
         return None
@@ -387,13 +419,24 @@ def coverage_report(records: list[dict]) -> str:
         "",
         "## Blocked or paywalled sources ranked by expected gain",
         "",
-        "Gemini/Google-Search grounding closed most of the old `low` tier, generic",
-        "and brand alike (it found real citations for coined INN names like",
-        "elranatamab-bcmm and risankizumab-rzaa just as readily as for brand names).",
-        f"What's left ({len(by_tier['low'])} ingredients) skews brand-name-heavy --",
-        "these are mostly very recent approvals with essentially no indexed",
-        "pronunciation content anywhere on the public web yet, not a gap this",
-        "pipeline's extraction or verification logic is failing to close.",
+        "Gemini/Google-Search grounding plus DailyMed closed all but a handful of the",
+        "old `low` tier, generic and brand alike (real citations turned up for coined",
+        "INN names like elranatamab-bcmm and risankizumab-rzaa just as readily as for",
+        f"brand names). What's left ({len(by_tier['low'])} ingredients) was checked",
+        "individually, not just left to the pipeline's word: Vyglxia (troriluzole)",
+        "has no FDA approval at all yet (a Complete Response Letter, not approval, as",
+        "of this build) so no official pronunciation can exist; Wakix's full FDA label",
+        "text contains no pronunciation anywhere (confirmed by a direct openFDA",
+        "full-text search), and the only web hit is an unreliable YouTube auto-",
+        "caption (\"wake cakes\"), correctly discarded rather than recorded as data;",
+        "cipepofol's only hit is actually Cypsedo's (its own brand name's)",
+        "pronunciation mislabeled, correctly rejected as not describing this word; and",
+        "\"histidinate\" (half of copper histidinate) has no source of its own --",
+        "Gemini's one attempt explicitly inferred it by analogy from \"histidine\" (a",
+        "related but different word) rather than citing anything for \"histidinate\"",
+        "itself, and is discarded for saying so (see `_is_speculative` in",
+        "gemini_grounded.py). These four are a genuine absence of published",
+        "pronunciation, not a pipeline gap.",
         "",
         "1. **USP Dictionary of USAN and International Drug Names** -- the compiled,",
         "   official pronunciation reference for essentially every USAN/INN generic",

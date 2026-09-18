@@ -249,16 +249,25 @@ _RESPELL_PATTERN = re.compile(
     # this is deliberately permissive on the regex side -- `_judge_format`
     # is what actually screens out a false positive like "well-known", not
     # a tighter regex.
+    #
+    # The 4th branch (a *run* of 2+ hyphen-groups separated by single
+    # spaces) comes before the bare single-group branch so it wins at the
+    # same starting position: a two-word generic name's answer is often one
+    # hyphen-group per word ("pra-DEM-a-jeen ZAM-i-KER-a-sel" for
+    # "prademagene zamikeracel") and matching only the first bare group used
+    # to silently record just half the name's pronunciation as if it were
+    # the whole thing.
     r'"([\wÀ-ʯ\']+(?:[-–][\wÀ-ʯ\']+){1,7})"|'
     r"\(([\wÀ-ʯ\' ]+(?:[-–][\wÀ-ʯ\']+){1,7})\)|"
+    r"\b(\w+(?:[-–]\w+){1,7}(?:\s+\w+(?:[-–]\w+){1,7})+)\b|"
     r"\b(\w+(?:[-–]\w+){1,7})\b"
 )
 
 _IPA_PATTERN = re.compile(r"/([^/\s][^/]{1,40}[^/\s])/")
 
 
-def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | None:
-    """Pull a hyphenated respelling candidate out of a claim segment.
+def _extract_all_respellings(segment_text: str, exclude: str | None = None) -> list[str]:
+    """Every hyphenated respelling candidate in a claim segment, in order.
 
     Stress is not always marked by capitalization ("ad-kee" is as valid a
     respelling as "bik-TEG-ra-vir") -- the only structural requirement is
@@ -268,27 +277,46 @@ def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | 
     the real respelling (`the drug "elranatamab-bcmm" is "El-rah-NAH-tah-
     mab"`) -- when that echo itself has an FDA-suffix hyphen, it satisfies
     this regex and, being first in the sentence, used to get returned ahead
-    of the actual respelling. `exclude` (the source word) drops that echo.
+    of the actual respelling if only the first match were kept. `exclude`
+    (the source word) drops that echo.
 
-    The comparison is case-insensitive but hyphen-preserving, not the loose
-    `_normalize()` (which also strips hyphens/spaces): a real respelling
-    like "VRAY-lar" normalizes to the same string as its source word
-    "Vraylar" purely because the hyphen and case differences wash out, and
-    that would wrongly exclude it as "just the name" -- an actual echo
+    The exclude comparison is case-insensitive but hyphen-preserving, not
+    the loose `_normalize()` (which also strips hyphens/spaces): a real
+    respelling like "VRAY-lar" normalizes to the same string as its source
+    word "Vraylar" purely because the hyphen and case differences wash out,
+    and that would wrongly exclude it as "just the name" -- an actual echo
     reproduces the source word's own spelling verbatim (case aside), it
     doesn't happen to collide with it after stripping punctuation.
+
+    Returning every match, not just the first, matters for a compound
+    answer like `"in-SUL-in EYE-koe-dek"` when asking specifically about
+    "icodec-abae": the first hyphen-group belongs to a different word
+    ("insulin") than the one being asked about, and only trying candidates
+    in order until one passes the format judge (see `_candidates` in
+    `verified_claims`) recovers the second, correct one.
     """
     text = segment_text.replace("*", "")
     exclude_ci = exclude.strip().lower() if exclude else None
+    out: list[str] = []
+    seen: set[str] = set()
     for m in _RESPELL_PATTERN.finditer(text):
-        candidate = m.group(1) or m.group(2) or m.group(3)
+        candidate = m.group(1) or m.group(2) or m.group(3) or m.group(4)
         if not candidate or "-" not in candidate.replace("–", "-"):
             continue
         candidate = candidate.replace("–", "-").strip()
         if exclude_ci and candidate.lower() == exclude_ci:
             continue
-        return candidate
-    return None
+        if candidate.lower() in seen:
+            continue
+        seen.add(candidate.lower())
+        out.append(candidate)
+    return out
+
+
+def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | None:
+    """The first candidate from `_extract_all_respellings`, or None."""
+    matches = _extract_all_respellings(segment_text, exclude=exclude)
+    return matches[0] if matches else None
 
 
 _STRESS_MARK = r"(?:''|\"|['’])"
@@ -297,6 +325,7 @@ _STRESS_STOPWORDS = {
     "is", "a", "an", "the", "of", "or", "and", "in", "on", "at", "as",
     "to", "was", "were", "it", "be", "by", "for", "with",
 }
+_QUOTED_WORD = re.compile(r'"([a-zA-Z]+(?:\s+[a-zA-Z]+)*)"')
 
 
 def _stress_kind(token: str) -> str | None:
@@ -308,6 +337,23 @@ def _stress_kind(token: str) -> str | None:
     if token.endswith("'") or token.endswith("’"):
         return "primary"
     return None
+
+
+def _quoted_words(text: str) -> set[str]:
+    """Every word that appears as, or as the last word of, an ordinary
+    double-quoted mention in `text` -- e.g. `{"sunirine"}` from `the drug
+    "sunirine" in the name "pivekimab sunirine"`. A bare `"` is genuinely
+    the USAN double-prime stress glyph in some Gemini answers ("dor\" a
+    vir' een"), but Gemini also just quotes plain words constantly, and a
+    token immediately before one of *those* closing quotes ("sunirine\"")
+    is indistinguishable from a real double-prime syllable by punctuation
+    alone. This set lets the stopword-stripping loop drop such an echoed
+    word instead of misreading it as a stress-marked syllable.
+    """
+    words: set[str] = set()
+    for phrase in _QUOTED_WORD.findall(text):
+        words.add(phrase.split()[-1].lower())
+    return words
 
 
 def stress_tokens_to_respelling(tokens: list[str]) -> str | None:
@@ -350,12 +396,15 @@ def _extract_stress_respelling(text: str) -> str | None:
     firing on ordinary prose.
     """
     text = text.replace("*", "")
+    quoted = _quoted_words(text)
     for m in re.finditer(
         rf"(?:^|[\s(\"])((?:[a-zA-Z]{{1,8}}{_STRESS_MARK}?\s+){{1,5}}[a-zA-Z]{{1,8}}{_STRESS_MARK}?)(?=[\s.)\"]|$)",
         text,
     ):
         tokens = m.group(1).split()
-        while tokens and re.sub(r"[^a-zA-Z]", "", tokens[0]).lower() in _STRESS_STOPWORDS:
+        while tokens and re.sub(r"[^a-zA-Z\"]", "", tokens[0]).lower().rstrip('"') in (
+            _STRESS_STOPWORDS | quoted
+        ):
             tokens = tokens[1:]
         respelling = stress_tokens_to_respelling(tokens)
         if respelling:
@@ -468,6 +517,30 @@ def _judge_format(word: str, respelling: str | None, ipa: str | None) -> bool:
     return valid
 
 
+_SPECULATION_PATTERN = re.compile(
+    r"was not found|not found in the search|no direct pronunciation|"
+    r"highly probable|would likely be|is likely (?:to be|pronounced)|"
+    r"probably (?:pronounced|follows)|could not find|couldn't find|"
+    r"unable to find|does not appear to have|no specific pronunciation|"
+    r"i couldn't find",
+    re.IGNORECASE,
+)
+
+
+def _is_speculative(text: str) -> bool:
+    """True when Gemini's own answer admits it found no direct source and
+    is instead guessing by analogy -- confirmed on a real case: asked about
+    "histidinate", it answered by inferring from "histidine" (a different,
+    if related, word) with "It is highly probable that... would likely be
+    **HIS-ti-dih-nate**", citing sources that were for "histidine", not
+    "histidinate". The citations were real, but the claim they were made to
+    support was not what they said -- this pipeline's whole premise is
+    retrieval, not inference, so an answer that admits to inferring must
+    never be treated as if it cited something.
+    """
+    return bool(_SPECULATION_PATTERN.search(text))
+
+
 def verified_claims(name: str) -> list[VerifiedClaim]:
     """Every grounded claim for `name` backed by a real Google Search
     grounding citation and passing the LLM format/plausibility check.
@@ -482,7 +555,7 @@ def verified_claims(name: str) -> list[VerifiedClaim]:
     independently-retrieved source.
     """
     answer = grounded_answer(name)
-    if not answer or not answer.chunks:
+    if not answer or not answer.chunks or _is_speculative(answer.text):
         return []
 
     resolved = {i: _resolve_redirect(c.redirect_uri) for i, c in enumerate(answer.chunks)}
@@ -518,19 +591,29 @@ def verified_claims(name: str) -> list[VerifiedClaim]:
 
     def _candidates(text: str) -> list[str]:
         """Every distinct respelling candidate across all three notation
-        styles this pipeline parses. Chaining the three extractors with
-        `or` (the earlier version of this function) let an early, wrong
-        match block a later, correct one from ever being tried -- e.g. the
-        plain hyphen pattern matching a citation's document number ("USAN
-        NO-08") ahead of the real stress-marked respelling later in the
-        same sentence ("zip'' ah ler' ti nib"), for Zipalertinib. `emit`
-        already rejects a bad candidate via the format judge, so there is
-        no harm in offering it several candidates instead of just the
-        first regex's opinion.
+        styles this pipeline parses, and every hyphenated match in the
+        text, not just the first. Taking only the first match (the earlier
+        version of this function, whether by `or`-chaining extractors or by
+        `_extract_respelling` itself returning early) let an early, wrong
+        match block a later, correct one from ever being tried:
+          - the plain hyphen pattern matching a citation's document number
+            ("USAN NO-08") ahead of the real stress-marked respelling later
+            in the same sentence ("zip'' ah ler' ti nib"), for Zipalertinib.
+          - a parenthetical aside that happens to end in a hyphenated word
+            ("(as part of the full drug name ... inbakicept-pmln)") matching
+            ahead of the real quoted answer ("in-BAK-ih-sept") later on.
+          - a compound answer for a two-word name ("in-SUL-in EYE-koe-dek")
+            giving up the FIRST word's respelling when asked specifically
+            about the SECOND ("icodec-abae") -- only the second hyphen-group
+            is a plausible answer for that word, and only trying every group
+            lets the format judge find it.
+        `emit` already rejects a bad candidate via the format judge, so
+        there is no harm in offering it every candidate instead of just one
+        regex's first opinion.
         """
-        out_candidates = []
+        out_candidates: list[str] = []
         for candidate in (
-            _extract_respelling(text, exclude=name),
+            *_extract_all_respellings(text, exclude=name),
             _extract_stress_respelling(text),
             _extract_caps_stress_respelling(text),
         ):

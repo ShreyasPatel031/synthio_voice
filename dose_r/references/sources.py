@@ -352,12 +352,25 @@ DAILYMED_LOOKUP = "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm"
 # The respelling always sits in parentheses right after the drug's own name
 # in a Medication Guide's title line, e.g. "AMBELVIST (am bel' vist)" --
 # match the name, then require the parenthetical to have *some* internal
-# structure (a space, or a stress prime) so a bare repeat of the generic
-# name in parens right after ("AMBELVIST (gadoquatrane)") isn't mistaken
-# for one.
+# structure (a space, hyphen, or stress prime) so a bare repeat of the
+# generic name in parens right after ("AMBELVIST (gadoquatrane)") isn't
+# mistaken for one. A registered/trademark mark often sits between the name
+# and the parenthetical too (`YUVIWEL ® (YOU-vih-well)`, once its own
+# `<span>` tag is stripped down to the bare glyph) -- `[®™\s]*` absorbs it.
+#
+# The inner character class originally left out `-`, which is the single
+# most common respelling separator (`YOU-vih-well`, `ky-ZAH-treks`,
+# `rev-tor-pik`) -- every hyphenated respelling silently failed to match at
+# all, while a single-word or space-only parenthetical (a repeated generic
+# name, a dosing note) matched fine and masked the miss.
+#
+# Not every Medication Guide uses parentheses either -- `LYNAVOY [LIN-ah-
+# voy]` brackets it -- so both delimiters are tried, each requiring its own
+# matching close so `(foo]` can't match.
 def _dailymed_respell_pattern(name: str) -> re.Pattern:
+    inner = r"[a-zA-Z][a-zA-Z\"'’ \-]{1,60}?"
     return re.compile(
-        rf"\b{re.escape(name)}\s*\(\s*([a-zA-Z][a-zA-Z\"'’ ]{{1,60}}?)\s*\)",
+        rf"\b{re.escape(name)}[®™\s]*(?:\(\s*({inner})\s*\)|\[\s*({inner})\s*\])",
         re.IGNORECASE,
     )
 
@@ -400,6 +413,8 @@ def dailymed_pronunciation(name: str) -> dict | None:
     if hit is not None:
         return hit or None
 
+    import html as html_module  # stdlib entity decoder; shadowed by no local var here
+
     from . import gemini_grounded  # local import: keeps this a soft, in-package dependency
 
     pattern = _dailymed_respell_pattern(name)
@@ -408,18 +423,27 @@ def dailymed_pronunciation(name: str) -> dict | None:
         url = f"{DAILYMED_LOOKUP}?setid={setid}"
         try:
             req = urllib.request.Request(url, headers=UA)
-            html = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
+            raw_html = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
         except Exception:
             continue
+
+        # A registered-trademark mark sits between the name and its
+        # respelling as its own tag (`YUVIWEL<span class="Sup">®</span>
+        # (YOU-vih-well)`), which silently defeated a regex applied to the
+        # raw markup -- stripping tags first (and decoding entities so a
+        # curly apostrophe inside the respelling itself, e.g. an escaped
+        # `&#8217;`, matches the plain apostrophe this pattern expects)
+        # finds it.
+        text = html_module.unescape(re.sub(r"<[^>]+>", " ", raw_html))
 
         # The brand name alone (no respelling) recurs throughout the body
         # text ("AMBELVIST (gadoquatrane) injection is..."), so the FIRST
         # match in the document is usually not the one with a respelling --
         # that one lives in the Medication Guide's title line, further
         # down. Scan every match with real structure and judge each one.
-        for m in pattern.finditer(html):
-            respelling = m.group(1).strip()
-            if " " not in respelling and "'" not in respelling and "’" not in respelling:
+        for m in pattern.finditer(text):
+            respelling = (m.group(1) or m.group(2)).strip()
+            if not any(c in respelling for c in (" ", "-", "'", "’")):
                 continue
             if gemini_grounded._judge_format(name, respelling, None):
                 result = {"name": "dailymed", "raw": respelling, "url": url}
