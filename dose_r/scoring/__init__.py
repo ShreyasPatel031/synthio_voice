@@ -6,11 +6,13 @@ from .base import PASS_THRESHOLD, ScoreResult, Scorer
 from .standin import StandInScorer
 from .asr_roundtrip import AsrRoundTripScorer
 from .llm_panel import AudioLLMPanelScorer
+from .speech_similarity import SpeechSimilarityScorer
 
 _REGISTRY: dict[str, type[Scorer]] = {
     "standin": StandInScorer,
     "asr-roundtrip": AsrRoundTripScorer,
     "llm-panel": AudioLLMPanelScorer,
+    "speech-similarity": SpeechSimilarityScorer,
 }
 
 
@@ -30,5 +32,5 @@ def available_scorers() -> list[str]:
 
 
 __all__ = ["PASS_THRESHOLD", "ScoreResult", "Scorer", "StandInScorer",
-           "AsrRoundTripScorer", "AudioLLMPanelScorer", "register_scorer",
-           "build_scorer", "available_scorers"]
+           "AsrRoundTripScorer", "AudioLLMPanelScorer", "SpeechSimilarityScorer",
+           "register_scorer", "build_scorer", "available_scorers"]

@@ -549,21 +549,27 @@ def _make_wav(path, *, channels=1, rate=16000, n_frames=800):
         w.writeframes(struct.pack(f"<{n_frames * channels}h", *([0] * (n_frames * channels))))
 
 
-def test_available_clips_prefers_drugs_com_over_merriam_webster(tmp_path):
+def test_available_clips_prefers_merriam_webster_over_drugs_com(tmp_path):
+    """Merriam-Webster is preferred: it is an actual pronouncing dictionary
+    (carries a written respelling) rather than just an audio file. Confirmed
+    on real data -- Drugs.com's and MW's Aspirin clips sound different, but
+    MW's own respelling "as-p(schwa-)rin" documents the schwa as optional, so
+    the two clips are the same entry's accepted variants, not a conflict."""
     from dose_r.references import reference_clips
 
     wav = tmp_path / "clip.wav"
     _make_wav(wav)
     manifest = _write_manifest(tmp_path, [
-        {"ingredient": "Abilify", "name_type": "brand", "source": "merriam-webster",
-         "coverage": "full", "local_path": str(wav), "format": "wav",
-         "sample_rate_hz": 16000, "duration_s": 1.0},
         {"ingredient": "Abilify", "name_type": "brand", "source": "drugs.com",
          "coverage": "full", "local_path": str(wav), "format": "wav",
          "sample_rate_hz": 16000, "duration_s": 1.0},
+        {"ingredient": "Abilify", "name_type": "brand", "source": "merriam-webster",
+         "coverage": "full", "local_path": str(wav), "format": "wav",
+         "sample_rate_hz": 16000, "duration_s": 1.0, "respelling": "uh-BIL-uh-fy"},
     ])
     clips = reference_clips.available_clips(manifest)
-    assert clips["Abilify"].source == "drugs.com"
+    assert clips["Abilify"].source == "merriam-webster"
+    assert clips["Abilify"].respelling == "uh-BIL-uh-fy"
 
 
 def test_available_clips_skips_records_whose_file_is_missing(tmp_path):
@@ -1052,3 +1058,68 @@ def test_locate_span_with_timing_finds_matching_word():
     ]
     result = _locate_span_with_timing("Take Advil now.", "Advil", words)
     assert result == (0.3, 0.9)
+
+
+def test_speech_similarity_scorer_no_reference_clip_is_unscoreable():
+    from dose_r.scoring.speech_similarity import SpeechSimilarityScorer
+
+    item = dataset.DoseItem(drug="Zzznotreal", name_type="generic", sentence="Take Zzznotreal now.")
+    scorer = SpeechSimilarityScorer(reference_clips={})  # empty -- nothing available
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is False
+    assert "no reference clip" in result.error
+
+
+def test_speech_similarity_scorer_synthesis_failure_scores_zero_not_none():
+    from dose_r.adapters.base import SynthesisResult
+    from dose_r.scoring.speech_similarity import SpeechSimilarityScorer
+
+    item = dataset.load_items()[0]
+    scorer = SpeechSimilarityScorer(reference_clips={})
+    failed = SynthesisResult(system_id="x", item_id=item.item_id, ok=False, error="boom")
+
+    result = scorer.score(item, failed)
+
+    assert result.score == 0.0 and result.scoreable is True
+
+
+def test_speech_similarity_scorer_missing_span_is_unscoreable(monkeypatch):
+    from dose_r.references.reference_clips import ReferenceClip
+    from dose_r.scoring.speech_similarity import SpeechSimilarityScorer
+
+    item = dataset.load_items()[0]
+    clip = ReferenceClip(item.drug, item.name_type, "drugs.com", Path("/x.wav"), "wav", 16000, 1.0)
+    scorer = SpeechSimilarityScorer(reference_clips={item.drug: clip})
+
+    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_drug_span",
+                        lambda *a, **k: None)  # span not locatable
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is False
+    assert "could not locate" in result.error
+
+
+def test_speech_similarity_scorer_end_to_end_with_mocked_embeddings(monkeypatch):
+    import numpy as np
+    from dose_r.references.reference_clips import ReferenceClip
+    from dose_r.scoring.speech_similarity import SpeechSimilarityScorer
+
+    item = dataset.load_items()[0]
+    clip = ReferenceClip(item.drug, item.name_type, "merriam-webster", Path("/x.mp3"),
+                         "mp3", 16000, 1.5, respelling="uh-BIL-uh-fy")
+    scorer = SpeechSimilarityScorer(reference_clips={item.drug: clip})
+
+    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_drug_span",
+                        lambda *a, **k: b"fake-wav-bytes")
+    identical = np.random.RandomState(0).randn(10, 8)
+    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_frame_embeddings",
+                        lambda source: identical)
+
+    result = scorer.score(item, _mock_synth_result(item.item_id))
+
+    assert result.scoreable is True
+    assert result.score == pytest.approx(5.0, abs=1e-2)
+    assert result.metadata["reference_source"] == "merriam-webster"
+    assert result.metadata["reference_respelling"] == "uh-BIL-uh-fy"

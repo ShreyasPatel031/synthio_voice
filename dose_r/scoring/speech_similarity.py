@@ -83,6 +83,25 @@ This is a proxy, not ground truth
   check should be re-run on a larger sample before this caveat is either
   resolved or promoted to a known limitation.
 
+Reference source: Merriam-Webster preferred, with a real trade-off
+----------------------------------------------------------------------
+`dose_r.references.reference_clips` prefers Merriam-Webster over Drugs.com
+when both exist -- it is an actual pronouncing dictionary (carries a written
+respelling, e.g. aspirin's "as-p(schwa-)rin" documents the schwa as an
+explicitly optional variant, which is what resolved the Aspirin
+voice-invariance outlier as a real-but-accepted variant rather than an error).
+
+That preference has a measured cost: Merriam-Webster's own clips run
+noticeably longer than Drugs.com's for the same word (WS1's own
+`AUDIO_COVERAGE.md`: 1.3-2x, described as a slower teaching-recording pace).
+Confirmed here on Abilify: scoring against Drugs.com's reference (1.05s) gave
+3.22; the identical synthesized clip against Merriam-Webster's reference
+(2.14s) gives 2.60. That is a large swing driven by which "correct" reference
+was picked, not by anything about the candidate audio -- a real limitation of
+comparing against a single reference recording's pace, not fixed by this
+module. Treat scores as comparative across systems scored against the SAME
+reference, not as an absolute, pace-independent pronunciation measure.
+
 Cost
 ----
 Local model, CPU inference, no network calls, no per-clip spend -- same as
@@ -94,9 +113,16 @@ from __future__ import annotations
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import librosa
 import numpy as np
+
+from ..adapters.base import SynthesisResult
+from ..audio_span import extract_drug_span
+from ..dataset import DoseItem
+from ..references.reference_clips import ReferenceClip, available_clips
+from .base import ScoreResult, Scorer
 
 MODEL_ID = "facebook/wav2vec2-base"
 _TARGET_SR = 16_000
@@ -198,3 +224,87 @@ def score_speech_similarity(feats_a: np.ndarray, feats_b: np.ndarray) -> tuple[f
     result = speech_bertscore(feats_a, feats_b)
     score = round(5.0 * min(max(result["f1"], 0.0), 1.0), 3)
     return score, result
+
+
+class SpeechSimilarityScorer(Scorer):
+    """Path 2: audio-to-audio pronunciation similarity against a human
+    reference clip. See module docstring for the method, its validation
+    results (mixed -- one open caveat on voice-invariance calibration), and
+    what it does and doesn't establish.
+    """
+
+    measures_pronunciation = True
+
+    def __init__(self, *, reference_clips: dict[str, ReferenceClip] | None = None,
+                 stt_session: Any = None):
+        # Looked up once per scorer instance, not per item -- available_clips()
+        # reads the whole manifest and stats every candidate file on disk;
+        # reusing it across a run avoids doing that once per of 1000+ items.
+        self._clips = reference_clips if reference_clips is not None else available_clips()
+        self._stt_session = stt_session
+
+    @property
+    def scorer_id(self) -> str:
+        return "speech-similarity-v1"
+
+    def score(self, item: DoseItem, result: SynthesisResult) -> ScoreResult:
+        base = dict(scorer_id=self.scorer_id, item_id=item.item_id,
+                    system_id=result.system_id)
+
+        if not result.ok or not result.audio:
+            return ScoreResult(**base, score=0.0, scoreable=True,
+                               error=result.error or "no audio returned",
+                               notes="synthesis failed upstream")
+
+        clip = self._clips.get(item.drug)
+        if clip is None:
+            return ScoreResult(
+                **base, score=None, scoreable=False,
+                error=f"no reference clip available for {item.drug!r}",
+                notes="Path 2 covers only ingredients with a committed/fetched "
+                      "human reference clip (~65% currently: 179/284).",
+            )
+
+        try:
+            span = extract_drug_span(result.audio, item.sentence, item.drug,
+                                     session=self._stt_session)
+        except Exception as exc:
+            return ScoreResult(**base, score=None, scoreable=False,
+                               error=f"drug-span extraction failed: {exc}")
+        if span is None:
+            return ScoreResult(
+                **base, score=None, scoreable=False,
+                error="could not locate the drug name's audio span in the "
+                      "synthesized clip's transcript",
+            )
+
+        try:
+            feats_synth = extract_frame_embeddings(span)
+            feats_ref = extract_frame_embeddings(clip.path)
+        except Exception as exc:
+            return ScoreResult(**base, score=None, scoreable=False,
+                               error=f"embedding extraction failed: {exc}")
+
+        score, components = score_speech_similarity(feats_synth, feats_ref)
+
+        return ScoreResult(
+            **base, score=score, components=components,
+            metadata={
+                "reference_source": clip.source,
+                "reference_respelling": clip.respelling,
+                "reference_duration_s": clip.duration_s,
+                "layer": _LAYER,
+            },
+            notes=(
+                "Audio-to-audio comparison (SpeechBERTScore-style) against a "
+                f"{clip.source} human reference clip -- no ASR, no LLM, no "
+                "phoneme decoding involved. Validated on a small slice: clean "
+                "discrimination and a clear win over a naive MFCC/DTW "
+                "baseline, but voice-invariance (two humans, same word) had "
+                "one unexplained low outlier out of five in that slice -- "
+                "treat any single score as noisier than the discrimination "
+                "result alone would suggest. Covers only ~65% of ingredients "
+                "(those with a reference clip). Not Workstream 1's hybrid "
+                "judge."
+            ),
+        )

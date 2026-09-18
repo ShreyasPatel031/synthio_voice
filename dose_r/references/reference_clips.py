@@ -1,16 +1,18 @@
 """Selecting and transcribing the human reference-pronunciation clips.
 
 Workstream 1's manifest (`data/reference_audio/manifest.jsonl`) lists clips from
-three sources -- Drugs.com, Merriam-Webster, UMich -- but only the Drugs.com WAVs
-are actually committed to git. The other two are gitignored deliberately (their
-own .gitignore: Merriam-Webster's MP3s are re-fetchable from the `source_url` in
-each manifest record, so keeping a copy in git is redundant; the same is true in
-spirit for UMich). That means `local_path` in a Merriam-Webster or UMich record
-points to a file that exists in Workstream 1's container, not in this one.
+three sources -- Drugs.com, Merriam-Webster, UMich. Only the Drugs.com WAVs are
+committed to git on their branch (MW/UMich are gitignored there as re-fetchable
+from each record's public `source_url`). This repo fetches Merriam-Webster's 82
+clips directly from that URL (small, public, per-word audio files from their
+dictionary API) into `data/reference_audio/mw/`, matching the manifest's
+`local_path` convention so `available_clips()` needs no special-casing. UMich's
+clips are not fetched (no direct per-clip URL recorded, only a Wayback Machine
+page) and remain a known coverage gap.
 
-This module only ever reads a clip whose `local_path` resolves on disk, so those
-un-committed records are silently skipped rather than treated as an error --
-they are a known gap, not a bug (see `docs/REFERENCE_AUDIO_GROUNDING.md`).
+This module only ever reads a clip whose `local_path` resolves on disk, so any
+still-missing record is silently skipped rather than treated as an error --
+a known gap, not a bug (see `docs/REFERENCE_AUDIO_GROUNDING.md`).
 """
 
 from __future__ import annotations
@@ -25,11 +27,17 @@ from . import audio_manifest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Preference order when more than one source has a usable clip for the same
-# ingredient. Drugs.com is the only source verified for every clip in this
-# environment (collected by hand because the site blocks automated fetches);
-# preferring it first means the "which clip did we grade against" choice does
-# not silently change if Merriam-Webster/UMich clips are pulled in later.
-_SOURCE_PRIORITY = ("drugs.com", "merriam-webster", "umich")
+# ingredient. Merriam-Webster is preferred first: it is an actual pronouncing
+# dictionary, not just an audio file -- its manifest record carries a written
+# respelling (e.g. aspirin: "as-p(schwa-)rin", the parenthetical marking the
+# schwa as an explicitly optional, dictionary-documented variant) that lets a
+# disagreement between sources be checked against a real authority instead of
+# guessed at. Concretely: Drugs.com's and Merriam-Webster's Aspirin clips
+# sound different (elided vs. unelided middle syllable) -- checking MW's own
+# transcription confirmed both are the SAME dictionary entry's accepted
+# variants, not a real conflict. Drugs.com remains the fallback for the
+# ~33% of ingredients (95/284 per AUDIO_COVERAGE.md) that only it covers.
+_SOURCE_PRIORITY = ("merriam-webster", "drugs.com", "umich")
 
 
 @dataclass(frozen=True)
@@ -41,6 +49,11 @@ class ReferenceClip:
     audio_format: str
     sample_rate_hz: int
     duration_s: float
+    # Written dictionary respelling, e.g. "as-p(schwa-)rin" for aspirin -- only
+    # Merriam-Webster records carry this. Real provenance for why a given clip
+    # was treated as the reference, not just an audio file with no transcript
+    # behind it. None for sources (Drugs.com, UMich) that don't provide one.
+    respelling: str | None = None
 
 
 def _resolve(record: dict[str, Any]) -> Path:
@@ -67,6 +80,7 @@ def available_clips(
             ingredient=ingredient, name_type=best["name_type"], source=best["source"],
             path=_resolve(best), audio_format=best["format"],
             sample_rate_hz=best["sample_rate_hz"], duration_s=best["duration_s"],
+            respelling=best.get("respelling"),
         )
     return out
 
