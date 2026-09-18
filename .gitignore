@@ -22,3 +22,4 @@ artifacts/
 # Cached source-pull responses; rebuildable, keyed per ingredient
 dose_r/references/.cache/
 dose_r/strata/.fda_cache.json
+data/collected/
