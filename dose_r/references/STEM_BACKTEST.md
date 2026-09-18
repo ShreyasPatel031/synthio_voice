@@ -20,17 +20,18 @@ lower (better) normalized PEU error than plain `g2p.py`.
 | -prazole | 3 | 0.6629 | 0.4515 | +0.2114 | kept |
 | -sartan | 1 | 0.5000 | 0.2000 | +0.3000 | kept |
 | -statin | 2 | 1.2451 | 0.7605 | +0.4846 | kept |
-| -tide | 4 | 0.9431 | 0.7679 | +0.1752 | kept |
-| -tinib | 1 | 0.6011 | 0.5830 | +0.0182 | kept |
-| -umab | 2 | 1.3682 | 1.5134 | -0.1452 | DROPPED -- no measured benefit |
-| -zumab | 1 | 0.6959 | 0.5377 | +0.1583 | kept |
+| -tide | 5 | 1.2166 | 1.1735 | +0.0431 | kept |
+| -tinib | 4 | 1.1333 | 1.1195 | +0.0137 | kept |
+| -umab | 4 | 1.8258 | 1.9989 | -0.1731 | DROPPED -- no measured benefit |
+| -vir | 3 | 2.2572 | 2.3478 | -0.0906 | DROPPED -- no measured benefit |
+| -zumab | 3 | 1.6954 | 2.0375 | -0.3421 | DROPPED -- no measured benefit |
 
 ## Aggregate, kept stems only
 
-14 sourced examples across 7 stems.
-Plain `g2p.py` average normalized error: 0.8221 PEU.
-Stem engine average normalized error: 0.6098 PEU.
-Average improvement: +0.2123 PEU (26% reduction).
+17 sourced examples across 6 stems.
+Plain `g2p.py` average normalized error: 1.0033 PEU.
+Stem engine average normalized error: 0.8642 PEU.
+Average improvement: +0.1391 PEU (14% reduction).
 
 ## Examples
 
@@ -66,6 +67,7 @@ Average improvement: +0.2123 PEU (26% reduction).
 
 | Ingredient | g2p PEU | stem PEU | improvement |
 | --- | --- | --- | --- |
+| bulevirtide-gmod | 2.3106 | 2.7960 | -0.4855 |
 | dulaglutide | 1.1171 | 0.7814 | +0.3357 |
 | exenatide | 1.5123 | 1.3884 | +0.1238 |
 | semaglutide | 0.5390 | 0.4215 | +0.1175 |
@@ -75,24 +77,41 @@ Average improvement: +0.2123 PEU (26% reduction).
 
 | Ingredient | g2p PEU | stem PEU | improvement |
 | --- | --- | --- | --- |
+| ensartinib | 0.2175 | 0.1000 | +0.1175 |
+| osimertinib | 1.6039 | 1.6919 | -0.0880 |
 | tofacitinib | 0.6011 | 0.5830 | +0.0182 |
+| upadacitinib | 2.1105 | 2.1033 | +0.0072 |
 
 ### -umab
 
 | Ingredient | g2p PEU | stem PEU | improvement |
 | --- | --- | --- | --- |
 | adalimumab | 1.3445 | 1.2848 | +0.0597 |
+| canakinumab | 3.1704 | 3.3098 | -0.1394 |
+| durvalumab | 1.3964 | 1.6590 | -0.2626 |
 | secukinumab | 1.3919 | 1.7420 | -0.3501 |
+
+### -vir
+
+| Ingredient | g2p PEU | stem PEU | improvement |
+| --- | --- | --- | --- |
+| bictegravir | 1.1076 | 0.7779 | +0.3298 |
+| ensitrelvir | 1.0104 | 0.5000 | +0.5104 |
+| islatravir | 4.6537 | 5.7656 | -1.1119 |
 
 ### -zumab
 
 | Ingredient | g2p PEU | stem PEU | improvement |
 | --- | --- | --- | --- |
+| bevacizumab-vikg | 3.6729 | 4.7913 | -1.1184 |
 | omalizumab | 0.6959 | 0.5377 | +0.1583 |
+| teplizumab-mzwv | 0.7175 | 0.7837 | -0.0662 |
 
 ## Dropped stems
 
-- `-umab`: average improvement -0.1452 PEU over 2 example(s) -- the stem engine did not measurably help (or measurably hurt), so it is not applied by `build.py` even though it stays documented in `usan_stems.py` for reference.
+- `-umab`: average improvement -0.1731 PEU over 4 example(s) -- the stem engine did not measurably help (or measurably hurt), so it is not applied by `build.py` even though it stays documented in `usan_stems.py` for reference.
+- `-vir`: average improvement -0.0906 PEU over 3 example(s) -- the stem engine did not measurably help (or measurably hurt), so it is not applied by `build.py` even though it stays documented in `usan_stems.py` for reference.
+- `-zumab`: average improvement -0.3421 PEU over 3 example(s) -- the stem engine did not measurably help (or measurably hurt), so it is not applied by `build.py` even though it stays documented in `usan_stems.py` for reference.
 
 ## Untested stems
 
@@ -109,7 +128,6 @@ back-tested stem.
 - `-olol`: USAN stem '-olol', beta blockers (e.g. propranolol, atenolol): stress before the stem. Not present in this dataset; included for completeness.
 - `-omab`: USAN substem '-omab', murine monoclonal antibodies (e.g. muromonab): stress on the syllable before it. Not present in this dataset.
 - `-pril`: USAN stem '-pril', ACE inhibitors (e.g. captopril, lisinopril): stress before the stem. Not present in this dataset; included for completeness.
-- `-vir`: USAN stem '-vir', antivirals (e.g. acyclovir, oseltamivir): rhymes with 'fir', stress on the syllable before it.
 - `-ximab`: USAN substem '-ximab', chimeric monoclonal antibodies (e.g. rituximab, infliximab): the AMA/USAN pronunciation key notates the 'x' as /z/; stress on the syllable before it. Not present in this dataset with a source to test against.
 - `-zole`: USAN stem '-azole', antifungal/other azole-ring drugs not using the '-prazole' PPI variant (e.g. riluzole): 'zole' rhymes with 'hole', stress on the syllable before it.
 

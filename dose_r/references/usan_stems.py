@@ -396,19 +396,23 @@ BACKTEST_RESULTS: dict[str, dict] = {
     "prazole": {"n": 3, "improvement": 0.2114},
     "sartan": {"n": 1, "improvement": 0.3000},
     "statin": {"n": 2, "improvement": 0.4846},
-    "tide": {"n": 4, "improvement": 0.1752},
-    "tinib": {"n": 1, "improvement": 0.0182},
-    "umab": {"n": 2, "improvement": -0.1452},
-    "zumab": {"n": 1, "improvement": 0.1583},
+    "tide": {"n": 5, "improvement": 0.0431},
+    "tinib": {"n": 4, "improvement": 0.0137},
+    "umab": {"n": 4, "improvement": -0.1731},
+    "vir": {"n": 3, "improvement": -0.0906},
+    "zumab": {"n": 3, "improvement": -0.3421},
 }
 
-# `-umab` measured WORSE than plain `g2p.py` on back-test (one of its two
-# sourced examples, secukinumab, reduces the stem's own final syllable to no
-# stress at all rather than the secondary stress the other sourced `-mab`
-# words show, which the current rule cannot reproduce). Per the project rule
+# `-umab`, `-vir` and `-zumab` all measure at or below zero improvement over
+# plain `g2p.py` once a larger, real-sourced ground truth is available --
+# `-vir` and `-zumab` in particular looked fine on n=1 thin samples and
+# flipped negative once Gemini-grounded retrieval (see gemini_grounded.py)
+# added enough real citations to test them properly. Per the project rule
 # that a stem which does not measurably help must be dropped rather than
-# kept on faith, `-umab` is disabled here even though it remains documented
-# above with its citation.
+# kept on faith, all three are disabled here even though they remain
+# documented above with their citations. `-tide` and `-tinib` survive but
+# are markedly weaker on the larger sample (0.18 -> 0.04, 0.02 -> 0.01) --
+# kept because they are still positive, not because they are strong.
 DROPPED_STEMS = frozenset(
     suffix for suffix, result in BACKTEST_RESULTS.items() if result["improvement"] <= 0
 )

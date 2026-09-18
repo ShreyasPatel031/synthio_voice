@@ -6,25 +6,26 @@
 
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
-| high | 28 | 9.9% | two independent sources agree |
-| medium | 83 | 29.2% | exactly one external source answered |
-| low | 173 | 60.9% | no external source; derived from spelling by rule |
+| high | 41 | 14.4% | two independent sources agree |
+| medium | 170 | 59.9% | exactly one external source answered |
+| low | 73 | 25.7% | no external source; derived from spelling by rule |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
-| high | 13 | 15 |
-| medium | 33 | 50 |
-| low | 97 | 76 |
+| high | 21 | 20 |
+| medium | 78 | 92 |
+| low | 44 | 29 |
 
 ## Sources that answered
 
 | Source | Ingredients |
 | --- | --- |
-| merriam-webster/medical-api | 100 |
+| gemini-grounded-search | 165 |
+| merriam-webster/medical-api | 90 |
 | wikipedia | 22 |
-| cmudict | 18 |
+| cmudict | 14 |
 | wiktionary | 2 |
 | merriam-webster/dictionary | 1 |
 
@@ -34,7 +35,7 @@
 | --- | --- | --- | --- |
 | Original (MW HTML scrape + CMUdict only) | 19 | 80 | 185 |
 | + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |
-| + MW Medical Dictionary API (this build) | 28 | 83 | 173 |
+| + MW Medical Dictionary API (this build) | 41 | 170 | 73 |
 
 The Wikipedia/Wiktionary step is the real gain here: it answered 24
 ingredients no other source had, and independently corroborated several
@@ -51,11 +52,11 @@ brand names lean on the general dictionary.
 
 | Source | Outcome |
 | --- | --- |
-| Merriam-Webster Medical API | **Wired in.** Structured, reliable; 100 ingredients. Needs `MW_MEDICAL_KEY` in `.env`; degrades to the HTML path when absent. |
+| Merriam-Webster Medical API | **Wired in.** Structured, reliable; 90 ingredients. Needs `MW_MEDICAL_KEY` in `.env`; degrades to the HTML path when absent. |
 | Merriam-Webster `/dictionary/` (HTML) | **Wired in**, as the fallback for names the medical API misses; 1 ingredient(s) this run. |
 | Wikipedia (`{{IPAc-en}}`, `{{IPA\|en\|...}}`, `{{respell}}`) | **Wired in.** 22 ingredients. Most DOSE brand names are too new or minor for an English Wikipedia article at all. |
 | Wiktionary (same templates) | **Wired in.** 2 ingredients; thin, and mostly overlaps Wikipedia rather than adding new names. |
-| CMUdict | **Wired in** (pre-existing). 18 ingredients; a general dictionary, not a drug-name resource. |
+| CMUdict | **Wired in** (pre-existing). 14 ingredients; a general dictionary, not a drug-name resource. |
 | Drugs.com | Dead end. HTTP 403 on every request from this environment (bot-blocked), medical and general pages alike. |
 | DrugBank | Dead end. HTTP 403. |
 | FDA labels (openFDA, DailyMed) | Dead end. Reachable (200), but label text carries no pronunciation respellings -- nothing to extract. |
@@ -105,179 +106,79 @@ brand names lean on the general dictionary.
 
 ## Needs arbitration
 
-173 ingredients have no external source and are currently
+73 ingredients have no external source and are currently
 rule-derived. These are the layer's weak spot and must not be read as gold:
 
 - Adquey (brand)
-- Alhemo (brand)
-- Alyftrek (brand)
 - Ambelvist (brand)
-- Anktiva (brand)
 - Attruby (brand)
-- Aucatzyl (brand)
-- Avlayah (brand)
-- Awiqli (brand)
-- Baxfendy (brand)
-- Beqalzi (brand)
 - Biktarvy (brand)
 - Bizengri (brand)
 - Blujepa (brand)
 - Byetta (brand)
 - Bysanti (brand)
-- Casgevy (brand)
-- Cobenfy (brand)
-- Cosentyx (brand)
 - Cypsedo (brand)
 - Datroway (brand)
-- Decnupaz (brand)
 - Dupixent (brand)
-- Ebglyss (brand)
-- Elrexfio (brand)
-- Ensacove (brand)
 - Entresto (brand)
-- Foundayo (brand)
-- Hepcludex (brand)
 - Icotyde (brand)
-- Idvynso (brand)
-- Ilaris (brand)
-- Imaavy (brand)
-- Imfinzi (brand)
-- Ingrezza (brand)
-- Inpefa (brand)
-- Jardiance (brand)
 - Jideytro (brand)
 - Journavx (brand)
-- Kisqali (brand)
 - Kyzatrex (brand)
 - Leqembi (brand)
-- Lifyorli (brand)
-- Lipfendra (brand)
-- Loargys (brand)
 - Lumvoa (brand)
 - Lynavoy (brand)
 - Lytenava (brand)
-- Meibo (brand)
 - Nurtec (brand)
 - Nuzolvence (brand)
 - Obicetrapib (brand)
-- Ojemda (brand)
 - Orzeyful (brand)
 - Otezla (brand)
-- Palynziq (brand)
 - Plozasiran (brand)
-- Qulipta (brand)
 - Retatrutide (brand)
 - Revtorpyk (brand)
-- Revuforj (brand)
-- Rezdiffra (brand)
 - Rhapsido (brand)
 - Rinvoq (brand)
 - Simtriyo (brand)
-- Skyrizi (brand)
 - TNKase (brand)
-- Tagrisso (brand)
-- Talvey (brand)
-- Toujeo (brand)
-- Trikafta (brand)
 - Trutakna (brand)
 - Tryngolza (brand)
-- Tryptyr (brand)
-- Tzield (brand)
 - Ubrelvy (brand)
-- Utebzi (brand)
 - Vabysmo (brand)
 - Veozah (brand)
 - Veppanu (brand)
-- Voranigo (brand)
-- Vraylar (brand)
 - Vyglxia (brand)
-- Vyloy (brand)
-- Vyvgart (brand)
 - Wakix (brand)
-- Wayrilz (brand)
-- Winrevair (brand)
-- Xocova (brand)
-- Xofluza (brand)
-- Yuviwel (brand)
 - Zaiidra (brand)
-- Zaynich (brand)
 - Zevaskyn (brand)
 - Zipalertinib (brand)
 - Zorevunersen (brand)
-- Zycubo (brand)
 - acoltremon (generic)
-- acoramidis (generic)
 - apremilast (generic)
-- atacicept-vymj (generic)
 - atogepant (generic)
 - baxdrostat (generic)
-- bevacizumab-vikg (generic)
-- bictegravir (generic)
-- bulevirtide-gmod (generic)
-- canakinumab (generic)
-- cariprazine (generic)
 - centanafadine (generic)
 - cipepofol (generic)
 - concizumab (generic)
-- datopotamab deruxtecan (generic)
 - deutivacaftor (generic)
 - difamilast (generic)
 - doravirine (generic)
 - dupilumab (generic)
-- durvalumab (generic)
-- elexacaftor (generic)
-- elranatamab-bcmm (generic)
-- ensartinib (generic)
-- ensitrelvir (generic)
-- exagamglogene autotemcel (generic)
-- faricimab-svoa (generic)
-- fezolinetant (generic)
 - gadoquatrane (generic)
-- gedatolisib (generic)
-- gepotidacin (generic)
-- icotrokinra (generic)
-- islatravir (generic)
 - lebrikizumab-lbkz (generic)
 - lecanemab (generic)
 - linerixibat (generic)
-- milsaperidone (generic)
 - navepegritide (generic)
 - nipocalimab-aahu (generic)
-- obecabtagene autoleucel (generic)
-- olezarsen (generic)
-- orforglipron (generic)
-- osimertinib (generic)
 - oveporexton (generic)
-- pegvaliase-pqpz (generic)
-- pegzilarginase-nbln (generic)
-- pivekimab sunirine-pvzy (generic)
-- prademagene zamikeracel (generic)
 - relacorilant (generic)
 - remibrutinib (generic)
-- resmetirom (generic)
-- revumenib (generic)
-- ribociclib (generic)
 - rilzabrutinib (generic)
-- rimegepant (generic)
 - risankizumab-rzaa (generic)
-- sotatercept-csrk (generic)
-- talquetamab (generic)
-- tebipenem pivoxil (generic)
-- tenecteplase (generic)
-- teplizumab-mzwv (generic)
-- tezacaftor (generic)
-- tividenofusp alfa-eknm (generic)
 - tovorafenib (generic)
 - troriluzole (generic)
-- ubrogepant (generic)
-- upadacitinib (generic)
 - valbenazine (generic)
-- vanzacaftor (generic)
-- veligrotug-vvze (generic)
 - vepdegestrant (generic)
-- vorasidenib (generic)
 - zenocutuzumab (generic)
-- zidebactam (generic)
 - zidesamtinib (generic)
 - zolbetuximab (generic)
-- zoliflodacin (generic)
