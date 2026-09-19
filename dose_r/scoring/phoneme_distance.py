@@ -116,6 +116,36 @@ def _is_multiword_ingredient(drug: str) -> bool:
     return " " in drug.strip()
 
 
+# A second, distinct data-coverage gap found running this scorer at corpus
+# scale: FDA-mandated "biosimilar distinguishing suffixes" (e.g.
+# "risankizumab-rzaa", "-rzaa" being a deliberately arbitrary 4-letter code
+# with no established pronunciation of any kind by design). The dictionary
+# IPA for these covers only the base name, not the suffix -- confirmed
+# directly: "risankizumab-rzaa"'s reference is "rɪsænˈkɪzjuːmæb" (no suffix
+# at all), while Gemini's actual audio attempts the full name including an
+# attempt at sounding out "R-Z-A-A" as letters, decoded tail "ɑːɹ ɹ ɛs eɪ".
+# Comparing the longer candidate string against the shorter, suffix-less
+# reference inflates the distance for a reason that has nothing to do with
+# pronunciation accuracy. Confirmed on 12 items in the real corpus run
+# (all scoring nearly 0, dragging hyphenated-name mean to 2.06 vs 3.76 for
+# the rest) -- but NOT every hyphenated name is affected: genuine two-word
+# compound names with real phonetic coverage on both halves (e.g.
+# "dimethyl-fumarate", "insulin-glargine") score normally. The length-ratio
+# check below, restricted to hyphenated names, separates the two: a
+# candidate decoding to notably more phoneme segments than the winning
+# reference variant, but ONLY when the name is hyphenated (a plain
+# mispronunciation like Adquey's can also decode longer than its reference,
+# so the ratio alone is not a safe signal without the hyphen restriction --
+# checked directly on the real corpus run before adding this condition).
+_SUFFIX_GAP_LENGTH_RATIO = 1.4
+
+
+def _is_likely_suffix_coverage_gap(drug: str, decoded_len: int, ref_len: int) -> bool:
+    if "-" not in drug or ref_len == 0:
+        return False
+    return decoded_len > _SUFFIX_GAP_LENGTH_RATIO * ref_len
+
+
 @lru_cache(maxsize=1)
 def _get_panphon():
     import panphon
@@ -242,6 +272,11 @@ class PhonemeDistanceScorer(Scorer):
         score = rate_to_score(result_dist["rate"])
         multiword = _is_multiword_ingredient(item.drug)
 
+        ft, _ = _get_panphon()
+        decoded_len = len(ft.ipa_segs(normalize_phonemes(decoded)))
+        ref_len = len(ft.ipa_segs(normalize_phonemes(result_dist["best_variant"])))
+        suffix_gap = _is_likely_suffix_coverage_gap(item.drug, decoded_len, ref_len)
+
         return ScoreResult(
             **base, score=score,
             components={"rate": result_dist["rate"], "distance": result_dist["distance"]},
@@ -250,6 +285,7 @@ class PhonemeDistanceScorer(Scorer):
                 "best_matching_ipa_variant": result_dist["best_variant"],
                 "all_variant_rates": result_dist["all_variants"],
                 "multiword_ingredient_caveat": multiword,
+                "suffix_coverage_gap_caveat": suffix_gap,
             },
             notes=(
                 "Phoneme-level edit distance (panphon-weighted) between the "
@@ -260,6 +296,13 @@ class PhonemeDistanceScorer(Scorer):
                    "is a clip/IPA scope mismatch on multi-word names (the "
                    "reference clip often covers only the first word); read "
                    "this score with that in mind. " if multiword else "")
+                + ("CAVEAT: likely FDA biosimilar-suffix coverage gap -- the "
+                   "dictionary IPA for this hyphenated name appears to cover "
+                   "only the base name, not the (deliberately arbitrary, "
+                   "unpronounceable-by-design) suffix, and the candidate's "
+                   "decoded length is notably longer than the reference; "
+                   "this score likely understates the candidate's real "
+                   "accuracy on the part that IS meant to be pronounced. " if suffix_gap else "")
                 + "Not yet run at corpus scale; validated on discrimination "
                 "(mismatched pairs averaged 3.85 vs 0.88 for correct pairs) "
                 "and human-ceiling checks only."
