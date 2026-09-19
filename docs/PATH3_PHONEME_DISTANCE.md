@@ -84,24 +84,36 @@ Lowest 5, clean: Adquey (0.00), faricimab-svoa (0.04), bulevirtide-gmod
 | talquetamab | #37 / 2.92 | #126 / 3.70 | "especially bad" -- still does not match on either path |
 | **acoramidis** | **#5 / 2.32** | **#148 / 3.94** | "actually okay, different pronunciation" -- **Path 3 fixes exactly this false positive** |
 
-**The headline result**: Path 3 corrects Path 2's most concrete, evidenced
-failure -- aripiprazole and acoramidis were false positives under
-single-reference audio scoring (top-5-worst despite being valid
-pronunciation variants), and Path 3's multi-variant IPA matching moves both
-solidly into the upper half of the corpus, matching the user's own ear.
-Voranigo is a new, opposite discrepancy Path 3 introduces (confirmed bad by
-ear, but not flagged here) -- worth investigating before trusting Path 3's
-ranking on items nobody has personally checked. talquetamab remains
-unresolved on both paths.
+**Path 2 is ground truth for this whole project** -- validated repeatedly,
+directly, against the user's own ear (aripiprazole, acoramidis, Vyloy,
+Adquey, Voranigo, esomeprazole, Eliquis, talquetamab were all confirmed by
+listening this session). Path 3 is judged AGAINST Path 2, not alongside it
+as an equal, independent opinion.
+
+By that standard: Path 3 gets 7 of 9 checked items right, including a
+real fix on aripiprazole/acoramidis (Path 2 wrongly scored both as
+top-5-worst against a single reference recording; both are confirmed valid
+pronunciation VARIANTS, not errors, and Path 3's multi-variant IPA matching
+correctly moves both into the upper half of the corpus). But on
+**Voranigo, Path 3 is simply wrong** -- Path 2 (2.18, near-worst) matches
+the confirmed-bad-by-ear verdict; Path 3 (3.18, mid-pack) does not. Checked
+directly why: Path 3 decoded Gemini's Voranigo as ending in "aʊ" (rhymes
+with "cow") instead of the dictionary's "oʊ" (rhymes with "go"), plus an
+inserted "t" -- a real, audible error that panphon's feature-distance
+weighting scores as a cheap edit (both diphthongs share their offglide;
+inserting one light consonant is a small edit in feature-distance terms),
+underweighting what actually sounds wrong to a listener. That is a
+concrete, demonstrated limitation of Path 3's distance weighting, not an
+alternate valid opinion to Path 2's.
 
 ## Reading this correctly
 
-- **Two paths now disagree about which items are worst, not just about
-  coverage.** Neither should be treated as the sole source of truth --
-  Path 2 catches Vyloy/Voranigo better; Path 3 catches Adquey more
-  decisively and fixes the aripiprazole/acoramidis variant-conflation
-  problem. Where they actively disagree (Voranigo) is exactly where manual
-  verification matters most.
+- **Path 3 is not a second ground truth.** It exists to reach the
+  95%-not-99% of items Path 2 cannot score at all (no human recording),
+  using Path 2's validated, ear-confirmed judgments as the standard it is
+  checked against wherever both can be computed. Where they disagree
+  (Voranigo, confirmed above), Path 2 wins and Path 3's error is the thing
+  to fix, not a data point to average in.
 - **Not yet checked**: whether Path 3 conflates "wrong word" with "right
   phonemes, wrong prosody/stress" the way Path 2's own blind spots were
   found this session. No minimal-pair sensitivity test has been run on
