@@ -398,11 +398,11 @@ BACKTEST_RESULTS: dict[str, dict] = {
     "statin": {"n": 2, "improvement": 0.4846},
     "tide": {"n": 6, "improvement": 0.0019},
     "tinib": {"n": 7, "improvement": 0.1755},
-    "umab": {"n": 5, "improvement": -0.1086},
+    "umab": {"n": 5, "improvement": -0.1003},
     "vir": {"n": 3, "improvement": 0.6685},
-    "ximab": {"n": 1, "improvement": 0.1120},
+    "ximab": {"n": 1, "improvement": -0.2780},
     "zole": {"n": 1, "improvement": -0.8583},
-    "zumab": {"n": 7, "improvement": 0.1681},
+    "zumab": {"n": 7, "improvement": 0.0933},
 }
 
 # Adding the AMA USAN Statement PDF as a directly-fetched, primary source

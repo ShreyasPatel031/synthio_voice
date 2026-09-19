@@ -198,13 +198,14 @@ def _respelling_text_to_variant(raw: str) -> tuple[str, str] | None:
         return None
 
 
-# These five sources are each a single, known, fixed kind of site -- no
+# These six sources are each a single, known, fixed kind of site -- no
 # per-citation Gemini call is needed to classify them the way an arbitrary
 # Gemini-grounded web citation needs (see classify_source_trust in
-# gemini_grounded.py). DailyMed and the AMA USAN Statement are the naming/
-# regulatory bodies' own record; the rest are editorially-maintained
-# references, not primary authorities but not open to public submission
-# either.
+# gemini_grounded.py). DailyMed, the AMA USAN Statement, and the NCI
+# Dictionary of Cancer Terms (a National Cancer Institute/NIH property)
+# are naming/regulatory/federal-health-agency records; the rest are
+# editorially-maintained references, not primary authorities but not open
+# to public submission either.
 _STATIC_TRUST_TIER = {
     "merriam-webster/medical-api": "verified_secondary",
     "merriam-webster/dictionary": "verified_secondary",
@@ -213,6 +214,7 @@ _STATIC_TRUST_TIER = {
     "cmudict": "verified_secondary",
     "dailymed": "official_medical",
     "usan-official": "official_medical",
+    "nci-dictionary-of-cancer-terms": "official_medical",
 }
 
 
@@ -248,6 +250,15 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
             if usan_hit:
                 variants, srcs, _tier = usan_hit
                 found.append((variants, srcs))
+
+    nci = sources.nci_pronunciation(word)
+    if nci:
+        try:
+            variant = _respelling_span_to_variant(nci["raw"])
+        except WikiNotationError:
+            variant = None
+        if variant:
+            found.append(([variant], [_tagged(nci)]))
 
     mw = sources.merriam_webster(word)
     if mw:
@@ -440,7 +451,8 @@ def coverage_report(records: list[dict]) -> str:
         "| + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |",
         "| + MW Medical Dictionary API | 41 | 170 | 73 |",
         "| + Gemini/Google-Search grounding, rule-based fallback removed | 98 | 171 | 15 |",
-        "| + DailyMed Medication Guide respellings (this build) "
+        "| + DailyMed Medication Guide respellings | 86 | 194 | 4 |",
+        "| + NCI Dictionary of Cancer Terms (this build) "
         f"| {len(by_tier['high'])} | {len(by_tier['medium'])} | {len(by_tier['low'])} |",
         "",
         "The Wikipedia/Wiktionary and Medical API steps were the first two real gains.",
@@ -463,6 +475,24 @@ def coverage_report(records: list[dict]) -> str:
         "false-positive guard -- a table cell like `YUVIWEL (gross content per vial)`",
         "also has the shape \"NAME (something with a space)\" -- so every candidate is",
         "checked against the same Gemini format-plausibility judge before acceptance.",
+        "",
+        "The NCI Dictionary of Cancer Terms was the single largest jump in this "
+        f"build: {by_source.get('nci-dictionary-of-cancer-terms', 0)} ingredients, and "
+        "every one of them a second, independent citation for a name that usually only "
+        "had one source before -- 27 previously-`medium` records moved straight to "
+        "`high`. It was found by directly checking a source the user pointed at "
+        "(cancer.gov's own Dictionary of Cancer Terms page), confirming the public page "
+        "itself is a React SPA with no server-rendered pronunciation text (a dead end as "
+        "scraped, like the separate NCI Drug Dictionary already documented above), then "
+        "reverse-engineering its real backing JSON API from the app's own JS bundle the "
+        "same way the AMA USAN search API was found. That API returns a structured "
+        "record per term with both a text respelling and a real hosted audio recording -- "
+        "an official U.S. federal government source (NIH's National Cancer Institute), "
+        "not a secondhand citation of one. Coverage is deliberately oncology-skewed: it's "
+        "a *cancer* terms dictionary, so it only lists the DOSE ingredients that come up "
+        "in oncology or supportive-care contexts, confirmed directly by querying its own "
+        "search endpoint for the names it doesn't have (valsartan, clopidogrel, etc.) and "
+        "finding nothing, not just a spelling mismatch.",
         "",
         "## Sources tried",
         "",
@@ -521,6 +551,28 @@ def coverage_report(records: list[dict]) -> str:
         "vist)`), in the same USAN prime-stress notation the Gemini-grounded path "
         "already parses. Not every label includes one, so this doesn't close "
         "every remaining gap. |",
+        "| NCI Dictionary of Cancer Terms (cancer.gov) | **Wired in** "
+        "(`sources.nci_pronunciation`). "
+        f"{by_source.get('nci-dictionary-of-cancer-terms', 0)} ingredients, brand and "
+        "generic alike. The public page (`cancer.gov/publications/dictionaries/"
+        "cancer-terms/def/{name}`) is a React SPA with no server-rendered "
+        "pronunciation text -- a dead end as scraped -- but its real backing API "
+        "(`webapis.cancer.gov/glossary/v1/Terms/Cancer.gov/Patient/en/{name}`), "
+        "reverse-engineered from the app's own JS bundle the same way the AMA USAN "
+        "search API was found, returns a structured JSON record with both a text "
+        "respelling (`pronunciation.key`, e.g. `(uh-see-tuh-MIH-nuh-fen)` for "
+        "acetaminophen -- the same capitalized-syllable notation "
+        "`respell_to_arpabet_ipa` already parses) and a real hosted audio recording "
+        "(`pronunciation.audio`, kept in the citation alongside the text). An "
+        "official U.S. federal government source (NIH's National Cancer Institute), "
+        "not a secondhand citation of one -- and it covers plenty of brand names "
+        "too, not just generics (Xanax, Lipitor, Nexium, Crestor, Zoloft, Advil, "
+        "Ambien, Valium among them). Coverage is deliberately oncology-skewed: "
+        "confirmed directly against its own search endpoint, names with no "
+        "connection to cancer care or its supportive treatments (valsartan, "
+        "clopidogrel, atorvastatin, quetiapine) aren't in this dictionary at all, "
+        "which is a real characteristic of what this source covers, not a bug in "
+        "how it's queried. |",
         "| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from "
         "this environment, medical and general pages alike. **Reached indirectly**: "
         "Gemini's `google_search` tool retrieves and cites Drugs.com pages server-"

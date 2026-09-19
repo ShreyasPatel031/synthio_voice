@@ -561,6 +561,72 @@ def dailymed_pronunciation(name: str) -> dict | None:
     return result
 
 
+NCI_GLOSSARY_BASE = "https://webapis.cancer.gov/glossary/v1/Terms/Cancer.gov/Patient/en"
+
+
+def nci_pronunciation(name: str) -> dict | None:
+    """A drug's own respelling and audio recording from the NCI Dictionary
+    of Cancer Terms (nih.gov's National Cancer Institute) -- a federal
+    government reference on the same standing as DailyMed or MedlinePlus,
+    not a secondhand citation of one.
+
+    Its own site (`cancer.gov/publications/dictionaries/cancer-terms/def/
+    {name}`) is a React SPA with no server-rendered pronunciation text at
+    all -- a dead end as scraped, same as the NCI Drug Dictionary already
+    documented as such in this module's docstring. Its real backing API
+    isn't a dead end, though: reverse-engineered from the app's own JS
+    bundle (`termDefinition: "/Terms/${dictionary}/${audience}/${language}"`,
+    `dictionaryEndpoint: "https://webapis.cancer.gov/glossary/v1/"`), it
+    returns a structured JSON record per term with its own
+    `pronunciation.key` (a capitalized-syllable, hyphenated respelling
+    already in the same notation `respell_to_arpabet_ipa` parses, e.g.
+    "(uh-see-tuh-MIH-nuh-fen)" for acetaminophen) and a real hosted
+    `pronunciation.audio` recording (`nci-media.cancer.gov`) -- both
+    stored here, even though only `key` is converted into a phonetic
+    variant; the audio URL is kept in the citation as a second,
+    independently checkable form of the same official record.
+
+    Coverage here is narrow and oncology-skewed on purpose: this is a
+    *cancer* terms dictionary, so it only carries the subset of DOSE's
+    ingredients that come up in oncology/supportive-care contexts
+    (confirmed directly: a name like "valsartan" or "clopidogrel" isn't
+    merely spelled differently in this index, `Autosuggest` finds nothing
+    resembling it at all -- it's a real, expected gap, not a bug in how
+    this source is queried). Biosimilar suffixes are stripped the same
+    way `usan_pronunciation` strips them ("bevacizumab", not
+    "bevacizumab-vikg") -- this dictionary indexes the parent generic
+    name only.
+    """
+    from . import usan_stems  # local import: avoids a hard, one-way dependency
+
+    slug, _ = usan_stems._split_fda_suffix(name.lower().replace(" ", "-"))
+    cache_key = f"nci-pron::{slug}"
+    hit = _cached(cache_key)
+    if hit is not None:
+        return hit or None
+
+    url = f"{NCI_GLOSSARY_BASE}/{urllib.parse.quote(slug)}"
+    result = None
+    try:
+        req = urllib.request.Request(url, headers={**UA, "Accept": "application/json"})
+        raw = urllib.request.urlopen(req, timeout=TIMEOUT).read().decode("utf-8", "ignore")
+        data = json.loads(raw)
+        key = (data.get("pronunciation") or {}).get("key") or ""
+        respelling = key.strip().strip("()").strip()
+        if respelling:
+            result = {
+                "name": "nci-dictionary-of-cancer-terms",
+                "raw": respelling,
+                "audio": data.get("pronunciation", {}).get("audio"),
+                "url": f"https://www.cancer.gov/publications/dictionaries/cancer-terms/def/{slug}",
+            }
+    except Exception:
+        pass
+
+    _store(cache_key, result or {})
+    return result
+
+
 USAN_SEARCH_BASE = "https://searchusan.ama-assn.org/usan/search"
 USAN_DOC_BASE = "https://searchusan.ama-assn.org/usan/documentDownload"
 

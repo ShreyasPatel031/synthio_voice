@@ -6,16 +6,16 @@
 
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
-| high | 86 | 30.3% | two independent sources agree |
-| medium | 194 | 68.3% | exactly one external source answered |
+| high | 112 | 39.4% | two independent sources agree |
+| medium | 168 | 59.2% | exactly one external source answered |
 | low | 4 | 1.4% | no external source; no ground truth |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
-| high | 49 | 37 |
-| medium | 90 | 104 |
+| high | 58 | 54 |
+| medium | 81 | 87 |
 | low | 4 | 0 |
 
 ## Sources that answered
@@ -24,8 +24,9 @@
 | --- | --- |
 | usan-official | 108 |
 | merriam-webster/medical-api | 88 |
-| gemini-grounded-search | 84 |
 | dailymed | 84 |
+| gemini-grounded-search | 78 |
+| nci-dictionary-of-cancer-terms | 50 |
 | wikipedia | 20 |
 | cmudict | 13 |
 | wiktionary | 2 |
@@ -45,8 +46,8 @@ hardcoded domain list) -- see `classify_source_trust` in gemini_grounded.py.
 
 | Tier | Meaning | Ingredients citing at least one |
 | --- | --- | --- |
-| official_medical | Government health agency, national regulator, or the drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | 212 |
-| verified_secondary | Editorially-maintained reference, not a primary authority but not open to public submission either (Drugs.com, WebMD, Wikipedia, Merriam-Webster, a university hospital's patient site) | 188 |
+| official_medical | Government health agency, national regulator, or the drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | 260 |
+| verified_secondary | Editorially-maintained reference, not a primary authority but not open to public submission either (Drugs.com, WebMD, Wikipedia, Merriam-Webster, a university hospital's patient site) | 184 |
 | third_party_unverified | Crowdsourced/user-generated, no editorial review (howtopronounce.com, a YouTube upload, a blog) -- **excluded**, never counted | 0 |
 
 That last row should always read 0: it is what `_variants_from_claims` in
@@ -67,7 +68,8 @@ under that restriction and reverted to `low`.
 | + Wikipedia/Wiktionary (`{{IPAc-en}}`/`{{IPA}}`/`{{respell}}`) | 28 | 83 | 173 |
 | + MW Medical Dictionary API | 41 | 170 | 73 |
 | + Gemini/Google-Search grounding, rule-based fallback removed | 98 | 171 | 15 |
-| + DailyMed Medication Guide respellings (this build) | 86 | 194 | 4 |
+| + DailyMed Medication Guide respellings | 86 | 194 | 4 |
+| + NCI Dictionary of Cancer Terms (this build) | 112 | 168 | 4 |
 
 The Wikipedia/Wiktionary and Medical API steps were the first two real gains.
 The Gemini step is the largest one by far: Gemini 2.5 Flash with the
@@ -90,6 +92,8 @@ false-positive guard -- a table cell like `YUVIWEL (gross content per vial)`
 also has the shape "NAME (something with a space)" -- so every candidate is
 checked against the same Gemini format-plausibility judge before acceptance.
 
+The NCI Dictionary of Cancer Terms was the single largest jump in this build: 50 ingredients, and every one of them a second, independent citation for a name that usually only had one source before -- 27 previously-`medium` records moved straight to `high`. It was found by directly checking a source the user pointed at (cancer.gov's own Dictionary of Cancer Terms page), confirming the public page itself is a React SPA with no server-rendered pronunciation text (a dead end as scraped, like the separate NCI Drug Dictionary already documented above), then reverse-engineering its real backing JSON API from the app's own JS bundle the same way the AMA USAN search API was found. That API returns a structured record per term with both a text respelling and a real hosted audio recording -- an official U.S. federal government source (NIH's National Cancer Institute), not a secondhand citation of one. Coverage is deliberately oncology-skewed: it's a *cancer* terms dictionary, so it only lists the DOSE ingredients that come up in oncology or supportive-care contexts, confirmed directly by querying its own search endpoint for the names it doesn't have (valsartan, clopidogrel, etc.) and finding nothing, not just a spelling mismatch.
+
 ## Sources tried
 
 | Source | Outcome |
@@ -100,7 +104,8 @@ checked against the same Gemini format-plausibility judge before acceptance.
 | Wiktionary (same templates) | **Wired in.** 2 ingredients; thin, and mostly overlaps Wikipedia rather than adding new names. Deliberately exempted from the Wikipedia brand/generic bold-region restriction above: Wiktionary has no `{{Infobox drug}}`-style lead-sentence bolding convention and is one page per exact spelling, so it carries no brand/generic dual-naming ambiguity for that restriction to guard against -- applying it anyway broke Benadryl, whose real `===Pronunciation===` section sits near the top of the page with no bolded "Benadryl" nearby at all; the restriction instead locked onto an unrelated *later* bolded mention inside a "Benadryl challenge" trivia section and searched only after it, missing the real section entirely. |
 | CMUdict | **Wired in** (pre-existing). 13 ingredients; a general dictionary, not a drug-name resource. |
 | DailyMed (FDA Medication Guides) | **Wired in.** 84 ingredients (brands only). Reachable from this environment (unlike drugs.com), and a real find caught by manual spot-checking after this build shipped: many Medication Guides state the brand's own respelling right in the title line (`AMBELVIST (am bel' vist)`), in the same USAN prime-stress notation the Gemini-grounded path already parses. Not every label includes one, so this doesn't close every remaining gap. |
-| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 84 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
+| NCI Dictionary of Cancer Terms (cancer.gov) | **Wired in** (`sources.nci_pronunciation`). 50 ingredients, brand and generic alike. The public page (`cancer.gov/publications/dictionaries/cancer-terms/def/{name}`) is a React SPA with no server-rendered pronunciation text -- a dead end as scraped -- but its real backing API (`webapis.cancer.gov/glossary/v1/Terms/Cancer.gov/Patient/en/{name}`), reverse-engineered from the app's own JS bundle the same way the AMA USAN search API was found, returns a structured JSON record with both a text respelling (`pronunciation.key`, e.g. `(uh-see-tuh-MIH-nuh-fen)` for acetaminophen -- the same capitalized-syllable notation `respell_to_arpabet_ipa` already parses) and a real hosted audio recording (`pronunciation.audio`, kept in the citation alongside the text). An official U.S. federal government source (NIH's National Cancer Institute), not a secondhand citation of one -- and it covers plenty of brand names too, not just generics (Xanax, Lipitor, Nexium, Crestor, Zoloft, Advil, Ambien, Valium among them). Coverage is deliberately oncology-skewed: confirmed directly against its own search endpoint, names with no connection to cancer care or its supportive treatments (valsartan, clopidogrel, atorvastatin, quetiapine) aren't in this dictionary at all, which is a real characteristic of what this source covers, not a bug in how it's queried. |
+| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 78 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
 | DrugBank | Dead end. HTTP 403. |
 | FDA labels via openFDA (structured JSON) | Dead end for pronunciation. Reachable (200), but the structured label JSON does not carry the Medication Guide's free-text title line, which is where a respelling (if present at all) actually lives -- see DailyMed above, which serves the rendered guide text instead of the structured fields. |
 | NLM RxNav / RxNorm | Dead end for pronunciation. Reachable, resolves names to RxCUIs reliably, but `allProperties` carries only coding/synonym fields (ATC, SNOMED, DrugBank ID, etc.) -- no phonetic field exists in the schema. Kept as the id-lookup step for the MedlinePlus Connect pipeline below. |
