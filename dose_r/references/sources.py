@@ -258,33 +258,131 @@ def _wiki_wikitext(domain: str, title: str) -> str | None:
 _IPAC_EN = re.compile(r"\{\{\s*IPAc-en\s*\|([^{}]+)\}\}", re.IGNORECASE)
 _IPA_EN = re.compile(r"\{\{\s*IPA\s*\|\s*en\s*\|([^{}]+)\}\}", re.IGNORECASE)
 _RESPELL = re.compile(r"\{\{\s*respell\s*\|([^{}]+)\}\}", re.IGNORECASE)
+_BOLD_TERM = re.compile(r"'''([^']+)'''")
+# `[ \t]*`, not `\s*`, after "=" -- a `\s*` here crosses the newline when
+# the field is empty ("| pronounce          =\n| tradename ...") and
+# silently captures the NEXT infobox line as if it were this field's own
+# value, confirmed as a real bug on empagliflozin's own article (whose
+# `pronounce` field is genuinely empty; a `\s*` version captured
+# "| tradename          = Jardiance, others" as the "pronunciation").
+_INFOBOX_PRONOUNCE = re.compile(r"\|\s*pronounce\s*=[ \t]*([^\n]*)")
+# {{Infobox drug}} repurposes its `source` field (normally the antibody's
+# source-organism code -- "u"/"o"/"xi"/"zu" for human/murine/chimeric/
+# humanized) to carry the PRONUNCIATION instead when `mab_type` is set,
+# i.e. for monoclonal antibodies. Confirmed directly on secukinumab's own
+# article: `| source = {{IPAc-en|...}}<br />{{respell|...}}` sits above
+# the "Clinical data" section, while its own `pronounce` field (inside
+# "Clinical data") is empty -- the same empty-`pronounce` shape as
+# empagliflozin, but here the real pronunciation was never missing, just
+# filed under a different key. Gated on `mab_type` appearing anywhere on
+# the page so a coincidental `source = ...` elsewhere (e.g. a citation
+# template) on a non-antibody article is never mistaken for this field.
+_INFOBOX_MAB_SOURCE = re.compile(r"\|\s*source\s*=[ \t]*([^\n]*)")
 
 
 def _args(inner: str) -> list[str]:
     return [a.strip() for a in inner.split("|") if a.strip() and "=" not in a]
 
 
-def _extract_pronunciation(wikitext: str) -> dict | None:
-    """The first usable pronunciation template in a page's wikitext."""
-    m = _IPAC_EN.search(wikitext)
+def _pronunciation_region(wikitext: str, target: str, domain: str) -> str:
+    """The slice of `wikitext` that may legitimately carry `target`'s own
+    pronunciation template, not some other bolded name's.
+
+    A drug's lead sentence commonly bolds and parenthesizes a pronunciation
+    for BOTH its names, one right after the other ("'''Empagliflozin''',
+    sold under the brand name '''Jardiance''' ({{IPAc-en|...}})") -- a
+    prose-wide search finds Jardiance's, not empagliflozin's own, because
+    the generic name in that lead sentence has no pronunciation guide of
+    its own at all, only the brand does (confirmed directly: its own
+    infobox `pronounce` field, see `_INFOBOX_PRONOUNCE`, is empty).
+    Restricting the search to the text between `target`'s own bolded
+    mention and the NEXT bolded term (a different name) keeps a template
+    from being attributed to the wrong word just because it's the first
+    one on the page. This is the fallback for a page with no (or no
+    populated) infobox `pronounce` field, not the primary path -- that
+    field, when present and non-empty, is Wikipedia's own explicit,
+    unambiguous label for the article subject's own pronunciation and
+    needs no positional inference at all.
+
+    This restriction is Wikipedia-specific and actively harmful on
+    Wiktionary: confirmed directly on Benadryl's Wiktionary entry, whose
+    `===Pronunciation===` section sits right after the etymology near the
+    top of the page with no bolded "Benadryl" anywhere nearby (Wiktionary
+    has no {{Infobox drug}}-style lead-sentence bolding convention at
+    all) -- the restriction instead found an unrelated LATER bolded
+    mention of "Benadryl" inside a "Benadryl challenge" trivia section and
+    started the search window after it, skipping the real pronunciation
+    entirely. Wiktionary is also one page per exact spelling, so it has
+    no brand/generic dual-naming ambiguity for this restriction to guard
+    against in the first place -- a non-Wikipedia domain just searches
+    the whole page.
+    """
+    if domain != "en.wikipedia.org":
+        return wikitext
+
+    target_norm = _norm_for_match(target)
+    bolds = list(_BOLD_TERM.finditer(wikitext))
+    target_bold = next((m for m in bolds if _norm_for_match(m.group(1)) == target_norm), None)
+    if target_bold is None:
+        # `target` isn't bolded in its own article's lead at all (unusual,
+        # but seen for some redirects/stubs) -- fall back to the whole page
+        # rather than finding nothing, since there's no other name's
+        # bolding to accidentally prefer over.
+        return wikitext
+
+    start = target_bold.end()
+    next_other_bold = next(
+        (m for m in bolds if m.start() > start and _norm_for_match(m.group(1)) != target_norm),
+        None,
+    )
+    end = next_other_bold.start() if next_other_bold else len(wikitext)
+    return wikitext[start:end]
+
+
+def _templates_in(region: str) -> dict | None:
+    m = _IPAC_EN.search(region)
     if m:
         args = _args(m.group(1))
         if args:
             return {"kind": "ipa", "raw": "".join(args)}
 
-    m = _IPA_EN.search(wikitext)
+    m = _IPA_EN.search(region)
     if m:
         args = _args(m.group(1))
         if args:
             return {"kind": "ipa", "raw": args[0]}
 
-    m = _RESPELL.search(wikitext)
+    m = _RESPELL.search(region)
     if m:
         args = _args(m.group(1))
         if args:
             return {"kind": "respell", "raw": args}
 
     return None
+
+
+def _extract_pronunciation(wikitext: str, target: str, domain: str) -> dict | None:
+    """`target`'s own pronunciation template: the infobox `pronounce` field
+    when it's present and non-empty (Wikipedia's own explicit label for
+    the article subject's pronunciation, so no attribution guesswork
+    needed at all), else the mAb-infobox `source` field (see
+    `_INFOBOX_MAB_SOURCE`), else the prose fallback -- see
+    `_pronunciation_region`.
+    """
+    infobox = _INFOBOX_PRONOUNCE.search(wikitext)
+    if infobox and infobox.group(1).strip():
+        found = _templates_in(infobox.group(1))
+        if found:
+            return found
+
+    if "mab_type" in wikitext:
+        mab_source = _INFOBOX_MAB_SOURCE.search(wikitext)
+        if mab_source and mab_source.group(1).strip():
+            found = _templates_in(mab_source.group(1))
+            if found:
+                return found
+
+    return _templates_in(_pronunciation_region(wikitext, target, domain))
 
 
 def _wiki_source(domain: str, source_name: str, name: str) -> dict | None:
@@ -297,7 +395,7 @@ def _wiki_source(domain: str, source_name: str, name: str) -> dict | None:
     wikitext = _wiki_wikitext(domain, title)
     result = None
     if wikitext:
-        pron = _extract_pronunciation(wikitext)
+        pron = _extract_pronunciation(wikitext, name, domain)
         if pron:
             raw = pron["raw"]
             result = {
@@ -468,14 +566,51 @@ USAN_DOC_BASE = "https://searchusan.ama-assn.org/usan/documentDownload"
 # "PRONUNCIATION" is followed by the respelling and then the next section
 # header, reliably "THERAPEUTIC CLAIM" in every USAN Statement on file --
 # confirmed directly against real documents for cipepofol and copper
-# histidinate (see the PDFs this source is built from).
+# histidinate (see the PDFs this source is built from). USAN's own PDF for
+# oveporexton has a typo in the header itself ("PRONOUNCIATION", confirmed
+# directly against that document), which an exact-string match on
+# "PRONUNCIATION" silently missed entirely -- `PRONO?UNCIATION` tolerates
+# either spelling.
+# pypdf's text extraction sometimes breaks a word across a line boundary
+# mid-word, not just between words -- confirmed directly in empagliflozin's
+# own Statement, which extracts as "...THERAPEUTIC CLAI\nM Treatment...".
+# An exact "THERAPEUTIC CLAIM" match silently misses this, and silently is
+# the operative word: it looks exactly like "this document has no
+# PRONUNCIATION field" or "this name has no USAN document", not a parse
+# failure, so it would never have surfaced without deliberately auditing
+# every generic this source claims to have found nothing for. `_loose`
+# tolerates whitespace (including a newline) appearing before any letter
+# of the phrase, so a mid-word break like this can't defeat the match.
+def _loose(phrase: str) -> str:
+    return "".join(rf"\s*{re.escape(c)}" if c != " " else r"\s+" for c in phrase)
+
+
+# oveporexton's own Statement has a typo in the header itself
+# ("PRONOUNCIATION", confirmed directly against that document) -- an
+# extra "O" before the "U" ("PRON-OU-NCIATION" vs the correctly-spelled
+# "PRON-U-NCIATION"). The optional "O" tolerates either spelling on top of
+# `_loose`'s tolerance for a mid-word line break.
 _USAN_PRONUNCIATION = re.compile(
-    r"PRONUNCIATION\s*\n?\s*(.+?)\s*\n?\s*THERAPEUTIC CLAIM", re.DOTALL
+    rf"{_loose('PRON')}(?:{_loose('O')})?{_loose('U')}{_loose('NCIATION')}"
+    rf"\s*(.+?)\s*{_loose('THERAPEUTIC CLAIM')}",
+    re.DOTALL | re.IGNORECASE,
 )
 
 
 def _norm_for_match(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def _doc_slug(document_uri: str) -> str:
+    """A search result's `document_uri` -> its bare filename, decoded and
+    without the `.pdf` extension -- more reliable to match a query against
+    than the free-text `title` field (see `usan_pronunciation`'s
+    docstring), since the filename consistently follows the
+    "{name}.pdf"/"{name}-{suffix}.pdf" convention while a title can carry
+    extra descriptive words or, rarely, a typo.
+    """
+    name = urllib.parse.unquote(document_uri.rsplit("/", 1)[-1])
+    return re.sub(r"\.pdf$", "", name, flags=re.IGNORECASE)
 
 
 def _usan_search(term: str) -> list[dict]:
@@ -558,7 +693,18 @@ def usan_pronunciation(name: str) -> dict | None:
     best = None
     best_ratio = 0.0
     for c in candidates:
-        ratio = difflib.SequenceMatcher(None, target_norm, _norm_for_match(c["title"])).ratio()
+        title_ratio = difflib.SequenceMatcher(None, target_norm, _norm_for_match(c["title"])).ratio()
+        slug_ratio = difflib.SequenceMatcher(
+            None, target_norm, _norm_for_match(_doc_slug(c["document_uri"]))
+        ).ratio()
+        # The filename slug is the more reliable signal -- a real title can
+        # carry extra descriptive words a plain drug-name title normally
+        # wouldn't ("ENSARTINIB nonproprietary drug name" for the correct,
+        # plain "ensartinib.pdf", scoring lower against the title alone
+        # than the WRONG "ensartinib-hydrochloride.pdf" salt variant did,
+        # confirmed as a real mismatch this max() fixes), while the
+        # filename itself consistently follows the "{name}.pdf" convention.
+        ratio = max(title_ratio, slug_ratio)
         if ratio > best_ratio:
             best_ratio, best = ratio, c
 

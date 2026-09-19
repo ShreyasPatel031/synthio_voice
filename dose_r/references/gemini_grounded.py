@@ -364,32 +364,52 @@ def _extract_respelling(segment_text: str, exclude: str | None = None) -> str | 
     return matches[0] if matches else None
 
 
-_STRESS_MARK = r"(?:''|\"|”|″|['’′‘])"
+# Every glyph seen in the wild standing in for a single prime (primary
+# stress) -- an ASCII apostrophe, either curly direction (pypdf renders a
+# real USAN PDF's prime as whichever direction its font happens to use,
+# confirmed inconsistent even across documents in the same set: "dem‘" in
+# prademagene zamikeracel's own Statement, "kiz’" in risankizumab's), or
+# the real Unicode prime `′` (MedlinePlus/SafeMedication's own respelling
+# for tenecteplase: "ten ek′ te plase"). A standalone double-prime glyph
+# (secondary stress) shows up as a literal `"`, the curly right-double-
+# quote `”`, or the real Unicode double prime `″`. Two PRIME_CHARS in a
+# row is *also* secondary stress -- Gemini renders it as `''`, and a real
+# USAN PDF as `’’` (deutivacaftor's own Statement: "due tiv’’ a kaf’ tor")
+# -- rather than enumerating every two-character combination by hand, any
+# pairing of two prime-family characters is treated the same way.
+#
+# Some USAN PDFs' own embedded fonts remap the prime glyph into the
+# Private Use Area instead of a standard prime character at all -- pypdf
+# extracts it as U+F0A2 in exenatide's and omalizumab's own Statements
+# ("ex en a tide", "oh mah lye zoo mab"), a font-encoding
+# choice specific to those documents, not a typo to special-case. Treating
+# the whole Private Use Area (U+E000-U+F8FF) as "some kind of prime" and
+# defaulting a lone one to primary is a safer bet than failing to parse
+# the token at all -- the exact codepoint a given font happens to remap
+# it to isn't something to enumerate one at a time as more turn up.
+_PRIME_CHARS = "'’‘′-"
+_DOUBLE_PRIME_CHARS = "\"”″"
+_STRESS_MARK = rf"(?:[{_PRIME_CHARS}]{{1,2}}|[{_DOUBLE_PRIME_CHARS}])"
 _STRESS_TOKEN = re.compile(rf"^[a-zA-Z]{{1,8}}{_STRESS_MARK}?$")
 _STRESS_STOPWORDS = {
     "is", "a", "an", "the", "of", "or", "and", "in", "on", "at", "as",
     "to", "was", "were", "it", "be", "by", "for", "with",
 }
 _QUOTED_WORD = re.compile(r'"([a-zA-Z]+(?:\s+[a-zA-Z]+)*)"')
+_PRIME_CHAR_SET = re.compile(rf"[{_PRIME_CHARS}]")
 
 
 def _stress_kind(token: str) -> str | None:
-    """`"primary"` for a single prime -- the real Unicode prime `′` (as in
-    "ten ek′ te plase" for tenecteplase, from MedlinePlus/SafeMedication),
-    an ASCII apostrophe `'`, or a curly quote in either direction (`’` or
-    `‘` -- pypdf renders a real USAN PDF's prime as whichever curly
-    direction its font happens to use, confirmed inconsistent even within
-    the same document set: "dem‘" in prademagene zamikeracel's own
-    Statement, "kiz’" in risankizumab's) -- `"secondary"` for a double
-    prime, rendered as the real Unicode double prime `″`, a literal `"`,
-    two ASCII apostrophes `''` (Gemini's own text output), or the curly
-    right-double-quote `”` (pypdf extracting a real USAN PDF's double-prime
-    glyph, confirmed against the risankizumab and zolbetuximab documents:
-    `ris" an kiz' ue mab`) -- `None` for no stress mark at all.
+    """`"secondary"` for a double prime (any single `_DOUBLE_PRIME_CHARS`
+    glyph, or two `_PRIME_CHARS` glyphs in a row, in any combination),
+    `"primary"` for exactly one trailing `_PRIME_CHARS` glyph, `None` for
+    no stress mark at all.
     """
-    if token.endswith("''") or token.endswith('"') or token.endswith("”") or token.endswith("″"):
+    if token[-1:] in _DOUBLE_PRIME_CHARS:
         return "secondary"
-    if token.endswith("'") or token.endswith("’") or token.endswith("′") or token.endswith("‘"):
+    if len(token) >= 2 and _PRIME_CHAR_SET.match(token[-1]) and _PRIME_CHAR_SET.match(token[-2]):
+        return "secondary"
+    if token[-1:] and _PRIME_CHAR_SET.match(token[-1]):
         return "primary"
     return None
 
@@ -423,7 +443,16 @@ def stress_tokens_to_respelling(tokens: list[str]) -> str | None:
     Gemini's free-form prose) and `sources.dailymed_pronunciation` (an FDA
     Medication Guide's title line already isolates the respelling in
     parentheses, so there is no prose to search, just tokens to convert).
+
+    A USAN Statement's own PRONUNCIATION field is sometimes wrapped in
+    parentheses as part of its own formatting ("(a pix' a ban)" for
+    apixaban), which would otherwise fail every token in the whole
+    respelling: "(a" doesn't start with a letter, "ban)" doesn't end with
+    one or a valid stress mark. Stripping wrapper punctuation first (not
+    the stress-mark characters themselves) fixes this without weakening
+    the mark validation on the meaningful part of each token.
     """
+    tokens = [t.strip("()[]") for t in tokens]
     if len(tokens) < 2 or not all(_STRESS_TOKEN.match(t) for t in tokens):
         return None
     if not any(_stress_kind(t) == "primary" for t in tokens):
