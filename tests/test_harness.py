@@ -1207,7 +1207,7 @@ def test_speech_similarity_scorer_missing_span_is_unscoreable(monkeypatch):
     clip = ReferenceClip(item.drug, item.name_type, "drugs.com", Path("/x.wav"), "wav", 16000, 1.0)
     scorer = SpeechSimilarityScorer(reference_clips={item.drug: clip})
 
-    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_drug_span",
+    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_drug_span_forced_align",
                         lambda *a, **k: None)  # span not locatable
 
     result = scorer.score(item, _mock_synth_result(item.item_id))
@@ -1226,7 +1226,7 @@ def test_speech_similarity_scorer_end_to_end_with_mocked_embeddings(monkeypatch)
                          "mp3", 16000, 1.5, respelling="uh-BIL-uh-fy")
     scorer = SpeechSimilarityScorer(reference_clips={item.drug: clip})
 
-    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_drug_span",
+    monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_drug_span_forced_align",
                         lambda *a, **k: b"fake-wav-bytes")
     identical = np.random.RandomState(0).randn(10, 8)
     monkeypatch.setattr("dose_r.scoring.speech_similarity.extract_frame_embeddings",

@@ -20,6 +20,25 @@ Correction history -- read before trusting any number this module produces
 -------------------------------------------------------------------------------
 Three rounds of fixes, in order, each found by testing rather than assuming:
 
+0. **Drug-span extraction (Cloud-STT timestamps -> forced alignment).** This
+   scorer originally located the drug's audio span by asking Cloud STT to
+   *recognize* the full sentence and reading off its word timestamps
+   (`audio_span.extract_drug_span`). Two real contamination bugs were found
+   that way by a human listening to specific clips (padding bleeding into a
+   neighboring word; Cloud STT returning one corrupted 5.1s timestamp for
+   what should be a single word) and fixed with three guardrails -- but even
+   with all three, a human listening test on "esomeprazole" found the
+   "fixed" span STILL audibly cut into the preceding word "start", because
+   Cloud STT's own timestamp can be subtly (not just grossly) wrong in a way
+   no guardrail catches. Replaced with `forced_align.extract_drug_span_forced_align`,
+   which never has to guess what was said -- it aligns the audio against the
+   ALREADY-KNOWN sentence text using a phoneme CTC model + forced alignment,
+   so there is no "recognize the right word" step to get wrong. Confirmed
+   correct on esomeprazole and 3 other previously-flagged items (Eliquis,
+   Vyloy, talquetamab) by ear; talquetamab, previously unscoreable (Cloud
+   STT's timestamp was uncorrectably corrupted), now extracts cleanly. See
+   `dose_r/forced_align.py`'s module docstring for the full mechanism.
+
 1. **Model and layer (first draft -> corrected).** First draft used
    `facebook/wav2vec2-base`, final layer. The paper tested 7 SSL models
    (Table 5); wav2vec2-base was the WEAKEST of the six real ones (LCC 0.560;
@@ -149,8 +168,8 @@ import librosa
 import numpy as np
 
 from ..adapters.base import SynthesisResult
-from ..audio_span import extract_drug_span
 from ..dataset import DoseItem
+from ..forced_align import extract_drug_span_forced_align
 from ..references.reference_clips import ReferenceClip, available_clips
 from .base import ScoreResult, Scorer
 
@@ -282,20 +301,22 @@ class SpeechSimilarityScorer(Scorer):
 
     measures_pronunciation = True
 
-    def __init__(self, *, reference_clips: dict[str, ReferenceClip] | None = None,
-                 stt_session: Any = None):
+    def __init__(self, *, reference_clips: dict[str, ReferenceClip] | None = None):
         # Looked up once per scorer instance, not per item -- available_clips()
         # reads the whole manifest and stats every candidate file on disk;
         # reusing it across a run avoids doing that once per of 1000+ items.
         self._clips = reference_clips if reference_clips is not None else available_clips()
-        self._stt_session = stt_session
 
     @property
     def scorer_id(self) -> str:
-        return "speech-similarity-v3"  # v1: F1+wav2vec2-base. v2: precision+wavlm-large.
-                                       # v3: F1+wavlm-large (current) -- precision was tried
-                                       # and dropped for weak truncation sensitivity, see
-                                       # module docstring's "Correction history" step 3.
+        return "speech-similarity-v4"  # v1: F1+wav2vec2-base. v2: precision+wavlm-large.
+                                       # v3: F1+wavlm-large -- precision was tried and
+                                       # dropped for weak truncation sensitivity, see module
+                                       # docstring's "Correction history" step 3. v4 (current):
+                                       # same F1+wavlm-large, but drug-span extraction switched
+                                       # from Cloud-STT timestamps to forced alignment against
+                                       # the known sentence text -- see "Correction history"
+                                       # step 0.
 
     def score(self, item: DoseItem, result: SynthesisResult) -> ScoreResult:
         base = dict(scorer_id=self.scorer_id, item_id=item.item_id,
@@ -316,16 +337,15 @@ class SpeechSimilarityScorer(Scorer):
             )
 
         try:
-            span = extract_drug_span(result.audio, item.sentence, item.drug,
-                                     session=self._stt_session)
+            span = extract_drug_span_forced_align(result.audio, item.sentence, item.drug)
         except Exception as exc:
             return ScoreResult(**base, score=None, scoreable=False,
                                error=f"drug-span extraction failed: {exc}")
         if span is None:
             return ScoreResult(
                 **base, score=None, scoreable=False,
-                error="could not locate the drug name's audio span in the "
-                      "synthesized clip's transcript",
+                error="could not locate the drug name's audio span via forced "
+                      "alignment against the sentence text",
             )
 
         try:
@@ -349,8 +369,10 @@ class SpeechSimilarityScorer(Scorer):
             notes=(
                 "Audio-to-audio comparison (SpeechBERTScore F1, "
                 f"{MODEL_ID}) against a {clip.source} human reference clip -- "
-                "no ASR, no LLM, no phoneme decoding involved. F1 rather than "
-                "the paper's precision-only choice: tested more sensitive to "
+                "the similarity score itself involves no ASR, LLM, or phoneme "
+                "decoding (span extraction uses a phoneme CTC model for forced "
+                "alignment against the known sentence text, not recognition). "
+                "F1 rather than the paper's precision-only choice: tested more sensitive to "
                 "a candidate truncating/dropping part of the name (see module "
                 "docstring), at the cost of more sensitivity to reference "
                 "recording pace. Validated on a small slice with a wide "
