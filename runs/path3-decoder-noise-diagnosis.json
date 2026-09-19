@@ -1,0 +1,837 @@
+{
+  "abilify": {
+    "vs_dict": 0.21875,
+    "vs_human_decode": 0.125,
+    "path2": 2.949
+  },
+  "alyftrek": {
+    "vs_dict": 1.25,
+    "vs_human_decode": 1.09375,
+    "path2": 3.149
+  },
+  "advil": {
+    "vs_dict": 0.375,
+    "vs_human_decode": 0.375,
+    "path2": 3.74
+  },
+  "advair": {
+    "vs_dict": 1.6,
+    "vs_human_decode": 1.75,
+    "path2": 2.688
+  },
+  "adquey": {
+    "vs_dict": 7.625,
+    "vs_human_decode": 3.7291666666666665,
+    "path2": 1.86
+  },
+  "alhemo": {
+    "vs_dict": 0.3333333333333333,
+    "vs_human_decode": 0.08333333333333333,
+    "path2": 3.213
+  },
+  "ambien": {
+    "vs_dict": 0.08333333333333333,
+    "vs_human_decode": 0.20833333333333334,
+    "path2": 3.505
+  },
+  "aspirin": {
+    "vs_dict": 0.16666666666666666,
+    "vs_human_decode": 3.6875,
+    "path2": 3.566
+  },
+  "anktiva": {
+    "vs_dict": 0.25,
+    "vs_human_decode": 0.3392857142857143,
+    "path2": 3.649
+  },
+  "attruby": {
+    "vs_dict": 0.7916666666666666,
+    "vs_human_decode": 0.5416666666666666,
+    "path2": 3.0
+  },
+  "aucatzyl": {
+    "vs_dict": 2.4285714285714284,
+    "vs_human_decode": 6.15,
+    "path2": 2.817
+  },
+  "benadryl": {
+    "vs_dict": 0.1875,
+    "vs_human_decode": 1.4642857142857142,
+    "path2": 3.973
+  },
+  "biktarvy": {
+    "vs_dict": 0.96875,
+    "vs_human_decode": 0.0,
+    "path2": 4.037
+  },
+  "bizengri": {
+    "vs_dict": 0.421875,
+    "vs_human_decode": 1.1527777777777777,
+    "path2": 3.141
+  },
+  "blujepa": {
+    "vs_dict": 0.53125,
+    "vs_human_decode": 1.3214285714285714,
+    "path2": 3.432
+  },
+  "byetta": {
+    "vs_dict": 2.1458333333333335,
+    "vs_human_decode": 1.375,
+    "path2": 3.617
+  },
+  "claritin": {
+    "vs_dict": 0.09375,
+    "vs_human_decode": 0.71875,
+    "path2": 3.588
+  },
+  "cymbalta": {
+    "vs_dict": 1.0625,
+    "vs_human_decode": 0.90625,
+    "path2": 3.311
+  },
+  "chantix": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.0,
+    "path2": 3.245
+  },
+  "cobenfy": {
+    "vs_dict": 1.3571428571428572,
+    "vs_human_decode": 2.0,
+    "path2": 2.592
+  },
+  "cosentyx": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.05,
+    "path2": 3.851
+  },
+  "crestor": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.9285714285714286,
+    "path2": 3.572
+  },
+  "eliquis": {
+    "vs_dict": 1.3928571428571428,
+    "vs_human_decode": 1.25,
+    "path2": 2.603
+  },
+  "dupixent": {
+    "vs_dict": 0.3333333333333333,
+    "vs_human_decode": 0.05555555555555555,
+    "path2": 3.355
+  },
+  "datroway": {
+    "vs_dict": 1.6111111111111112,
+    "vs_human_decode": 0.0,
+    "path2": 3.467
+  },
+  "ebglyss": {
+    "vs_dict": 1.4166666666666667,
+    "vs_human_decode": 3.2,
+    "path2": 2.746
+  },
+  "enbrel": {
+    "vs_dict": 0.2916666666666667,
+    "vs_human_decode": 0.375,
+    "path2": 3.244
+  },
+  "ensacove": {
+    "vs_dict": 0.125,
+    "vs_human_decode": 1.2857142857142858,
+    "path2": 3.124
+  },
+  "elrexfio": {
+    "vs_dict": 1.0,
+    "vs_human_decode": 0.9166666666666666,
+    "path2": 3.445
+  },
+  "entresto": {
+    "vs_dict": 0.1388888888888889,
+    "vs_human_decode": 0.0,
+    "path2": 4.091
+  },
+  "farxiga": {
+    "vs_dict": 1.1071428571428572,
+    "vs_human_decode": 1.25,
+    "path2": 3.418
+  },
+  "flonase": {
+    "vs_dict": 0.03125,
+    "vs_human_decode": 0.15625,
+    "path2": 3.322
+  },
+  "acetaminophen": {
+    "vs_dict": 0.2708333333333333,
+    "vs_human_decode": 0.2916666666666667,
+    "path2": 3.808
+  },
+  "acoramidis": {
+    "vs_dict": 0.8181818181818182,
+    "vs_human_decode": 2.775,
+    "path2": 2.318
+  },
+  "acoltremon": {
+    "vs_dict": 0.325,
+    "vs_human_decode": 0.1,
+    "path2": 3.649
+  },
+  "alprazolam": {
+    "vs_dict": 0.15,
+    "vs_human_decode": 0.15,
+    "path2": 4.046
+  },
+  "adalimumab": {
+    "vs_dict": 2.0625,
+    "vs_human_decode": 2.5384615384615383,
+    "path2": 2.69
+  },
+  "apixaban": {
+    "vs_dict": 0.8611111111111112,
+    "vs_human_decode": 0.8055555555555556,
+    "path2": 3.72
+  },
+  "atogepant": {
+    "vs_dict": 1.7386363636363635,
+    "vs_human_decode": 2.375,
+    "path2": 3.028
+  },
+  "aripiprazole": {
+    "vs_dict": 1.3958333333333333,
+    "vs_human_decode": 3.05,
+    "path2": 2.294
+  },
+  "apremilast": {
+    "vs_dict": 0.05,
+    "vs_human_decode": 0.25,
+    "path2": 2.712
+  },
+  "atorvastatin": {
+    "vs_dict": 0.4166666666666667,
+    "vs_human_decode": 0.4375,
+    "path2": 3.917
+  },
+  "baloxavir-marboxil": {
+    "vs_dict": 0.9671052631578947,
+    "vs_human_decode": 1.7222222222222223,
+    "path2": 3.772
+  },
+  "cetirizine": {
+    "vs_dict": 0.16666666666666666,
+    "vs_human_decode": 1.09375,
+    "path2": 3.609
+  },
+  "cariprazine": {
+    "vs_dict": 1.2625,
+    "vs_human_decode": 1.2875,
+    "path2": 2.328
+  },
+  "clopidogrel": {
+    "vs_dict": 1.1923076923076923,
+    "vs_human_decode": 1.9583333333333333,
+    "path2": 3.555
+  },
+  "diazepam": {
+    "vs_dict": 0.9444444444444444,
+    "vs_human_decode": 0.3125,
+    "path2": 4.122
+  },
+  "dapagliflozin": {
+    "vs_dict": 0.75,
+    "vs_human_decode": 1.2333333333333334,
+    "path2": 3.061
+  },
+  "datopotamab-deruxtecan": {
+    "vs_dict": 1.6614583333333333,
+    "vs_human_decode": 1.359375,
+    "path2": 3.202
+  },
+  "dulaglutide": {
+    "vs_dict": 1.5227272727272727,
+    "vs_human_decode": 1.5227272727272727,
+    "path2": 3.285
+  },
+  "diphenhydramine": {
+    "vs_dict": 0.09166666666666666,
+    "vs_human_decode": 0.125,
+    "path2": 3.838
+  },
+  "dupilumab": {
+    "vs_dict": 1.0,
+    "vs_human_decode": 0.1111111111111111,
+    "path2": 3.88
+  },
+  "duloxetine": {
+    "vs_dict": 0.15,
+    "vs_human_decode": 0.7954545454545454,
+    "path2": 3.731
+  },
+  "efgartigimod-alfa": {
+    "vs_dict": 2.3203125,
+    "vs_human_decode": 2.9916666666666667,
+    "path2": 3.073
+  },
+  "empagliflozin": {
+    "vs_dict": 1.3214285714285714,
+    "vs_human_decode": 1.5178571428571428,
+    "path2": 3.151
+  },
+  "esomeprazole": {
+    "vs_dict": 1.5625,
+    "vs_human_decode": 1.5625,
+    "path2": 2.824
+  },
+  "etanercept": {
+    "vs_dict": 3.05,
+    "vs_human_decode": 1.90625,
+    "path2": 3.423
+  },
+  "exenatide": {
+    "vs_dict": 0.825,
+    "vs_human_decode": 0.9,
+    "path2": 3.334
+  },
+  "famotidine": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 1.8,
+    "path2": 3.305
+  },
+  "fezolinetant": {
+    "vs_dict": 1.2884615384615385,
+    "vs_human_decode": 1.4791666666666667,
+    "path2": 3.443
+  },
+  "fluoxetine": {
+    "vs_dict": 0.775,
+    "vs_human_decode": 0.725,
+    "path2": 4.124
+  },
+  "ibuprofen": {
+    "vs_dict": 0.6458333333333334,
+    "vs_human_decode": 1.2125,
+    "path2": 3.658
+  },
+  "gepotidacin": {
+    "vs_dict": 1.4107142857142858,
+    "vs_human_decode": 1.375,
+    "path2": 2.647
+  },
+  "fluticasone-propionate": {
+    "vs_dict": 0.056818181818181816,
+    "vs_human_decode": 8.85,
+    "path2": 2.753
+  },
+  "insulin-glargine": {
+    "vs_dict": 0.08333333333333333,
+    "vs_human_decode": 0.5178571428571429,
+    "path2": 3.867
+  },
+  "loratadine": {
+    "vs_dict": 0.9444444444444444,
+    "vs_human_decode": 0.8888888888888888,
+    "path2": 4.17
+  },
+  "levothyroxine": {
+    "vs_dict": 0.7142857142857143,
+    "vs_human_decode": 0.75,
+    "path2": 3.194
+  },
+  "lisdexamfetamine": {
+    "vs_dict": 0.53125,
+    "vs_human_decode": 0.675,
+    "path2": 3.409
+  },
+  "lurasidone": {
+    "vs_dict": 1.45,
+    "vs_human_decode": 1.725,
+    "path2": 3.479
+  },
+  "nipocalimab-aahu": {
+    "vs_dict": 2.0833333333333335,
+    "vs_human_decode": 2.8863636363636362,
+    "path2": 2.704
+  },
+  "nogapendekin-alfa-inbakicept-pmln": {
+    "vs_dict": 2.324074074074074,
+    "vs_human_decode": 2.3055555555555554,
+    "path2": 2.832
+  },
+  "omeprazole": {
+    "vs_dict": 0.225,
+    "vs_human_decode": 0.8409090909090909,
+    "path2": 3.417
+  },
+  "omalizumab": {
+    "vs_dict": 1.5454545454545454,
+    "vs_human_decode": 1.075,
+    "path2": 3.022
+  },
+  "obecabtagene-autoleucel": {
+    "vs_dict": 0.2727272727272727,
+    "vs_human_decode": 1.618421052631579,
+    "path2": 3.513
+  },
+  "remibrutinib": {
+    "vs_dict": 0.14583333333333334,
+    "vs_human_decode": 0.8863636363636364,
+    "path2": 3.715
+  },
+  "pregabalin": {
+    "vs_dict": 0.05,
+    "vs_human_decode": 0.1,
+    "path2": 3.821
+  },
+  "prademagene-zamikeracel": {
+    "vs_dict": 1.2954545454545454,
+    "vs_human_decode": 1.7857142857142858,
+    "path2": 2.367
+  },
+  "rilzabrutinib": {
+    "vs_dict": 1.1923076923076923,
+    "vs_human_decode": 2.3365384615384617,
+    "path2": 2.952
+  },
+  "revumenib": {
+    "vs_dict": 1.8055555555555556,
+    "vs_human_decode": 0.95,
+    "path2": 3.33
+  },
+  "quetiapine": {
+    "vs_dict": 0.875,
+    "vs_human_decode": 0.875,
+    "path2": 3.308
+  },
+  "rimegepant": {
+    "vs_dict": 0.18181818181818182,
+    "vs_human_decode": 0.18181818181818182,
+    "path2": 3.356
+  },
+  "rivaroxaban": {
+    "vs_dict": 0.6458333333333334,
+    "vs_human_decode": 0.0,
+    "path2": 3.869
+  },
+  "rosuvastatin": {
+    "vs_dict": 0.15384615384615385,
+    "vs_human_decode": 0.15384615384615385,
+    "path2": 3.24
+  },
+  "sitagliptin": {
+    "vs_dict": 0.20454545454545456,
+    "vs_human_decode": 0.8333333333333334,
+    "path2": 2.604
+  },
+  "suzetrigine": {
+    "vs_dict": 0.11363636363636363,
+    "vs_human_decode": 0.11363636363636363,
+    "path2": 2.804
+  },
+  "semaglutide": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.725,
+    "path2": 3.57
+  },
+  "sertraline": {
+    "vs_dict": 2.4722222222222223,
+    "vs_human_decode": 1.96875,
+    "path2": 2.814
+  },
+  "talquetamab": {
+    "vs_dict": 1.0,
+    "vs_human_decode": 1.5909090909090908,
+    "path2": 2.925
+  },
+  "testosterone-undecanoate": {
+    "vs_dict": 1.1354166666666667,
+    "vs_human_decode": 7.2727272727272725,
+    "path2": 2.969
+  },
+  "tiotropium-bromide": {
+    "vs_dict": 0.42857142857142855,
+    "vs_human_decode": 6.0227272727272725,
+    "path2": 3.157
+  },
+  "tofacitinib": {
+    "vs_dict": 0.4166666666666667,
+    "vs_human_decode": 1.6875,
+    "path2": 3.52
+  },
+  "tirzepatide": {
+    "vs_dict": 1.0795454545454546,
+    "vs_human_decode": 0.8055555555555556,
+    "path2": 3.357
+  },
+  "tovorafenib": {
+    "vs_dict": 1.1923076923076923,
+    "vs_human_decode": 1.2115384615384615,
+    "path2": 3.029
+  },
+  "varenicline": {
+    "vs_dict": 1.525,
+    "vs_human_decode": 1.45,
+    "path2": 2.813
+  },
+  "upadacitinib": {
+    "vs_dict": 1.3035714285714286,
+    "vs_human_decode": 1.4318181818181819,
+    "path2": 3.679
+  },
+  "vorasidenib": {
+    "vs_dict": 1.2272727272727273,
+    "vs_human_decode": 0.4375,
+    "path2": 3.209
+  },
+  "zolpidem": {
+    "vs_dict": 0.9444444444444444,
+    "vs_human_decode": 0.34375,
+    "path2": 3.171
+  },
+  "zolbetuximab": {
+    "vs_dict": 0.8269230769230769,
+    "vs_human_decode": 1.3958333333333333,
+    "path2": 2.89
+  },
+  "humira": {
+    "vs_dict": 2.1785714285714284,
+    "vs_human_decode": 1.6666666666666667,
+    "path2": 3.757
+  },
+  "imaavy": {
+    "vs_dict": 0.35,
+    "vs_human_decode": 0.35,
+    "path2": 2.54
+  },
+  "imfinzi": {
+    "vs_dict": 0.07142857142857142,
+    "vs_human_decode": 0.21428571428571427,
+    "path2": 3.938
+  },
+  "ingrezza": {
+    "vs_dict": 0.21428571428571427,
+    "vs_human_decode": 0.2857142857142857,
+    "path2": 3.99
+  },
+  "jardiance": {
+    "vs_dict": 1.4166666666666667,
+    "vs_human_decode": 2.28125,
+    "path2": 3.818
+  },
+  "januvia": {
+    "vs_dict": 0.15625,
+    "vs_human_decode": 0.0,
+    "path2": 3.852
+  },
+  "latuda": {
+    "vs_dict": 3.5625,
+    "vs_human_decode": 3.6875,
+    "path2": 3.025
+  },
+  "journavx": {
+    "vs_dict": 0.95,
+    "vs_human_decode": 0.16666666666666666,
+    "path2": 3.108
+  },
+  "kisqali": {
+    "vs_dict": 0.2857142857142857,
+    "vs_human_decode": 0.21428571428571427,
+    "path2": 3.391
+  },
+  "kyzatrex": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.8888888888888888,
+    "path2": 3.462
+  },
+  "leqembi": {
+    "vs_dict": 0.32142857142857145,
+    "vs_human_decode": 0.03571428571428571,
+    "path2": 3.426
+  },
+  "lipitor": {
+    "vs_dict": 0.10714285714285714,
+    "vs_human_decode": 1.5,
+    "path2": 3.263
+  },
+  "motrin": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.14285714285714285,
+    "path2": 3.995
+  },
+  "lyrica": {
+    "vs_dict": 1.0714285714285714,
+    "vs_human_decode": 0.25,
+    "path2": 3.351
+  },
+  "nexium": {
+    "vs_dict": 0.07142857142857142,
+    "vs_human_decode": 0.03571428571428571,
+    "path2": 3.433
+  },
+  "meibo": {
+    "vs_dict": 1.2916666666666667,
+    "vs_human_decode": 1.3333333333333333,
+    "path2": 2.888
+  },
+  "metformin": {
+    "vs_dict": 0.08333333333333333,
+    "vs_human_decode": 0.027777777777777776,
+    "path2": 3.857
+  },
+  "mounjaro": {
+    "vs_dict": 0.8,
+    "vs_human_decode": 1.75,
+    "path2": 2.973
+  },
+  "nurtec": {
+    "vs_dict": 1.3333333333333333,
+    "vs_human_decode": 4.0227272727272725,
+    "path2": 3.275
+  },
+  "nuzolvence": {
+    "vs_dict": 1.25,
+    "vs_human_decode": 0.925,
+    "path2": 3.442
+  },
+  "ojemda": {
+    "vs_dict": 1.3125,
+    "vs_human_decode": 0.35714285714285715,
+    "path2": 3.37
+  },
+  "otezla": {
+    "vs_dict": 0.14285714285714285,
+    "vs_human_decode": 1.5,
+    "path2": 4.048
+  },
+  "ozempic": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.0,
+    "path2": 3.551
+  },
+  "palynziq": {
+    "vs_dict": 1.0833333333333333,
+    "vs_human_decode": 2.638888888888889,
+    "path2": 2.827
+  },
+  "plavix": {
+    "vs_dict": 0.14285714285714285,
+    "vs_human_decode": 0.14285714285714285,
+    "path2": 4.029
+  },
+  "prilosec": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.0,
+    "path2": 3.845
+  },
+  "prozac": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 1.3333333333333333,
+    "path2": 4.093
+  },
+  "qulipta": {
+    "vs_dict": 1.21875,
+    "vs_human_decode": 0.42857142857142855,
+    "path2": 3.337
+  },
+  "revuforj": {
+    "vs_dict": 0.725,
+    "vs_human_decode": 2.921875,
+    "path2": 2.939
+  },
+  "rhapsido": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.09375,
+    "path2": 3.272
+  },
+  "rezdiffra": {
+    "vs_dict": 2.09375,
+    "vs_human_decode": 2.0,
+    "path2": 3.358
+  },
+  "rinvoq": {
+    "vs_dict": 1.2857142857142858,
+    "vs_human_decode": 1.2857142857142858,
+    "path2": 2.686
+  },
+  "rybelsus": {
+    "vs_dict": 1.03125,
+    "vs_human_decode": 1.125,
+    "path2": 3.421
+  },
+  "seroquel": {
+    "vs_dict": 1.90625,
+    "vs_human_decode": 1.8125,
+    "path2": 3.124
+  },
+  "skyrizi": {
+    "vs_dict": 0.8611111111111112,
+    "vs_human_decode": 0.03125,
+    "path2": 3.845
+  },
+  "spiriva": {
+    "vs_dict": 1.0714285714285714,
+    "vs_human_decode": 0.3125,
+    "path2": 3.535
+  },
+  "symbicort": {
+    "vs_dict": 0.027777777777777776,
+    "vs_human_decode": 0.375,
+    "path2": 3.486
+  },
+  "synthroid": {
+    "vs_dict": 0.03125,
+    "vs_human_decode": 0.0,
+    "path2": 3.792
+  },
+  "tagrisso": {
+    "vs_dict": 0.09375,
+    "vs_human_decode": 0.03125,
+    "path2": 3.517
+  },
+  "tecfidera": {
+    "vs_dict": 1.0,
+    "vs_human_decode": 1.0833333333333333,
+    "path2": 3.071
+  },
+  "talvey": {
+    "vs_dict": 1.2916666666666667,
+    "vs_human_decode": 3.0,
+    "path2": 2.973
+  },
+  "trulicity": {
+    "vs_dict": 0.7222222222222222,
+    "vs_human_decode": 1.96875,
+    "path2": 2.95
+  },
+  "tryngolza": {
+    "vs_dict": 3.2625,
+    "vs_human_decode": 1.5113636363636365,
+    "path2": 2.88
+  },
+  "tylenol": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.125,
+    "path2": 3.986
+  },
+  "tryptyr": {
+    "vs_dict": 1.1428571428571428,
+    "vs_human_decode": 0.0,
+    "path2": 3.031
+  },
+  "valium": {
+    "vs_dict": 1.2083333333333333,
+    "vs_human_decode": 0.2,
+    "path2": 4.287
+  },
+  "ubrelvy": {
+    "vs_dict": 1.9722222222222223,
+    "vs_human_decode": 1.03125,
+    "path2": 3.163
+  },
+  "vabysmo": {
+    "vs_dict": 2.28125,
+    "vs_human_decode": 2.1527777777777777,
+    "path2": 2.71
+  },
+  "veozah": {
+    "vs_dict": 1.9,
+    "vs_human_decode": 1.3958333333333333,
+    "path2": 2.944
+  },
+  "voranigo": {
+    "vs_dict": 1.4,
+    "vs_human_decode": 2.5555555555555554,
+    "path2": 2.184
+  },
+  "vraylar": {
+    "vs_dict": 1.0357142857142858,
+    "vs_human_decode": 1.45,
+    "path2": 3.906
+  },
+  "vyvanse": {
+    "vs_dict": 1.0625,
+    "vs_human_decode": 0.44642857142857145,
+    "path2": 2.827
+  },
+  "vyloy": {
+    "vs_dict": 2.0416666666666665,
+    "vs_human_decode": 2.0,
+    "path2": 1.587
+  },
+  "xanax": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.16666666666666666,
+    "path2": 3.926
+  },
+  "vyvgart": {
+    "vs_dict": 1.0714285714285714,
+    "vs_human_decode": 1.0357142857142858,
+    "path2": 2.569
+  },
+  "wayrilz": {
+    "vs_dict": 1.1785714285714286,
+    "vs_human_decode": 1.1785714285714286,
+    "path2": 3.537
+  },
+  "wegovy": {
+    "vs_dict": 0.42857142857142855,
+    "vs_human_decode": 0.35714285714285715,
+    "path2": 3.043
+  },
+  "winrevair": {
+    "vs_dict": 1.5277777777777777,
+    "vs_human_decode": 2.25,
+    "path2": 3.117
+  },
+  "xarelto": {
+    "vs_dict": 1.0625,
+    "vs_human_decode": 1.0625,
+    "path2": 3.186
+  },
+  "xeljanz": {
+    "vs_dict": 0.09375,
+    "vs_human_decode": 0.1875,
+    "path2": 3.513
+  },
+  "zantac": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.25,
+    "path2": 4.214
+  },
+  "xofluza": {
+    "vs_dict": 2.4722222222222223,
+    "vs_human_decode": 1.25,
+    "path2": 2.893
+  },
+  "xolair": {
+    "vs_dict": 0.16666666666666666,
+    "vs_human_decode": 1.2142857142857142,
+    "path2": 3.165
+  },
+  "zaiidra": {
+    "vs_dict": 0.8125,
+    "vs_human_decode": 1.75,
+    "path2": 3.933
+  },
+  "zepbound": {
+    "vs_dict": 0.0,
+    "vs_human_decode": 0.0,
+    "path2": 3.312
+  },
+  "zevaskyn": {
+    "vs_dict": 0.53125,
+    "vs_human_decode": 0.34375,
+    "path2": 2.371
+  },
+  "zoloft": {
+    "vs_dict": 0.07142857142857142,
+    "vs_human_decode": 2.95,
+    "path2": 4.059
+  },
+  "zycubo": {
+    "vs_dict": 2.638888888888889,
+    "vs_human_decode": 1.9375,
+    "path2": 2.862
+  },
+  "zyrtec": {
+    "vs_dict": 1.2916666666666667,
+    "vs_human_decode": 1.5,
+    "path2": 3.995
+  }
+}
