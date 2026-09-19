@@ -241,6 +241,7 @@ RESPELL_VOWELS: list[tuple[str, tuple[list[str], str]]] = [
 RESPELL_CONSONANTS: list[tuple[str, tuple[list[str], str]]] = [
     ("tch", (["CH"], "tʃ")),
     ("ch", (["CH"], "tʃ")),
+    ("ck", (["K"], "k")),
     ("dh", (["DH"], "ð")),
     ("gh", (["G"], "ɡ")),
     ("kh", (["HH"], "x")),
@@ -267,12 +268,26 @@ RESPELL_CONSONANTS: list[tuple[str, tuple[list[str], str]]] = [
     ("t", (["T"], "t")),
     ("v", (["V"], "v")),
     ("w", (["W"], "w")),
+    ("x", (["K", "S"], "ks")),
     ("z", (["Z"], "z")),
 ]
 
 # "y" is genuinely ambiguous in the key: word-initially/finally it is the
 # /aɪ/ nucleus ("eye", "sky"); elsewhere it is the /j/ onset ("you"). Resolved
 # contextually in `_respell_segments` rather than placed in the table above.
+#
+# "c" is the other letter with no fixed mapping: standard English spelling
+# rules make it "hard" (/k/) before a/o/u, a consonant, or at a syllable
+# boundary, and "soft" (/s/) before e/i/y -- also resolved contextually
+# rather than placed in the table, since a bare table entry can only ever
+# pick one. Confirmed as a real, silent gap on real citations before this
+# was added: a syllable with no table entry at all falls through to "stray
+# punctuation" and is dropped with no trace, not converted wrong -- DailyMed's
+# own respellings for Casgevy ("cass-JEH-vee"), Cobenfy ("co-BEN-fee"), and
+# Prozac ("PRO-zac") each lost their initial hard "c" entirely (`AE0 S JH
+# EH1 V IY0` for "cass", not `K AE0 S ...`), and NCI's etanercept
+# ("ee-TA-ner-cept") lost its soft "c" the same way. "ch" and "ck" are real
+# digraphs and are matched by the table above before this ever runs.
 RESPELL_TABLE = RESPELL_VOWELS + RESPELL_CONSONANTS
 
 
@@ -288,14 +303,75 @@ def _respell_segments(syllable: str) -> list[tuple[list[str], str]]:
                 out.append((["AY"], "aɪ"))
             i += 1
             continue
+
+        matched = False
         for graph, mapped in RESPELL_TABLE:
             if syllable.startswith(graph, i):
                 out.append(mapped)
                 i += len(graph)
+                matched = True
                 break
-        else:
-            i += 1  # stray punctuation
+        if matched:
+            continue
+
+        if syllable[i] == "c":
+            # A syllable-final "c" ("zac", "epic") is hard, same as before a
+            # consonant or a/o/u -- only an ACTUAL following e/i/y makes it
+            # soft, so this checks for one explicitly rather than testing
+            # `nxt in "eiy"` on a `nxt` that defaults to "" at the end of a
+            # syllable: "" is a substring of every string in Python, so that
+            # membership test alone would silently call end-of-syllable "c"
+            # soft too.
+            nxt = syllable[i + 1] if i + 1 < n else ""
+            soft = nxt != "" and nxt in "eiy"
+            out.append((["S"], "s") if soft else (["K"], "k"))
+            i += 1
+            continue
+
+        i += 1  # stray punctuation
     return out
+
+
+# The classic English "magic e" / silent-e spelling convention: a syllable
+# ending in "e" preceded by exactly one consonant (or by nothing at all, the
+# vowel sitting directly against the "e") makes the vowel "long" and the "e"
+# itself silent, rather than its own /ɛ/ sound. `_respell_segments` had no
+# notion of this at all -- a bare trailing single "e" always fell through to
+# the ordinary "e" -> EH table entry -- which is wrong on every real
+# citation seen so far that uses it: USAN's own "zole" for omeprazole/
+# aripiprazole (rhymes with "hole", not "hole-eh"), "tide" for exenatide/
+# Retatrutide (rhymes with "hide"), "kove" for Ensacove, and "proe"/"bue" for
+# ibuprofen (adjacent vowel+e, the same convention with zero consonants
+# between). Confirmed there is no counter-example in this dataset of a
+# trailing "e" syllable that is genuinely meant to say /ɛ/ -- every real
+# occurrence found is this convention.
+#
+# Deliberately conservative: only a SINGLE consonant between the vowel and
+# the "e" is treated as silent-e (the real English rule -- "hope" is silent-e,
+# a made-up "holpe" with two consonants would not be); anything that doesn't
+# match this shape is left completely alone and falls through to the
+# existing per-letter handling, rather than guessed at.
+_LONG_VOWEL = {"a": "ay", "e": "ee", "i": "eye", "o": "oh", "u": "ew"}
+_MAGIC_E_VOWELS = set(_LONG_VOWEL)
+_MAGIC_E_CONSONANTS = set("bcdfghjklmnpqrstvwxz")
+
+
+def _apply_magic_e(syllable: str) -> str:
+    """Rewrite a syllable's trailing silent "e" into the equivalent
+    already-handled long-vowel digraph, e.g. "zole" -> "zohl", "proe" ->
+    "proh" -- see the module note above `_LONG_VOWEL` for why.
+    """
+    if len(syllable) < 2 or not syllable.endswith("e"):
+        return syllable
+
+    body = syllable[:-1]
+    if len(body) >= 2 and body[-1] in _MAGIC_E_CONSONANTS and body[-2] in _MAGIC_E_VOWELS:
+        vowel, consonant, rest = body[-2], body[-1], body[:-2]
+        return f"{rest}{_LONG_VOWEL[vowel]}{consonant}"
+    if body and body[-1] in _MAGIC_E_VOWELS:
+        vowel, rest = body[-1], body[:-1]
+        return f"{rest}{_LONG_VOWEL[vowel]}"
+    return syllable
 
 
 def respell_to_arpabet_ipa(syllables: list[str]) -> tuple[str, str]:
@@ -321,7 +397,7 @@ def respell_to_arpabet_ipa(syllables: list[str]) -> tuple[str, str]:
                 saw_primary = True
 
         used_stress = False
-        for arpa_syms, ipa_sym in _respell_segments(syllable.lower()):
+        for arpa_syms, ipa_sym in _respell_segments(_apply_magic_e(syllable.lower())):
             for sym in arpa_syms:
                 if sym in VOWEL_ARPA:
                     arpa.append(f"{sym}{stress if not used_stress else 0}")

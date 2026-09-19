@@ -392,17 +392,17 @@ def to_arpabet_variants(word: str) -> list[list[str]] | None:
 # PEU error versus plain `g2p.py`, positive meaning the stem engine is
 # closer to the real, sourced pronunciation.
 BACKTEST_RESULTS: dict[str, dict] = {
-    "gliflozin": {"n": 2, "improvement": 0.0957},
-    "prazole": {"n": 3, "improvement": 0.2114},
+    "gliflozin": {"n": 2, "improvement": 0.4763},
+    "prazole": {"n": 3, "improvement": 0.2640},
     "sartan": {"n": 1, "improvement": 0.3000},
-    "statin": {"n": 2, "improvement": 0.4846},
-    "tide": {"n": 6, "improvement": 0.0019},
-    "tinib": {"n": 7, "improvement": 0.1755},
-    "umab": {"n": 5, "improvement": -0.1003},
+    "statin": {"n": 2, "improvement": 0.4660},
+    "tide": {"n": 6, "improvement": -0.0868},
+    "tinib": {"n": 7, "improvement": 0.1400},
+    "umab": {"n": 5, "improvement": -0.0719},
     "vir": {"n": 3, "improvement": 0.6685},
-    "ximab": {"n": 1, "improvement": -0.2780},
-    "zole": {"n": 1, "improvement": -0.8583},
-    "zumab": {"n": 7, "improvement": 0.0933},
+    "ximab": {"n": 1, "improvement": -0.0780},
+    "zole": {"n": 1, "improvement": -0.2132},
+    "zumab": {"n": 7, "improvement": 0.0686},
 }
 
 # Adding the AMA USAN Statement PDF as a directly-fetched, primary source

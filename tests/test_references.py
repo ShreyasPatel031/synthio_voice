@@ -172,3 +172,81 @@ def test_ipac_en_metformin_agrees_with_respell_and_mw():
 def test_ipa_to_arpabet_defaults_to_first_vowel_when_unmarked():
     arpa, _ = ipa_to_arpabet_ipa("/sɛfəpiːm/")
     assert arpa.split()[1] == "EH1"
+
+
+# --- Respelling-converter letter bugs ---------------------------------------
+#
+# `respell_to_arpabet_ipa` is the shared syllable-to-phoneme converter behind
+# Wikipedia's {{respell}} template AND every USAN/NCI/DailyMed respelling
+# this project parses (via `build._respelling_text_to_variant`) -- a bug here
+# is silent in the worst way: the record still carries a real, verified
+# citation, so nothing flags a wrong phoneme string as suspect. Each case
+# below is a real citation from `references.jsonl` that was confirmed wrong
+# before the fix, not a synthetic example.
+
+
+def test_respell_x_is_ks():
+    # Xanax's own NCI Dictionary of Cancer Terms respelling, "ZAN-ax" --
+    # confirmed silently dropping the "x" entirely before this test existed
+    # ("x" had no entry at all in RESPELL_CONSONANTS, so it fell through to
+    # "stray punctuation" and vanished without a trace): AE1 N AE0 for
+    # "an-ax", not AE1 N AE0 K S.
+    arpa, ipa = respell_to_arpabet_ipa(["ZAN", "ax"])
+    assert arpa == "Z AE1 N AE0 K S"
+    assert ipa == "zænæks"
+
+
+def test_respell_hard_and_soft_c():
+    # "c" had no entry at all either, for the same reason "x" didn't --
+    # Casgevy's own DailyMed respelling "cass-JEH-vee" lost its initial hard
+    # /k/ entirely. Soft c (etanercept's NCI respelling "ee-TA-ner-cept",
+    # /s/ before "e") and hard c at a syllable boundary before a consonant
+    # both need the same fix, not just the hard-c case.
+    arpa, _ = respell_to_arpabet_ipa(["cass", "JEH", "vee"])
+    assert arpa == "K AE0 S JH EH1 V IY0"
+
+    arpa, _ = respell_to_arpabet_ipa(["ee", "TA", "ner", "cept"])
+    assert arpa == "IY0 T AE1 N EH0 R S EH0 P T"
+
+
+def test_respell_c_at_end_of_syllable_is_hard_not_soft():
+    # A syllable-final "c" ("zac") must stay hard: `nxt` (the letter after
+    # "c") defaults to "" at the end of a syllable, and "" is a substring of
+    # every string in Python -- a naive `nxt in "eiy"` check would treat
+    # that empty string as if it matched "e"/"i"/"y" and wrongly call it
+    # soft. Prozac's own DailyMed respelling "PRO-zac" pinned this down as a
+    # real regression caught while writing this fix, not a hypothetical.
+    arpa, _ = respell_to_arpabet_ipa(["PRO", "zac"])
+    assert arpa == "P R AA1 Z AE0 K"
+
+
+def test_respell_silent_final_e():
+    # The "magic e" spelling convention (a syllable-final "e" after a single
+    # consonant makes the preceding vowel long and is itself silent) had no
+    # handling at all -- every bare trailing "e" fell through to the plain
+    # "e" -> EH table entry. omeprazole's own USAN respelling ends in "zole"
+    # (rhymes with "hole"): confirmed silently producing an extra EH0
+    # syllable that isn't there (Z AA1 L EH0) before this fix.
+    arpa, _ = respell_to_arpabet_ipa(["oh", "MEH", "pruh", "zole"])
+    assert arpa.endswith("Z OW0 L")
+    assert "EH0 L" not in arpa
+
+    # The zero-consonant case (vowel directly against the silent "e") is the
+    # same convention, not a separate one -- ibuprofen's own USAN
+    # respelling "eye bue proe' fen" needs both "bue" -> /bjuː/ and "proe"
+    # -> /proʊ/, neither of which has a consonant between the vowel and the
+    # "e".
+    arpa, _ = respell_to_arpabet_ipa(["eye", "bue", "proe", "fen"])
+    assert arpa == "AY1 B Y UW0 P R OW0 F EH0 N"
+
+
+def test_respell_magic_e_requires_exactly_one_consonant():
+    # Two consonants between the vowel and the "e" is NOT the magic-e
+    # pattern (a made-up "holpe" is not "hole") -- deliberately left
+    # unconverted (falls through to the ordinary per-letter handling, which
+    # may still not be perfect, but must not guess at a vowel-lengthening
+    # this conservative either way).
+    from dose_r.references.wiki_notation import _apply_magic_e
+
+    assert _apply_magic_e("zole") == "zohl"
+    assert _apply_magic_e("olde") == "olde"
