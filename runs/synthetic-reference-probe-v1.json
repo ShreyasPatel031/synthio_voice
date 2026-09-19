@@ -1,0 +1,51 @@
+{
+  "vyloy": {
+    "gemini-baseline": 0.3175,
+    "cloudtts-plain": 0.7167,
+    "cloudtts-ssml-ipa": 0.7167,
+    "gemini-ipa-text": 0.7233,
+    "gemini-ipa-hint": 0.7911
+  },
+  "advair": {
+    "gemini-baseline": 0.5375,
+    "cloudtts-plain": 0.7222,
+    "cloudtts-ssml-ipa": 0.7222,
+    "gemini-ipa-text": 0.634,
+    "gemini-ipa-hint": 0.6866
+  },
+  "eliquis": {
+    "gemini-baseline": 0.5205,
+    "cloudtts-plain": 0.7998,
+    "cloudtts-ssml-ipa": 0.796,
+    "gemini-ipa-text": 0.7115,
+    "gemini-ipa-hint": 0.8058
+  },
+  "esomeprazole": {
+    "gemini-baseline": 0.5648,
+    "cloudtts-plain": 0.8823,
+    "cloudtts-ssml-ipa": 0.8072,
+    "gemini-ipa-text": 0.7853,
+    "gemini-ipa-hint": 0.8028
+  },
+  "aripiprazole": {
+    "gemini-baseline": 0.4589,
+    "cloudtts-plain": 0.7859,
+    "cloudtts-ssml-ipa": 0.6881,
+    "gemini-ipa-text": 0.5684,
+    "gemini-ipa-hint": 0.5747
+  },
+  "acoramidis": {
+    "gemini-baseline": 0.4636,
+    "cloudtts-plain": 0.4732,
+    "cloudtts-ssml-ipa": 0.7111,
+    "gemini-ipa-text": 0.7762,
+    "gemini-ipa-hint": 0.7298
+  },
+  "talquetamab": {
+    "gemini-baseline": 0.5851,
+    "cloudtts-plain": 0.7358,
+    "cloudtts-ssml-ipa": 0.7174,
+    "gemini-ipa-text": 0.715,
+    "gemini-ipa-hint": 0.7575
+  }
+}
