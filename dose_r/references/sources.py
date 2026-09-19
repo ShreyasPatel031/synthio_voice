@@ -734,6 +734,69 @@ def _first_word_group(raw: str) -> str | None:
     return " ".join(words[: boundary + 1])
 
 
+def _split_at_word_boundaries(raw: str, n_words: int) -> list[str] | None:
+    """`raw`'s own syllable-token run, split into `n_words` groups -- the
+    generalization of `_first_word_group`'s "the boundary is the widest gap"
+    signal to a multi-word ingredient name USAN's own Statement respells in
+    full (not just a salt/ester qualifier tacked onto one word).
+
+    This is what makes it possible to store a stored `raw` from a *plain*
+    multi-word generic's own combined USAN respelling (e.g. "copper
+    histidinate" -> "kop' er  his' ti di nate", `dimethyl fumarate` ->
+    "dye  meth' il     fue' ma  rate") with its two words' phonemes joined
+    by a real space in the final IPA -- confirmed the same gap-width signal
+    survives across every real multi-word generic in this dataset that
+    USAN answers in full: each has exactly `n_words - 1` gaps clearly wider
+    than the rest, in left-to-right order, at exactly the true word
+    boundaries. Returns None rather than guessing when that isn't true
+    (fewer than `n_words - 1` gaps stand out, or a name has only one word),
+    the same conservative rule `_first_word_group` already uses.
+    """
+    if n_words < 2:
+        return None
+    parts = re.split(r"( +)", raw.strip())
+    words = parts[0::2]
+    gaps = [len(g) for g in parts[1::2]]
+    if len(words) < n_words or not gaps:
+        return None
+
+    mode_gap, mode_count = Counter(gaps).most_common(1)[0]
+    if mode_count == len(gaps):
+        return None
+
+    boundaries = sorted(i for i, g in enumerate(gaps) if g > mode_gap)
+    if len(boundaries) != n_words - 1:
+        return None
+
+    groups, start = [], 0
+    for b in boundaries:
+        groups.append(" ".join(words[start : b + 1]))
+        start = b + 1
+    groups.append(" ".join(words[start:]))
+    return groups
+
+
+def _collapse_pronunciation_whitespace(raw_full: str, name: str) -> str:
+    """`raw_full`'s own whitespace, collapsed for storage -- a real word
+    boundary is kept as a double space when `name` is multi-word and
+    `_split_at_word_boundaries` can find one for every word, so
+    `build._respelling_text_to_variant` can join each word's own IPA with
+    a real space instead of running a multi-word ingredient's phonemes
+    together with no boundary at all (confirmed a real, silent gap on
+    every multi-word generic USAN answers in full, e.g. "copper
+    histidinate" -> "kɒpɛrhɪstɪdɪneɪt", one unreadable run-on word,
+    before this fix). Every other run of whitespace, within a word or
+    when no boundary could be found, collapses to a single space same as
+    before -- this never invents a boundary it isn't confident about.
+    """
+    words = name.split()
+    if len(words) >= 2:
+        groups = _split_at_word_boundaries(raw_full.strip(), len(words))
+        if groups:
+            return "  ".join(re.sub(r"\s+", " ", g).strip() for g in groups)
+    return re.sub(r"\s+", " ", raw_full).strip()
+
+
 def _doc_slug(document_uri: str) -> str:
     """A search result's `document_uri` -> its bare filename, decoded and
     without the `.pdf` extension -- more reliable to match a query against
@@ -875,7 +938,7 @@ def usan_pronunciation(name: str) -> dict | None:
     result = None
     if best and best_ratio >= 0.85:
         raw_full = _fetch_pronunciation(best["document_uri"])
-        raw = re.sub(r"\s+", " ", raw_full).strip() if raw_full else ""
+        raw = _collapse_pronunciation_whitespace(raw_full, name) if raw_full else ""
         if raw:
             url = f"{USAN_DOC_BASE}?uri={urllib.parse.quote(best['document_uri'])}"
             result = {"name": "usan-official", "raw": raw, "url": url}

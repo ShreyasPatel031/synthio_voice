@@ -11,16 +11,23 @@ Confidence follows the project contract:
     medium   exactly one external source answered
     low      no external source; no ground truth
 
-Multi-word ingredients are resolved word by word when the full name misses, so
-`fluticasone propionate` can take a real pronunciation for the head word only.
-A record is only as trustworthy as its weakest word, so the tier is the minimum
-across words.
+Multi-word ingredients are resolved word by word when the full name misses --
+so a name with no single source covering all of it can still take each word's
+own best answer -- and also when a source DOES answer for the full name but
+its own citation only actually covers part of it (`_covers_full_name`):
+Merriam-Webster's own "fluticasone propionate" entry never respells
+"propionate" at all, so that whole-name "hit" is discarded in favor of
+resolving "fluticasone" and "propionate" separately rather than silently
+storing a partial answer as if it were the whole name's own pronunciation.
+A record is only as trustworthy as its weakest word, so the tier is the
+weakest tier across words, not the best.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -66,7 +73,12 @@ def _respelling_span_to_variant(raw: str) -> tuple[str, str]:
     variants = [respell_to_arpabet_ipa(p.split("-")) for p in parts]
     if len(variants) == 1:
         return variants[0]
-    return " ".join(v[0] for v in variants), "".join(v[1] for v in variants)
+    # A bare "".join for IPA ran every word's phonemes together with no
+    # boundary at all ("copper histidinate" -> "kɒpɛrhɪstɪdɪneɪt", one
+    # unreadable run-on word) -- a space is IPA's own normal convention for
+    # transcribing a multi-word phrase, and matches what the ARPABET join
+    # already does one line above.
+    return " ".join(v[0] for v in variants), " ".join(v[1] for v in variants)
 
 
 def _from_gemini_grounded(word: str) -> tuple[list[tuple[str, str]], list[dict], str] | None:
@@ -172,16 +184,14 @@ def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
         return []
 
 
-def _respelling_text_to_variant(raw: str) -> tuple[str, str] | None:
-    """Raw respelling text in either of the two notations this project's
-    non-Gemini direct sources return -> an (ARPABET, IPA) pair. Shared by
-    DailyMed (`dailymed_pronunciation`) and the AMA USAN Statement PDF
-    (`usan_pronunciation`), which don't distinguish which notation they
-    found: the drugs.com/WebMD-style hyphenated form, already stress-marked
-    by capitalization (`"ky-ZAH-treks"`, `"YOU-vih-well"`), and the USAN
-    prime-stress form (`"am bel' vist"`, `"si pep' oh fol"`), which needs
-    the same stress-token conversion the Gemini-grounded path uses for that
-    notation.
+def _respelling_word_to_variant(raw: str) -> tuple[str, str] | None:
+    """One word's worth of raw respelling text, in either of the two
+    notations this project's non-Gemini direct sources return -> an
+    (ARPABET, IPA) pair: the drugs.com/WebMD-style hyphenated form, already
+    stress-marked by capitalization (`"ky-ZAH-treks"`, `"YOU-vih-well"`),
+    and the USAN prime-stress form (`"am bel' vist"`, `"si pep' oh fol"`),
+    which needs the same stress-token conversion the Gemini-grounded path
+    uses for that notation.
     """
     if "-" in raw and "'" not in raw and "’" not in raw:
         try:
@@ -190,12 +200,56 @@ def _respelling_text_to_variant(raw: str) -> tuple[str, str] | None:
             return None
 
     respelling = gemini_grounded.stress_tokens_to_respelling(raw.split())
-    if not respelling:
-        return None
+    if respelling:
+        try:
+            return respell_to_arpabet_ipa(respelling.split("-"))
+        except WikiNotationError:
+            return None
+
+    # `stress_tokens_to_respelling` deliberately refuses a lone unmarked
+    # word ("chloride" on its own, split out of "trospium chloride"'s
+    # "trose' pee um chloride") -- that guard exists for ITS callers
+    # (Gemini's free-form prose, a DailyMed title line), where a single
+    # bare word with no internal structure is noise, not a real citation.
+    # Here it isn't noise: USAN's own PRONUNCIATION field simply never
+    # respells an ordinary salt/qualifier word ("chloride", "sodium",
+    # "alfa") that needs no phonetic guidance, the same behavior already
+    # confirmed and relied on in `sources._is_salt_form_of`. Falling
+    # through to the plain converter (no explicit stress -> its own
+    # default-first-vowel-gets-primary rule) is exactly what the word
+    # would have gotten anyway riding along inside the old, un-split
+    # combined blob.
     try:
-        return respell_to_arpabet_ipa(respelling.split("-"))
+        return respell_to_arpabet_ipa(raw.split())
     except WikiNotationError:
         return None
+
+
+def _respelling_text_to_variant(raw: str) -> tuple[str, str] | None:
+    """Raw respelling text from DailyMed (`dailymed_pronunciation`) or the
+    AMA USAN Statement PDF (`usan_pronunciation`) -> an (ARPABET, IPA)
+    pair -- see `_respelling_word_to_variant` for the two notations this
+    handles.
+
+    A multi-word ingredient's own raw text carries its real word boundary
+    as a double space (see `sources._collapse_pronunciation_whitespace`,
+    which puts it there in the first place, and its own docstring for why
+    a plain single-space collapse would otherwise silently lose it): each
+    word's own portion is converted on its own and the results joined with
+    a real space, the same way `_join`/`_respelling_span_to_variant` already
+    join a name resolved word by word. Converting the whole multi-word
+    string as if it were one word would run two words' syllables into one
+    nonsense chain, exactly as those two functions' own docstrings already
+    warn against for the sources that go through them.
+    """
+    words = [w for w in re.split(r"\s{2,}", raw.strip()) if w]
+    if len(words) < 2:
+        return _respelling_word_to_variant(raw)
+
+    variants = [_respelling_word_to_variant(w) for w in words]
+    if not all(variants):
+        return None
+    return " ".join(v[0] for v in variants), " ".join(v[1] for v in variants)
 
 
 # These six sources are each a single, known, fixed kind of site -- no
@@ -319,12 +373,105 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
 def _join(parts: list[list[tuple[str, str]]]) -> list[tuple[str, str]]:
     """Concatenate per-word variant lists, keeping each word's preferred first."""
     arpa = " ".join(p[0][0] for p in parts)
-    ipa = "".join(p[0][1] for p in parts)
+    # See the identical fix in `_respelling_span_to_variant` -- a bare
+    # "".join here ran a multi-word name's per-word IPA together with no
+    # boundary at all.
+    ipa = " ".join(p[0][1] for p in parts)
     return [(arpa, ipa)]
+
+
+_VOWEL_GROUPS = re.compile(r"[aeiouy]+")
+_ARPA_VOWEL_TOKEN = re.compile(r"^[A-Z]{1,2}[0-2]$")
+
+
+def _estimate_syllables(name: str) -> int:
+    """A crude vowel-group count across every word of `name` -- good enough
+    to gauge whether a resolved variant covers the whole ingredient, not to
+    convert anything (mirrors `audio_verify.estimate_syllables`, duplicated
+    rather than imported since this module and the audio pipeline are
+    otherwise independent).
+
+    Each SPACE-separated word has its own FDA biosimilar suffix, if any,
+    stripped first the same way `sources.usan_pronunciation`/
+    `nci_pronunciation` already strip it before searching: nothing is ever
+    meant to pronounce "-abae"/"-pvzy"/"-pmln" (confirmed directly -- USAN's
+    own index has no entry for the suffixed form at all), so counting it
+    toward the expected syllable count would wrongly show a genuinely
+    complete citation ("insulin icodec-abae" -> USAN's own "in sul' in
+    eye' koe dek", covering both real words in full) as if it were short
+    one syllable.
+
+    This must run per word, not on the whole hyphen-joined name at once:
+    `_split_fda_suffix`'s own regex (a trailing hyphen plus exactly four
+    letters) can't distinguish a real biosimilar code from an ordinary word
+    that happens to also be four letters -- "efgartigimod ALFA" would
+    otherwise have its own second word, a real word that genuinely needs
+    pronouncing, silently stripped as if it were a meaningless suffix code.
+    A real FDA suffix is always hyphen-attached WITHIN a word ("icodec-
+    abae"), never its own space-separated word on its own ("alfa"), so
+    stripping word by word (never touching a space) can't make that
+    mistake.
+    """
+    from . import usan_stems  # local import: avoids a hard, one-way dependency
+
+    total = 0
+    for word in name.split():
+        stripped, _ = usan_stems._split_fda_suffix(word.lower())
+        total += max(1, len(_VOWEL_GROUPS.findall(stripped)))
+    return total or 1
+
+
+def _covers_full_name(name: str, variants: list[tuple[str, str]]) -> bool:
+    """False when a multi-word `name`'s resolved variant(s) look like they
+    only cover a leading subset of its words, not the whole thing.
+
+    A source queried with the FULL multi-word ingredient name can still
+    only answer for part of it -- confirmed as a real, silent defect, not
+    a hypothetical: Merriam-Webster's own "fluticasone propionate" entry
+    only respells "fluticasone" (no "propionate" at all), the AMA USAN
+    Statement filed under "efgartigimod-alfa.pdf" only respells
+    "efgartigimod" in its own PRONUNCIATION field (never "alfa"), and a
+    Gemini citation for "formoterol fumarate dihydrate" turned out to be
+    WebMD's page for bare "formoterol". Each of these still produced a
+    real, convertible variant, so the existing `tier == "low"` gate for
+    falling back to word-by-word resolution never fired -- the partial
+    answer was stored as if it were the whole name's own pronunciation,
+    with nothing in `confidence`/`notes` distinguishing it from a real one.
+
+    0.75 is not an arbitrary round number -- it is the exact midpoint,
+    measured against every one of this dataset's 21 real multi-word
+    ingredients, between the lowest ratio any genuinely complete citation
+    reaches (0.80, "exagamglogene autotemcel", whose USAN respelling
+    naturally compresses vowel-heavy spelling into fewer real syllables --
+    "ex gam gloe jeen aw toe tem sel") and the highest ratio the confirmed-
+    broken cases reach (0.71, efgartigimod's own citation missing "alfa"
+    entirely). A plain 60% floor was tried first and missed efgartigimod
+    alfa outright (5 of 7 expected syllables = 71%, "passing" a looser
+    floor despite an entire missing word) -- found by checking every real
+    multi-word record's own ratio individually rather than trusting the
+    first threshold that happened to catch the two most obvious cases.
+    """
+    if " " not in name:
+        return True
+    expected = _estimate_syllables(name)
+    return any(
+        sum(1 for tok in arpa.split() if _ARPA_VOWEL_TOKEN.match(tok)) >= expected * 0.75
+        for arpa, _ in variants
+    )
 
 
 def resolve(name: str, name_type: str) -> dict:
     whole, srcs, tier, notes = _resolve_word(name, name_type)
+
+    partial_whole_name_match = False
+    if tier != "low" and " " in name and whole and not _covers_full_name(name, whole):
+        # The whole-name query found a real source, but its own answer
+        # doesn't look like it covers every word -- treat this exactly
+        # like no whole-name match at all (fall through to per-word
+        # resolution below) rather than silently keeping a partial
+        # pronunciation labeled as if it were the full name's own.
+        partial_whole_name_match = True
+        tier = "low"
 
     if tier == "low" and " " in name:
         per_word = [_resolve_word(w, name_type) for w in name.split()]
@@ -345,9 +492,12 @@ def resolve(name: str, name_type: str) -> dict:
         # every other word in the name had no source at all.
         tier = max((p[2] for p in per_word), key=TIERS.index)
         word_notes = "; ".join(p[3] for p in per_word if p[3])
-        notes = "resolved word by word; tier is the weakest word" + (
-            f"; {word_notes}" if word_notes else ""
+        why = (
+            "a whole-name source answered but covered only part of the name"
+            if partial_whole_name_match
+            else "resolved word by word"
         )
+        notes = f"{why}; tier is the weakest word" + (f"; {word_notes}" if word_notes else "")
 
     return {
         "ingredient": name,

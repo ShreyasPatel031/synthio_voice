@@ -139,21 +139,23 @@ def test_mw_trailing_variant_expands_to_a_full_form():
 
 
 def test_respell_metformin():
+    # IPA carries the same stress as ARPABET's digit, placed IPA's own way
+    # -- before the stressed syllable, not on its vowel.
     arpa, ipa = respell_to_arpabet_ipa(["met", "FOR", "min"])
     assert arpa == "M EH0 T F AO1 R M IH0 N"
-    assert ipa == "mɛtfɔːrmɪn"
+    assert ipa == "mɛtˈfɔːrmɪn"
 
 
 def test_respell_suzetrigine():
     arpa, ipa = respell_to_arpabet_ipa(["soo", "ZE", "tri", "jeen"])
     assert arpa == "S UW0 Z EH1 T R IH0 JH IY0 N"
-    assert ipa == "suːzɛtrɪdʒiːn"
+    assert ipa == "suːˈzɛtrɪdʒiːn"
 
 
 def test_ipa_cefepime():
     arpa, ipa = ipa_to_arpabet_ipa("/ˈsɛf.ə.piːm/")
     assert arpa == "S EH1 F AH0 P IY0 M"
-    assert ipa == "sɛfəpiːm"
+    assert ipa == "ˈsɛfəpiːm"
 
 
 def test_ipac_en_metformin_agrees_with_respell_and_mw():
@@ -193,7 +195,7 @@ def test_respell_x_is_ks():
     # "an-ax", not AE1 N AE0 K S.
     arpa, ipa = respell_to_arpabet_ipa(["ZAN", "ax"])
     assert arpa == "Z AE1 N AE0 K S"
-    assert ipa == "zænæks"
+    assert ipa == "ˈzænæks"
 
 
 def test_respell_hard_and_soft_c():
@@ -250,3 +252,216 @@ def test_respell_magic_e_requires_exactly_one_consonant():
 
     assert _apply_magic_e("zole") == "zohl"
     assert _apply_magic_e("olde") == "olde"
+
+
+# --- IPA stress marks -------------------------------------------------------
+#
+# ARPABET's stress digit was always correct; IPA's own stress mark was
+# silently never emitted at all, in any of the three converters that
+# produce it -- confirmed as a near-total gap across the whole reference
+# set (403 of 411 stored IPA strings had no `ˈ`/`ˌ` anywhere) before this
+# fix. Not a cosmetic gap: an SSML `<phoneme alphabet="ipa">` tag has no
+# other way to know which syllable of a drug name to stress.
+
+
+def test_respell_ipa_stress_matches_arpabet():
+    # metformin: primary stress on "FOR", the second syllable.
+    arpa, ipa = respell_to_arpabet_ipa(["met", "FOR", "min"])
+    assert arpa.split()[4] == "AO1"
+    assert ipa == "mɛtˈfɔːrmɪn"
+
+
+def test_respell_ipa_stress_fallback_when_nothing_marked():
+    # No syllable is uppercase at all -- ARPABET already defaults to
+    # primary stress on the first vowel; IPA must place its own mark at
+    # the same syllable, not stay silent just because nothing in the
+    # input was explicitly marked.
+    arpa, ipa = respell_to_arpabet_ipa(["eye", "bue", "proe", "fen"])
+    assert arpa.split()[0] == "AY1"
+    assert ipa.startswith("ˈ")
+
+
+def test_mw_ipa_carries_stress():
+    arpa, ipa = to_arpabet_ipa("flü-ˈtik-ə-ˌsōn")
+    assert ipa == "fluːˈtɪkəˌsoʊn"
+
+
+def test_ipac_en_preserves_its_own_stress_mark():
+    # Wikipedia's IPAc-en template already states stress explicitly in its
+    # own input (the "ˈ" argument here) -- this must carry it through to
+    # the output IPA, not just consume it for ARPABET and drop it.
+    _, ipa = ipac_en_args_to_arpabet_ipa(["m", "ɛ", "t", "ˈ", "f", "ɔːr", "m", "ᵻ", "n"])
+    assert ipa == "mɛtˈfɔːrmᵻn"
+
+
+# --- Multi-word IPA word boundaries -----------------------------------------
+#
+# A multi-word ingredient's per-word IPA strings were concatenated with no
+# separator at all ("copper histidinate" -> "kɒpɛrhɪstɪdɪneɪt", one
+# unreadable run-on word) while the ARPABET join already used a space --
+# confirmed as a real gap affecting every one of this dataset's 21
+# multi-word ingredients, not just a hypothetical.
+
+
+def test_join_separates_words_in_ipa_not_just_arpabet():
+    from dose_r.references.build import _join
+
+    (arpa, ipa), = _join([[("K AA1 P", "kɑːp")], [("HH IH1 S", "hɪs")]])
+    assert arpa == "K AA1 P HH IH1 S"
+    assert ipa == "kɑːp hɪs"
+
+
+def test_respelling_span_separates_words_in_ipa_not_just_arpabet():
+    from dose_r.references.build import _respelling_span_to_variant
+
+    arpa, ipa = _respelling_span_to_variant("bik-TEG-ra-vir SO-di-um")
+    assert " " in arpa
+    assert " " in ipa
+
+
+# --- Partial whole-name-source detection ------------------------------------
+#
+# A source queried with a full multi-word ingredient name can still only
+# answer for part of it: real, confirmed citations, not hypotheticals --
+# Merriam-Webster's own "fluticasone propionate" entry never respells
+# "propionate" at all, and the AMA USAN Statement filed under
+# "efgartigimod-alfa.pdf" never respells "alfa" in its own PRONUNCIATION
+# field. Both used to be stored as if they were the whole name's own
+# pronunciation, with nothing distinguishing them from a real one.
+
+
+def test_covers_full_name_rejects_a_missing_trailing_word():
+    from dose_r.references.build import _covers_full_name
+
+    # efgartigimod alfa's real, confirmed-broken USAN citation: covers
+    # "efgartigimod" (5 syllables) but never "alfa" (2 more). "alfa" is
+    # also exactly four letters, the same length `_split_fda_suffix` looks
+    # for on a real biosimilar code -- this must still be rejected, not
+    # have "alfa" silently excused from the expected count as if it were
+    # one.
+    assert not _covers_full_name(
+        "efgartigimod alfa", [("EH0 F G AA0 R T IH1 G IH0 M AA0 D", "")]
+    )
+
+
+def test_covers_full_name_accepts_natural_undercounting():
+    from dose_r.references.build import _covers_full_name
+
+    # exagamglogene autotemcel's real USAN citation ("ex gam gloe jeen aw
+    # toe tem sel") covers both words in full, just with fewer actual
+    # spoken syllables than the crude vowel-letter estimate over the
+    # written name expects -- must NOT be flagged as partial.
+    assert _covers_full_name(
+        "exagamglogene autotemcel",
+        [("EH0 K S G AE0 M G L OW0 JH IY0 N AO0 T OW0 T EH1 M S EH0 L", "")],
+    )
+
+
+def test_covers_full_name_ignores_fda_biosimilar_suffix():
+    from dose_r.references.build import _covers_full_name
+
+    # "-abae" is a meaningless FDA-assigned distinguishing code with no
+    # intended pronunciation of its own (confirmed elsewhere in this
+    # project: USAN's own index has no entry for the suffixed form at
+    # all) -- it must not count toward the expected syllable total, or a
+    # genuinely complete citation for "insulin icodec" would be wrongly
+    # flagged as short one syllable it was never supposed to have.
+    assert _covers_full_name(
+        "insulin icodec-abae",
+        [("IH0 N S AH1 L IH0 N AY2 K OW0 D EH0 K", "")],
+    )
+
+
+# --- USAN's own multi-word word-boundary signal -----------------------------
+#
+# A real USAN Statement respelling BOTH words of a multi-word generic name
+# in one combined PRONUNCIATION field, back to back, with no consistent
+# single/double-space convention marking which gap is the true word
+# boundary versus an ordinary between-syllable gap -- but the true boundary
+# is reliably the widest gap in the string, the same signal
+# `sources._first_word_group` already uses for the (different) salt-form
+# case. Confirmed against real citations, not synthetic ones: "copper
+# histidinate" -> "kop' er  his' ti di nate" (double space at the boundary,
+# single elsewhere), "dimethyl fumarate" -> "dye  meth' il     fue' ma
+# rate" (a 5-space boundary against 2-space syllable gaps elsewhere).
+
+
+def test_split_at_word_boundaries_finds_the_widest_gap():
+    from dose_r.references.sources import _split_at_word_boundaries
+
+    assert _split_at_word_boundaries("kop' er  his' ti di nate", 2) == [
+        "kop' er",
+        "his' ti di nate",
+    ]
+    # A wider outlier gap (3, against a modal gap of 1 elsewhere) is still
+    # found correctly regardless of its exact width, and each returned
+    # group's own internal syllables are single-space-joined.
+    assert _split_at_word_boundaries("dye meth' il   fue' ma rate", 2) == [
+        "dye meth' il",
+        "fue' ma rate",
+    ]
+
+
+def test_split_at_word_boundaries_declines_when_no_gap_stands_out():
+    from dose_r.references.sources import _split_at_word_boundaries
+
+    # Uniform spacing throughout -- no distinguishable boundary to trust,
+    # must return None rather than guess where one word ends.
+    assert _split_at_word_boundaries("ef gar tig i mod", 2) is None
+
+
+def test_collapse_pronunciation_whitespace_marks_the_real_boundary():
+    from dose_r.references.sources import _collapse_pronunciation_whitespace
+
+    collapsed = _collapse_pronunciation_whitespace(
+        "kop' er  his' ti di nate", "copper histidinate"
+    )
+    assert collapsed == "kop' er  his' ti di nate"
+
+    # Single-word names, or a boundary that can't be found confidently,
+    # fall back to a plain single-space collapse -- never invents a
+    # boundary it isn't sure of.
+    assert _collapse_pronunciation_whitespace("ef gar tig i mod", "efgartigimod alfa") == (
+        "ef gar tig i mod"
+    )
+
+
+def test_respelling_text_to_variant_uses_the_word_boundary_marker():
+    from dose_r.references.build import _respelling_text_to_variant
+
+    arpa, ipa = _respelling_text_to_variant("kop' er  his' ti di nate")
+    assert " " in arpa
+    assert " " in ipa
+    assert ipa.count("ˈ") == 2  # each word gets its own primary stress
+
+
+def test_respelling_text_to_variant_handles_a_plain_unmarked_trailing_word():
+    from dose_r.references.build import _respelling_text_to_variant
+
+    # "chloride" carries no stress mark of its own (an ordinary salt name
+    # USAN doesn't bother respelling, the same behavior already confirmed
+    # for "sodium"/"tartrate"/"alfa" elsewhere) -- must still convert
+    # instead of failing outright just because it's a single unmarked
+    # token on its own.
+    arpa, ipa = _respelling_text_to_variant("trose' pee um  chloride")
+    assert "chloride" not in arpa  # sanity: this is phonemes, not raw text
+    assert " " in arpa
+    assert " " in ipa
+
+
+def test_respelling_word_recovers_space_separated_caps_stress():
+    from dose_r.references.build import _respelling_word_to_variant
+
+    # DailyMed's own ALL-CAPS-for-stress convention with plain spaces, no
+    # hyphens and no prime marks at all ("AD vair" for Advair, "jar DEE
+    # ans" for Jardiance) previously matched neither branch of the old
+    # single-word converter: no hyphen to split on, and
+    # `stress_tokens_to_respelling` only recognizes the prime-mark
+    # convention, not ALL-CAPS -- silently dropping a real citation.
+    # Confirmed as a real gap on 12 real DailyMed citations, not a
+    # hypothetical, closed as a side effect of adding the plain-word
+    # fallback for "chloride"-style unmarked trailing words above.
+    arpa, _ = _respelling_word_to_variant("jar DEE ans")
+    assert arpa.split()[4] == "IY1"
+
+
