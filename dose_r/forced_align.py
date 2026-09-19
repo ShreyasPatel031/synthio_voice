@@ -208,14 +208,28 @@ def extract_drug_span_forced_align(audio_bytes: bytes, sentence: str, drug: str,
     # attribute it to neither side -- an unbiased assumption, in the absence
     # of any signal saying which side that transition audio really belongs
     # to, that recovers most of a short/fast word's true duration.
+    # The midpoint split above is only correct when the gap IS the CTC
+    # undershoot -- it breaks when the gap is a genuine pause (some TTS
+    # renderings space every word with a real 0.4-1.0s pause, e.g. an
+    # unusually slow/deliberate "quetiapine" clip found by this exact
+    # over-extension: its span came out 2.40s, ~3x the corpus norm for a
+    # similar phoneme count, because both neighboring gaps were real pauses
+    # -0.70s and 0.86s- not undershoot, and splitting them in half pulled
+    # ~0.4s of pure silence into the span on each side). Confirmed CTC
+    # undershoot gaps (Advair) were only ~0.2-0.3s; capping how much of a
+    # gap can be recovered bounds the silence-dilution failure mode while
+    # leaving genuine undershoot recovery (well under the cap) untouched.
+    _MAX_GAP_RECOVERY_S = 0.15
     if first_pos > 0:
         prev_end_frame = segments[first_pos - 1][2]
-        start_s = (prev_end_frame + drug_start_frame) / 2 * frame_stride
+        half_gap_s = (drug_start_frame - prev_end_frame) / 2 * frame_stride
+        start_s = drug_start_frame * frame_stride - min(half_gap_s, _MAX_GAP_RECOVERY_S)
     else:
         start_s = max(0.0, drug_start_frame * frame_stride - pad_s)
     if last_pos < len(segments) - 1:
         next_start_frame = segments[last_pos + 1][1]
-        end_s = (drug_end_frame + next_start_frame) / 2 * frame_stride
+        half_gap_s = (next_start_frame - drug_end_frame) / 2 * frame_stride
+        end_s = drug_end_frame * frame_stride + min(half_gap_s, _MAX_GAP_RECOVERY_S)
     else:
         end_s = min(duration_s, drug_end_frame * frame_stride + pad_s)
 
