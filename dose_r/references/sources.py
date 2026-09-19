@@ -51,6 +51,7 @@ import threading
 import time
 import urllib.parse
 import urllib.request
+from collections import Counter
 from pathlib import Path
 
 # pypdf logs a "fontTools is required..." warning per unusual font per page
@@ -601,6 +602,72 @@ def _norm_for_match(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", s.lower())
 
 
+def _is_salt_form_of(target: str, candidate: str) -> bool:
+    """True when `candidate` (a search result's title or filename slug) is
+    exactly `target` followed by a salt/ester qualifier word -- e.g.
+    "VARENICLINE  TARTRATE" or the slug "ibuprofen-sodium" for a query of
+    "varenicline"/"ibuprofen". USAN files a single Statement per salt
+    form even for a plain generic that has no separate USAN entry of its
+    own (confirmed directly: searching "varenicline" alone finds only
+    "varenicline_tartrate.pdf", never a bare "varenicline.pdf"), and that
+    Statement's own PRONUNCIATION field only ever respells the coined
+    stem itself, never the salt qualifier, which is already an ordinary,
+    independently pronounceable English/chemistry word ("tartrate",
+    "sodium", "hydrochloride") -- see `_first_word_group`, which isolates
+    just the stem's own portion of that combined field. An exact prefix
+    match this specific is a categorically stronger signal than the
+    general similarity score in `usan_pronunciation`, so it's accepted
+    even when the appended qualifier drags the overall ratio under that
+    function's 0.85 acceptance threshold.
+    """
+    cleaned = re.sub(r"[\s_-]+", " ", candidate.strip().lower())
+    target_norm = re.sub(r"[\s_-]+", " ", target.strip().lower())
+    if not cleaned.startswith(target_norm):
+        return False
+    rest = cleaned[len(target_norm) :]
+    return rest == "" or rest[0] == " "
+
+
+def _first_word_group(raw: str) -> str | None:
+    """The leading word's own syllable-token run, isolated from a raw
+    PRONUNCIATION field that actually spans more than one word (a
+    salt-form Statement's own combined respelling for both its stem and
+    its salt qualifier, e.g. "ar” i pip’ ra zole  lawr ox’ il" for
+    "aripiprazole lauroxil").
+
+    There is no single consistent separator between the two words'
+    syllable runs -- confirmed against real documents with two different
+    conventions: a single space between syllables of the same word and a
+    double space at the true word boundary (aripiprazole lauroxil), and a
+    uniform double space between EVERY syllable with only the one true
+    boundary bumped up to a triple space (esomeprazole strontium). Either
+    way the boundary is reliably the FIRST whitespace run strictly wider
+    than the modal (most common) gap elsewhere in the string -- also
+    confirmed against a three-word case (ibuprofen trelamine
+    hydrochloride: modal gap 1, both real word boundaries showing gap 2,
+    the first one landing exactly after "fen", i.e. after "ibuprofen").
+
+    Returns None when the string has no second word at all, or when
+    every gap is the same width (no distinguishable boundary to trust) --
+    callers must treat that as "can't isolate the stem safely" and not
+    guess, not as "there is no boundary".
+    """
+    parts = re.split(r"( +)", raw.strip())
+    words = parts[0::2]
+    gaps = [len(g) for g in parts[1::2]]
+    if len(words) < 2 or not gaps:
+        return None
+
+    mode_gap, mode_count = Counter(gaps).most_common(1)[0]
+    if mode_count == len(gaps):
+        return None
+
+    boundary = next((i for i, g in enumerate(gaps) if g > mode_gap), None)
+    if boundary is None:
+        return None
+    return " ".join(words[: boundary + 1])
+
+
 def _doc_slug(document_uri: str) -> str:
     """A search result's `document_uri` -> its bare filename, decoded and
     without the `.pdf` extension -- more reliable to match a query against
@@ -677,6 +744,17 @@ def usan_pronunciation(name: str) -> dict | None:
     own -- USAN doesn't register brand names at all). Similarity scoring
     handles both: the typo'd title still scores ~0.95 similar, "pitolisant"
     to "wakix" scores far below the acceptance threshold.
+
+    A plain generic can also have NO Statement of its own in the index at
+    all, only a salt/ester-qualified one -- confirmed directly:
+    "varenicline" alone finds nothing above the acceptance threshold, but
+    "varenicline_tartrate.pdf" is the only real varenicline USAN document
+    that exists, filed under the marketed salt. Its own PRONUNCIATION
+    field only ever respells the stem itself, never the salt qualifier
+    (an ordinary, independently pronounceable word), so `_is_salt_form_of`
+    + `_first_word_group` recover just that stem's portion when the
+    fuzzy-similarity match alone would otherwise reject the whole
+    document as "not a match for this generic".
     """
     from . import usan_stems  # local import: avoids a hard, one-way dependency
 
@@ -708,28 +786,69 @@ def usan_pronunciation(name: str) -> dict | None:
         if ratio > best_ratio:
             best_ratio, best = ratio, c
 
-    result = None
-    if best and best_ratio >= 0.85:
-        url = f"{USAN_DOC_BASE}?uri={urllib.parse.quote(best['document_uri'])}"
+    def _fetch_pronunciation(document_uri: str) -> str:
+        url = f"{USAN_DOC_BASE}?uri={urllib.parse.quote(document_uri)}"
         try:
             req = urllib.request.Request(url, headers=UA)
             content = urllib.request.urlopen(req, timeout=TIMEOUT).read()
         except Exception:
-            content = b""
+            return ""
+        if not content.startswith(b"%PDF"):
+            return ""
+        try:
+            from pypdf import PdfReader
+            import io
 
-        if content.startswith(b"%PDF"):
-            try:
-                from pypdf import PdfReader
-                import io
+            reader = PdfReader(io.BytesIO(content))
+            text = "\n".join(p.extract_text() or "" for p in reader.pages[:2])
+            m = _USAN_PRONUNCIATION.search(text)
+            return m.group(1).strip() if m else ""
+        except Exception:
+            return ""
 
-                reader = PdfReader(io.BytesIO(content))
-                text = "\n".join(p.extract_text() or "" for p in reader.pages[:2])
-                m = _USAN_PRONUNCIATION.search(text)
-                raw = re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
-            except Exception:
-                raw = ""
+    result = None
+    if best and best_ratio >= 0.85:
+        raw_full = _fetch_pronunciation(best["document_uri"])
+        raw = re.sub(r"\s+", " ", raw_full).strip() if raw_full else ""
+        if raw:
+            url = f"{USAN_DOC_BASE}?uri={urllib.parse.quote(best['document_uri'])}"
+            result = {"name": "usan-official", "raw": raw, "url": url}
+    else:
+        # No candidate scored high enough to be the plain generic's own
+        # Statement -- before giving up, check whether the index instead
+        # only has this stem filed under a salt/ester qualifier (USAN
+        # sometimes never digitized a bare-stem Statement at all even for
+        # a name with no separate salt-form USAN entry, e.g.
+        # "varenicline" only exists in the index as
+        # "varenicline_tartrate.pdf"). Every such candidate is tried, not
+        # just the first: some salt-form Statements respell only the
+        # stem with nothing appended at all (varenicline tartrate,
+        # ibuprofen sodium -- uniform inter-syllable spacing throughout,
+        # no boundary for `_first_word_group` to find, and no way to
+        # prove algorithmically that nothing beyond the stem is present),
+        # while others (ibuprofen trelamine, aripiprazole lauroxil)
+        # genuinely respell both words and DO show a detectable boundary
+        # -- so a stem with several salt-form entries in the index is
+        # still recoverable via whichever one happens to include the
+        # salt name's own respelling too, even though the others alone
+        # would have to be silently discarded as unverifiable.
+        for c in candidates:
+            if not (
+                _is_salt_form_of(search_term, c["title"])
+                or _is_salt_form_of(search_term, _doc_slug(c["document_uri"]))
+            ):
+                continue
+            raw_full = _fetch_pronunciation(c["document_uri"])
+            if not raw_full:
+                continue
+            stem = _first_word_group(raw_full)
+            if not stem:
+                continue
+            raw = re.sub(r"\s+", " ", stem).strip()
             if raw:
+                url = f"{USAN_DOC_BASE}?uri={urllib.parse.quote(c['document_uri'])}"
                 result = {"name": "usan-official", "raw": raw, "url": url}
+                break
 
     _store(cache_key, result or {})
     return result
