@@ -86,17 +86,51 @@ class NotationError(ValueError):
 
 
 def split_variants(raw: str) -> list[str]:
-    """MW's comma-separated alternates, with trailing-only variants expanded."""
+    """MW's comma-separated alternates, with partial variants expanded
+    against the full form they abbreviate.
+
+    MW abbreviates an alternate from either end. A LEADING "-"
+    ("flü-ˈtik-ə-ˌsōn, -ˌzōn") replaces only the trailing syllables; a
+    TRAILING "-" ("ə-ˌsēt-ə-ˈmin-ə-fən, ˌas-ət-") replaces only the
+    leading ones, and is just as common. Only the first was handled
+    before, so a trailing-"-" alternate was emitted as the bare fragment
+    it looks like in isolation -- "ˌas-ət-" became the two-syllable
+    "ˈˌæsət", stored as if it were a real, complete alternate
+    pronunciation of "acetaminophen". That is worse than merely useless
+    as ground truth: `phonetic_scorer.score_against_reference` keeps the
+    BEST-matching variant, so a fragment can only ever make scoring more
+    lenient -- a system that said just "asset" would have matched it
+    almost exactly and scored as correct. Expanding it against the base
+    form instead recovers what MW actually meant
+    ("ˌas-ət-ə-ˈmin-ə-fən", the real second pronunciation).
+    """
     parts = [p.strip() for p in raw.split(",") if p.strip()]
     if not parts:
         return []
 
     out = [parts[0]]
     for part in parts[1:]:
+        if part.startswith("-") and part.endswith("-"):
+            # Truncated at BOTH ends ("-ˈmē-prə-" in esomeprazole's
+            # "ˌes-ō-ˈmep-rə-ˌzōl, -ˈmē-prə-, -ˌzȯl"): a middle
+            # replacement, and how many base syllables sit on each side of
+            # it is genuinely ambiguous from the notation alone -- three
+            # remaining base syllables could split 1+2 or 2+1. Treating it
+            # as a leading-"-" alternate (what happened before) silently
+            # dropped the tail instead, emitting "ˌɛsoʊˈmiːprə" for a word
+            # that ends in "-zole". Skipped rather than guessed at: losing
+            # one real alternate is recoverable, a wrong one recorded as
+            # ground truth is not.
+            continue
         if part.startswith("-"):
             tail = part.lstrip("-")
             head = out[0].rsplit("-", tail.count("-") + 1)[0]
             out.append(f"{head}-{tail}")
+        elif part.endswith("-"):
+            head = part.rstrip("-")
+            base = out[0].split("-")
+            tail = base[head.count("-") + 1 :]
+            out.append("-".join([head, *tail]) if tail else head)
         else:
             out.append(part)
     return out
@@ -128,7 +162,15 @@ def to_arpabet_ipa(raw: str) -> tuple[str, str]:
     of the 88 Merriam-Webster-sourced records in this project's reference
     set had a stress mark in their stored IPA.
     """
-    cleaned = unicodedata.normalize("NFC", raw).translate(_DROP)
+    # A parenthesised stress mark is MW's notation for an OPTIONAL stress
+    # ("(ˈ)dī-ˈhī-ˌdrāt" for dihydrate, where the first syllable may or may
+    # not take one). `_DROP` strips the parentheses but not the mark inside
+    # them, which left two literal primaries in one word -- malformed, and
+    # exactly what the per-word "more primaries than words" check flags.
+    # The word's other, unparenthesised mark is the real one, so the
+    # optional one is dropped whole.
+    cleaned = re.sub(r"\([ˈˌ]\)", "", unicodedata.normalize("NFC", raw))
+    cleaned = cleaned.translate(_DROP)
     cleaned = re.sub(r"[^\wˈˌəᵊāēīōüȯäŋ̸̇\-]", "", cleaned)
     if not cleaned:
         raise NotationError(f"nothing usable in {raw!r}")
@@ -177,13 +219,35 @@ def to_arpabet_ipa(raw: str) -> tuple[str, str]:
                 arpa[i] = f"{sym[:-1]}1"
                 break
         if first_vowel_syllable_start is not None:
-            ipa.insert(first_vowel_syllable_start, PRIMARY)
+            # That syllable may already carry a SECONDARY mark, which is
+            # exactly the case this fallback exists for -- MW writes some
+            # entries with only secondaries and no primary at all
+            # ("ˌsər-trə-ˌlēn" for sertraline). Promote that mark to
+            # primary rather than stacking a second one in front of it,
+            # which would emit the malformed "ˈˌ".
+            if ipa[first_vowel_syllable_start : first_vowel_syllable_start + 1] == [SECONDARY]:
+                ipa[first_vowel_syllable_start] = PRIMARY
+            else:
+                ipa.insert(first_vowel_syllable_start, PRIMARY)
 
     return " ".join(arpa), "".join(ipa)
 
 
 def convert(raw: str) -> list[tuple[str, str]]:
-    """Every accepted variant in an MW entry, as (ARPABET, IPA) pairs."""
+    """Every accepted variant in an MW entry, as (ARPABET, IPA) pairs.
+
+    Note that an MW entry for a multi-word term writes both words as one
+    hyphen run ("bə-ˈläk-sə-ˌvir-mär-ˈbäk-səl" for baloxavir marboxil),
+    and MW's notation marks no word boundary within it: the second word's
+    own primary stress shows that one EXISTS, but not where it starts, and
+    its unstressed onset syllable ("mär-") is indistinguishable from a
+    continuation of the first word. Splitting at the second primary was
+    tried and is wrong -- a single word's primary need not fall on its
+    first syllable ("ə-ˌtȯr-və-ˈsta-tᵊn", atorvastatin), so that rule tears
+    ordinary single words in half. Such a variant is left as the converter
+    produces it here and dropped downstream instead; see
+    `build._is_malformed_multiword`.
+    """
     out = []
     for variant in split_variants(raw):
         try:

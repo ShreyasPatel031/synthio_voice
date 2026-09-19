@@ -63,7 +63,15 @@ IPA_VOWELS: list[tuple[str, tuple[list[str], str]]] = [
     ("ʊ", (["UH"], "ʊ")),
     ("ʌ", (["AH"], "ʌ")),
     ("ə", (["AH"], "ə")),
-    ("ᵻ", (["AH"], "ᵻ")),  # KIT/schwa alternation ("roses", "-in" suffixes)
+    # KIT/schwa alternation ("roses", "-in" suffixes). Wikipedia's own
+    # cover symbol for "either /ɪ/ or /ə/ depending on the speaker", NOT a
+    # standard IPA letter -- an SSML `<phoneme alphabet="ipa">` consumer has
+    # no reason to accept it, and this project's whole point is references
+    # a TTS engine can actually be driven with. The ARPABET side already
+    # resolves the alternation one way (AH, i.e. schwa), so the IPA says
+    # the same thing rather than passing the ambiguity through in a
+    # notation nothing downstream can read.
+    ("ᵻ", (["AH"], "ə")),
     ("ᵿ", (["UH"], "ᵿ")),  # FOOT/schwa alternation, the same idea for /ʊ~ə/
     ("i", (["IY"], "i")),  # weak "happY" vowel, written without length mark
     ("u", (["UW"], "u")),  # weak "influence"-type vowel, ditto

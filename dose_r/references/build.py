@@ -175,13 +175,54 @@ def _variants_from_claims(
 
 
 def _wiki_variants(hit: dict) -> list[tuple[str, str]]:
-    """A wikipedia/wiktionary source dict -> [(ARPABET, IPA), ...]."""
-    try:
-        if hit["kind"] == "ipa":
-            return [ipa_to_arpabet_ipa(hit["raw"])]
-        return [respell_to_arpabet_ipa(hit["raw"].split("|"))]
-    except WikiNotationError:
-        return []
+    """A wikipedia/wiktionary source dict -> [(ARPABET, IPA), ...].
+
+    A wikitext IPA template argument carries two separators that are NOT
+    part of the transcription and were previously fed straight into the
+    converter as if they were:
+
+    - "_" is wikitext's escaped space, so it marks a real WORD boundary
+      ("tɛˈstɒstəroʊn_ənˈdɛkənoʊeɪt" on testosterone undecanoate's own
+      article). Passed through, it was dropped as an unrecognised symbol
+      and ran the two words together into one 2-primary-stress blob.
+    - "," separates ALTERNATE pronunciations, each its own variant
+      ("ˌɛsoʊˈmɛprəˌzoʊl,_-ˈmiː-,_-ˌzɒl" on esomeprazole's). Concatenated,
+      all three alternates became one nonsense string ending
+      "...ˌzoʊlˈmiːˌzɒl".
+
+    An alternate abbreviated with a leading/trailing "-" (Wikipedia
+    borrowing Merriam-Webster's convention) is skipped rather than
+    expanded: unlike MW's own entries this project parses, a Wikipedia IPA
+    string is not split into hyphen-delimited syllables, so there is
+    nothing to align the abbreviation against -- and a fragment is worse
+    than a missing alternate, since `phonetic_scorer` keeps the
+    best-matching variant and a fragment can only make scoring more
+    lenient.
+    """
+    if hit["kind"] != "ipa":
+        try:
+            return [respell_to_arpabet_ipa(hit["raw"].split("|"))]
+        except WikiNotationError:
+            return []
+
+    out = []
+    for alternate in hit["raw"].split(","):
+        alternate = alternate.replace("_", " ").strip()
+        if not alternate or alternate.startswith("-") or alternate.endswith("-"):
+            continue
+        try:
+            per_word = [ipa_to_arpabet_ipa(w) for w in alternate.split()]
+        except WikiNotationError:
+            continue
+        if not per_word:
+            continue
+        out.append(
+            (
+                " ".join(arpa for arpa, _ in per_word),
+                " ".join(ipa for _, ipa in per_word),
+            )
+        )
+    return out
 
 
 def _respelling_word_to_variant(raw: str) -> tuple[str, str] | None:
@@ -350,7 +391,9 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
         gemini_hit = _from_gemini_grounded(word)
         if gemini_hit is not None:
             variants, srcs, tier = gemini_hit
-            return variants, srcs, tier, ""
+            variants = _usable_variants(word, variants)
+            if variants:
+                return variants, srcs, tier, ""
 
         return [], [], "low", "no audio and no phonetic source found"
 
@@ -365,6 +408,15 @@ def _resolve_word(word: str, name_type: str) -> tuple[list[tuple[str, str]], lis
             if v[0] not in seen_arpa:
                 seen_arpa.add(v[0])
                 variants.append(v)
+
+    kept = _usable_variants(word, variants)
+    if not kept:
+        # Every variant this name found is unusable as a reference for it --
+        # no ground truth, same as if nothing had answered. Keeping the
+        # best of several bad ones would be worse than having none: see
+        # `_is_fragment`.
+        return [], [], "low", "no source's answer was usable as a reference for this name"
+    variants = kept
 
     tier = "high" if len(found) > 1 else "medium"
     return variants, [src for _, srcs in found for src in srcs], tier, ""
@@ -382,6 +434,7 @@ def _join(parts: list[list[tuple[str, str]]]) -> list[tuple[str, str]]:
 
 _VOWEL_GROUPS = re.compile(r"[aeiouy]+")
 _ARPA_VOWEL_TOKEN = re.compile(r"^[A-Z]{1,2}[0-2]$")
+PRIMARY_STRESS = "ˈ"
 
 
 def _estimate_syllables(name: str) -> int:
@@ -458,6 +511,75 @@ def _covers_full_name(name: str, variants: list[tuple[str, str]]) -> bool:
         sum(1 for tok in arpa.split() if _ARPA_VOWEL_TOKEN.match(tok)) >= expected * 0.75
         for arpa, _ in variants
     )
+
+
+def _usable_variants(
+    name: str, variants: list[tuple[str, str]]
+) -> list[tuple[str, str]]:
+    """`variants`, minus any that can't serve as a reference for `name`.
+
+    Applied to EVERY path that produces variants, including the
+    Gemini-grounded one, which returns early and so used to bypass this
+    entirely -- that is how Retatrutide kept a citation respelling only
+    "-trutide" as its sole, preferred variant.
+    """
+    return [
+        v
+        for v in variants
+        if not _is_fragment(name, v[0]) and not _is_malformed_multiword(name, v[1])
+    ]
+
+
+def _is_malformed_multiword(name: str, ipa: str) -> bool:
+    """True when one variant carries more PRIMARY stresses than `name` has
+    words -- i.e. it transcribes more words than the name has, run together
+    with no boundary between them.
+
+    English marks one primary stress per word, so a second primary inside
+    a single space-delimited run means two words were fused. The real
+    cases here both come from Merriam-Webster entries for a longer term
+    than the ingredient itself: "bə-ˈläk-sə-ˌvir-mär-ˈbäk-səl" (baloxavir
+    marboxil as one hyphen run) and "ˌlis-ˌdeks-ˌam-ˈfet-ə-ˌmēn-dī-ˈmes-i-ˌlā"
+    (lisdexamfetamine DIMESYLATE, a salt the DOSE name doesn't include).
+    MW's notation gives no way to place the boundary -- see `notation.convert`
+    -- so these are dropped rather than split at a guessed position.
+
+    Dropping is cheap here and safe in general: both records already carry
+    a correct, properly-separated variant from USAN, and where such a
+    variant is the ONLY one, `_resolve_word` falls through to `low` rather
+    than keeping it, which is the honest outcome for a reference this
+    project can't transcribe cleanly.
+    """
+    return any(w.count(PRIMARY_STRESS) > 1 for w in ipa.split(" ") if w)
+
+
+def _is_fragment(name: str, arpa: str) -> bool:
+    """True when this ONE variant is too short to be a pronunciation of
+    `name` at all -- a piece of the word rather than the word.
+
+    Distinct from `_covers_full_name`, which asks whether ANY variant
+    covers a MULTI-word name (and so decides whether to re-resolve word by
+    word). This asks it of a single variant, for names of any length, and
+    exists because a fragment variant is not merely useless but actively
+    harmful: `phonetic_scorer.score_against_reference` keeps the
+    BEST-matching variant of the set, deliberately, so that a system isn't
+    penalised for a legitimate alternate pronunciation. That means a
+    fragment can only ever pull the score UP -- a system that said
+    "trutide" for Retatrutide would match the fragment "ˈtruːtaɪd" almost
+    exactly and be recorded as correct.
+
+    Real cases this catches, each traced to its own source quirk:
+    Retatrutide's sole citation respells only "-trutide"; Merriam-Webster
+    entries for a two-word term sometimes give only the second word
+    ("-ˈglär-ˌjēn" for insulin glargine). Threshold as in
+    `_covers_full_name` -- calibrated in that function's docstring against
+    every real multi-word record here, and applied to single-word names
+    too, where a genuine respelling never undershoots its own word by
+    this much.
+    """
+    expected = _estimate_syllables(name)
+    got = sum(1 for tok in arpa.split() if _ARPA_VOWEL_TOKEN.match(tok))
+    return got < expected * 0.6
 
 
 def resolve(name: str, name_type: str) -> dict:

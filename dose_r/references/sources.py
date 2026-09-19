@@ -154,10 +154,24 @@ def _mw_medical_api(name: str) -> dict | None:
     except Exception:
         return None  # not cached: a transient failure shouldn't poison the cache
 
+    # Only the entry FOR this word. MW returns the queried headword
+    # alongside every related one it indexes, and harvesting all of their
+    # `prs` attributed other drugs' pronunciations to this word: querying
+    # "fumarate" returns six entries -- "fumarate" itself, plus "dimethyl
+    # fumarate", "ferrous fumarate", "formoterol", "quetiapine" and
+    # "tenofovir" (all "X fumarate" salts) -- and the last three carry real
+    # respellings that are emphatically not how "fumarate" is said. That
+    # produced "formoterol formoterol dihydrate" as the stored reference
+    # for "formoterol fumarate dihydrate". MW separates a headword's
+    # syllables with "*", so that is stripped before comparing.
+    wanted = _norm_for_match(name)
     respellings = []
     for entry in entries:
         if not isinstance(entry, dict):
             continue  # a bare string is a spelling suggestion, not an entry
+        headword = entry.get("hwi", {}).get("hw", "")
+        if _norm_for_match(headword) != wanted:
+            continue
         for pr in entry.get("hwi", {}).get("prs", []):
             mw = pr.get("mw")
             if mw:

@@ -7,16 +7,16 @@
 | Tier | Count | Share | Meaning |
 | --- | --- | --- | --- |
 | high | 114 | 40.1% | two independent sources agree |
-| medium | 166 | 58.5% | exactly one external source answered |
-| low | 4 | 1.4% | no external source; no ground truth |
+| medium | 164 | 57.7% | exactly one external source answered |
+| low | 6 | 2.1% | no external source; no ground truth |
 
 ## By name type
 
 | Tier | brand | generic |
 | --- | --- | --- |
 | high | 60 | 54 |
-| medium | 79 | 87 |
-| low | 4 | 0 |
+| medium | 78 | 86 |
+| low | 5 | 1 |
 
 ## Sources that answered
 
@@ -24,13 +24,13 @@
 | --- | --- |
 | usan-official | 108 |
 | dailymed | 96 |
-| merriam-webster/medical-api | 93 |
-| gemini-grounded-search | 63 |
+| merriam-webster/medical-api | 87 |
+| gemini-grounded-search | 62 |
 | nci-dictionary-of-cancer-terms | 50 |
 | wikipedia | 20 |
 | cmudict | 14 |
+| merriam-webster/dictionary | 4 |
 | wiktionary | 2 |
-| merriam-webster/dictionary | 1 |
 
 ## Trust tiers
 
@@ -46,8 +46,8 @@ hardcoded domain list) -- see `classify_source_trust` in gemini_grounded.py.
 
 | Tier | Meaning | Ingredients citing at least one |
 | --- | --- | --- |
-| official_medical | Government health agency, national regulator, or the drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | 273 |
-| verified_secondary | Editorially-maintained reference, not a primary authority but not open to public submission either (Drugs.com, WebMD, Wikipedia, Merriam-Webster, a university hospital's patient site) | 174 |
+| official_medical | Government health agency, national regulator, or the drug-naming body itself (FDA, DailyMed, MedlinePlus, USAN/AMA) | 272 |
+| verified_secondary | Editorially-maintained reference, not a primary authority but not open to public submission either (Drugs.com, WebMD, Wikipedia, Merriam-Webster, a university hospital's patient site) | 171 |
 | third_party_unverified | Crowdsourced/user-generated, no editorial review (howtopronounce.com, a YouTube upload, a blog) -- **excluded**, never counted | 0 |
 
 That last row should always read 0: it is what `_variants_from_claims` in
@@ -69,7 +69,7 @@ under that restriction and reverted to `low`.
 | + MW Medical Dictionary API | 41 | 170 | 73 |
 | + Gemini/Google-Search grounding, rule-based fallback removed | 98 | 171 | 15 |
 | + DailyMed Medication Guide respellings | 86 | 194 | 4 |
-| + NCI Dictionary of Cancer Terms (this build) | 114 | 166 | 4 |
+| + NCI Dictionary of Cancer Terms (this build) | 114 | 164 | 6 |
 
 The Wikipedia/Wiktionary and Medical API steps were the first two real gains.
 The Gemini step is the largest one by far: Gemini 2.5 Flash with the
@@ -98,14 +98,14 @@ The NCI Dictionary of Cancer Terms was the single largest jump in this build: 50
 
 | Source | Outcome |
 | --- | --- |
-| Merriam-Webster Medical API | **Wired in.** Structured, reliable; 93 ingredients. Needs `MW_MEDICAL_KEY` in `.env`; degrades to the HTML path when absent. |
-| Merriam-Webster `/dictionary/` (HTML) | **Wired in**, as the fallback for names the medical API misses; 1 ingredient(s) this run. |
+| Merriam-Webster Medical API | **Wired in.** Structured, reliable; 87 ingredients. Needs `MW_MEDICAL_KEY` in `.env`; degrades to the HTML path when absent. |
+| Merriam-Webster `/dictionary/` (HTML) | **Wired in**, as the fallback for names the medical API misses; 4 ingredient(s) this run. |
 | Wikipedia (`{{IPAc-en}}`, `{{IPA\|en\|...}}`, `{{respell}}`) | **Wired in.** 20 ingredients. Most DOSE brand names are too new or minor for an English Wikipedia article at all. A brand/generic conflation bug was found and fixed here by spot-checking the rebuilt data, not by a user report: a naive "first pronunciation template on the page" search wrongly attributed a BRAND's own pronunciation to the GENERIC ingredient's record whenever the generic's lead sentence also named its brand in prose (confirmed on two live articles: empagliflozin's old source was actually Jardiance's IPA, `/dʒɑːrdiəns/`; perfluorohexyloctane's was actually Miebo's, `/maɪboʊ/`) -- both articles' own `pronounce` infobox field for the generic is genuinely empty, so a naive search fell through to the nearest IPA template, which belonged to the brand name bolded right next to it in the lead ("Empagliflozin, sold under the brand name Jardiance (...)"). Fixed in two layers: (1) try the `{{Infobox drug}}` `pronounce` field first, since it is Wikipedia's own explicit, unambiguous label for the article subject's own pronunciation; (2) failing that, restrict the prose search to the span between the article subject's own bolded mention and the next *different* bolded term, rather than the whole page. A third infobox shape was found the same way: for monoclonal antibodies (`mab_type` set), `{{Infobox drug}}` repurposes its `source` field -- normally the antibody's source-organism code ("u"/"o"/"xi"/"zu") -- to carry the pronunciation instead, confirmed directly on secukinumab's own article (`| source = {{IPAc-en|...}}` above an empty `| pronounce =`); checked against the other three mAb-infobox articles in this dataset (concizumab, lecanemab, talquetamab) to confirm `source` genuinely does hold an organism code, not a mis-filed pronunciation, on all of them. |
 | Wiktionary (same templates) | **Wired in.** 2 ingredients; thin, and mostly overlaps Wikipedia rather than adding new names. Deliberately exempted from the Wikipedia brand/generic bold-region restriction above: Wiktionary has no `{{Infobox drug}}`-style lead-sentence bolding convention and is one page per exact spelling, so it carries no brand/generic dual-naming ambiguity for that restriction to guard against -- applying it anyway broke Benadryl, whose real `===Pronunciation===` section sits near the top of the page with no bolded "Benadryl" nearby at all; the restriction instead locked onto an unrelated *later* bolded mention inside a "Benadryl challenge" trivia section and searched only after it, missing the real section entirely. |
 | CMUdict | **Wired in** (pre-existing). 14 ingredients; a general dictionary, not a drug-name resource. |
 | DailyMed (FDA Medication Guides) | **Wired in.** 96 ingredients (brands only). Reachable from this environment (unlike drugs.com), and a real find caught by manual spot-checking after this build shipped: many Medication Guides state the brand's own respelling right in the title line (`AMBELVIST (am bel' vist)`), in the same USAN prime-stress notation the Gemini-grounded path already parses. Not every label includes one, so this doesn't close every remaining gap. |
 | NCI Dictionary of Cancer Terms (cancer.gov) | **Wired in** (`sources.nci_pronunciation`). 50 ingredients, brand and generic alike. The public page (`cancer.gov/publications/dictionaries/cancer-terms/def/{name}`) is a React SPA with no server-rendered pronunciation text -- a dead end as scraped -- but its real backing API (`webapis.cancer.gov/glossary/v1/Terms/Cancer.gov/Patient/en/{name}`), reverse-engineered from the app's own JS bundle the same way the AMA USAN search API was found, returns a structured JSON record with both a text respelling (`pronunciation.key`, e.g. `(uh-see-tuh-MIH-nuh-fen)` for acetaminophen -- the same capitalized-syllable notation `respell_to_arpabet_ipa` already parses) and a real hosted audio recording (`pronunciation.audio`, kept in the citation alongside the text). An official U.S. federal government source (NIH's National Cancer Institute), not a secondhand citation of one -- and it covers plenty of brand names too, not just generics (Xanax, Lipitor, Nexium, Crestor, Zoloft, Advil, Ambien, Valium among them). Coverage is deliberately oncology-skewed: confirmed directly against its own search endpoint, names with no connection to cancer care or its supportive treatments (valsartan, clopidogrel, atorvastatin, quetiapine) aren't in this dictionary at all, which is a real characteristic of what this source covers, not a bug in how it's queried. |
-| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 63 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
+| Drugs.com (direct fetch) | Blocked. HTTP 403 on every direct request from this environment, medical and general pages alike. **Reached indirectly**: Gemini's `google_search` tool retrieves and cites Drugs.com pages server-side (Google's infrastructure, not this sandbox, does the fetch), so a citation naming drugs.com is still accepted as a real source even though this environment can't independently re-fetch it -- 62 ingredients answered via Gemini-grounded search overall (drugs.com and otherwise). |
 | DrugBank | Dead end. HTTP 403. |
 | FDA labels via openFDA (structured JSON) | Dead end for pronunciation. Reachable (200), but the structured label JSON does not carry the Medication Guide's free-text title line, which is where a respelling (if present at all) actually lives -- see DailyMed above, which serves the rendered guide text instead of the structured fields. |
 | NLM RxNav / RxNorm | Dead end for pronunciation. Reachable, resolves names to RxCUIs reliably, but `allProperties` carries only coding/synonym fields (ATC, SNOMED, DrugBank ID, etc.) -- no phonetic field exists in the schema. Kept as the id-lookup step for the MedlinePlus Connect pipeline below. |
@@ -125,7 +125,7 @@ USP Dictionary subscription -- the actual per-drug USAN Statement (the same
 record USP compiles from) is free and individually findable through AMA's
 own real search index (see the Sources tried table above), confirmed
 directly and now the primary source for both.
-What's left (4 ingredients) was checked individually,
+What's left (6 ingredients) was checked individually,
 not just left to the pipeline's word: Vyglxia (troriluzole) has no FDA
 approval at all yet (a Complete Response Letter, not approval, as of this
 build) so no official pronunciation can exist; Wakix's full FDA label text
@@ -170,12 +170,14 @@ as a citation (see the Trust tiers section above).
 
 ## Needs arbitration
 
-4 ingredients have no external source at all -- Gemini's
+6 ingredients have no external source at all -- Gemini's
 Google-Search grounding either found nothing or nothing that survived the
 LLM format check. There is no rule-based fallback for these: no phonetic
 reference exists for them in this layer, full stop.
 
 - Avlayah (brand)
+- Retatrutide (brand)
 - Toujeo (brand)
 - Vyglxia (brand)
 - Wakix (brand)
+- formoterol fumarate dihydrate (generic)

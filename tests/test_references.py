@@ -5,7 +5,7 @@ import pytest
 
 from dose_r.judge.phonemes import parse
 from dose_r.judge.references import ReferenceSet
-from dose_r.references.notation import convert, to_arpabet_ipa
+from dose_r.references.notation import convert, split_variants, to_arpabet_ipa
 from dose_r.references.wiki_notation import (
     ipa_to_arpabet_ipa,
     ipac_en_args_to_arpabet_ipa,
@@ -290,8 +290,11 @@ def test_ipac_en_preserves_its_own_stress_mark():
     # Wikipedia's IPAc-en template already states stress explicitly in its
     # own input (the "ˈ" argument here) -- this must carry it through to
     # the output IPA, not just consume it for ARPABET and drop it.
+    # Wikipedia's non-standard ᵻ ("either /ɪ/ or /ə/") is resolved to ə on
+    # the way out, matching what ARPABET already does with it -- a strict
+    # IPA consumer can't be handed a symbol that isn't in the alphabet.
     _, ipa = ipac_en_args_to_arpabet_ipa(["m", "ɛ", "t", "ˈ", "f", "ɔːr", "m", "ᵻ", "n"])
-    assert ipa == "mɛtˈfɔːrmᵻn"
+    assert ipa == "mɛtˈfɔːrmən"
 
 
 # --- Multi-word IPA word boundaries -----------------------------------------
@@ -465,3 +468,72 @@ def test_respelling_word_recovers_space_separated_caps_stress():
     assert arpa.split()[4] == "IY1"
 
 
+
+
+# --- Ground-truth conformance defects found in the pre-evaluation audit -----
+#
+# Every case below was a real defect in `references.jsonl` found while
+# validating the IPA before it gets used as evaluation ground truth, not a
+# synthetic example. They share a failure mode worth stating plainly:
+# `phonetic_scorer.score_against_reference` keeps the BEST-matching variant
+# of a reference set, deliberately, so that a system isn't penalised for a
+# legitimate alternate pronunciation. That makes a short or garbled variant
+# strictly dangerous -- it can only ever pull a score UP, never down, so a
+# system that mumbled a fragment would be recorded as correct.
+
+
+def test_mw_trailing_dash_alternate_is_expanded_not_left_a_fragment():
+    # acetaminophen's real MW entry. "ˌas-ət-" abbreviates the alternate by
+    # its LEADING syllables and used to be emitted as the bare 2-syllable
+    # "ˈˌæsət" -- both a fragment and malformed (doubled stress mark).
+    variants = split_variants("ə-ˌsēt-ə-ˈmin-ə-fən, ˌas-ət-")
+    assert variants == ["ə-ˌsēt-ə-ˈmin-ə-fən", "ˌas-ət-ə-ˈmin-ə-fən"]
+    assert [i for _, i in convert("ə-ˌsēt-ə-ˈmin-ə-fən, ˌas-ət-")] == [
+        "əˌsiːtəˈmɪnəfən",
+        "ˌæsətəˈmɪnəfən",
+    ]
+
+
+def test_mw_both_ends_truncated_alternate_is_skipped_not_guessed():
+    # esomeprazole's real MW entry. "-ˈmē-prə-" replaces a MIDDLE span and
+    # its position is ambiguous (three remaining base syllables could split
+    # 1+2 or 2+1), so it is dropped rather than silently losing the "-zole"
+    # tail as it did before.
+    assert split_variants("ˌes-ō-ˈmep-rə-ˌzōl, -ˈmē-prə-, -ˌzȯl") == [
+        "ˌes-ō-ˈmep-rə-ˌzōl",
+        "ˌes-ō-ˈmep-rə-ˌzȯl",
+    ]
+
+
+def test_mw_parenthesised_optional_stress_does_not_double_the_mark():
+    # dihydrate's real MW entry: "(ˈ)" is an OPTIONAL stress, and stripping
+    # only the parentheses left two literal primaries in one word.
+    arpa, ipa = to_arpabet_ipa("(ˈ)dī-ˈhī-ˌdrāt")
+    assert ipa == "daɪˈhaɪˌdreɪt"
+    assert ipa.count("ˈ") == 1
+
+
+def test_mw_entry_with_no_primary_promotes_its_secondary():
+    # sertraline's real MW entry marks only secondaries. ARPABET already
+    # defaulted the first vowel to primary; IPA used to stack its own mark
+    # in front of the existing secondary, emitting the malformed "ˈˌ".
+    _, ipa = to_arpabet_ipa("ˌsər-trə-ˌlēn")
+    assert "ˈˌ" not in ipa
+    assert ipa == "ˈsərtrəˌliːn"
+
+
+def test_is_fragment_rejects_a_variant_too_short_for_the_name():
+    from dose_r.references.build import _is_fragment
+
+    # Retatrutide's sole citation respelled only "-trutide".
+    assert _is_fragment("Retatrutide", "T R UW1 T AY0 D")
+    assert not _is_fragment("Retatrutide", "R EH2 T AH0 T R UW1 T AY0 D")
+
+
+def test_is_malformed_multiword_rejects_two_primaries_in_one_run():
+    from dose_r.references.build import _is_malformed_multiword
+
+    # MW writes a two-word term as one hyphen run with two primaries and
+    # no placeable word boundary (baloxavir marboxil).
+    assert _is_malformed_multiword("baloxavir marboxil", "bəˈlɑksəˌvɪrmɑrˈbɑksəl")
+    assert not _is_malformed_multiword("baloxavir marboxil", "bælˈɒksævɪr mɑːrˈbɒksɪl")
