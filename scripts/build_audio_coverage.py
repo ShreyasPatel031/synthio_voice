@@ -37,6 +37,7 @@ FULL_COVERAGE_SOURCES = {
     "merriam-webster": "Merriam-Webster (full name)",
     "umich": "UMich",
     "clincalc": "ClinCalc (full name)",
+    "nci": "NCI Dictionary of Cancer Terms",
 }
 
 
@@ -89,6 +90,7 @@ def build() -> str:
         "merriam-webster": mw_full,
         "umich": {r["ingredient"] for r in records if r["source"] == "umich"},
         "clincalc": cc_full,
+        "nci": {r["ingredient"] for r in records if r["source"] == "nci"},
     }
     source_labels = {s: FULL_COVERAGE_SOURCES[s] for s in full_coverage}
 
@@ -120,9 +122,11 @@ def build() -> str:
         "since the live site 403s behind a Cloudflare challenge; ClinCalc's Top 250",
         "Drugs pronunciation pages, fetched live -- the only source that records a",
         "generic name and a brand name as two separate clips instead of one page's",
-        "one recording. \"Coverage\" below means a clip that pronounces the *whole*",
-        "ingredient name, since that is what DOSE scores; Merriam-Webster's and",
-        "ClinCalc's word-/name-level partial clips are reported separately.",
+        "one recording; the NCI Dictionary of Cancer Terms's own backing JSON API",
+        "(`webapis.cancer.gov/glossary/v1/`), a real hosted government recording per",
+        "term, fetched live. \"Coverage\" below means a clip that pronounces the",
+        "*whole* ingredient name, since that is what DOSE scores; Merriam-Webster's",
+        "and ClinCalc's word-/name-level partial clips are reported separately.",
         "",
         "## Headline",
         "",
@@ -402,9 +406,11 @@ def build() -> str:
         f"{sum(1 for i in none if types[i]=='brand')} brand. The gap skews generic --",
         "coined INN names are exactly what neither a general dictionary, a consumer",
         "drug-information site, an older pharmacy-school teaching list (UMich's,",
-        "which barely overlaps DOSE's newer names), nor a commonly-prescribed-drugs",
-        "pronunciation page (ClinCalc's, which skews the same way) reliably records.",
-        "See",
+        "which barely overlaps DOSE's newer names), a commonly-prescribed-drugs",
+        "pronunciation page (ClinCalc's, which skews the same way), nor a cancer-",
+        "specific dictionary (NCI's, whose real gain was cross-checking names other",
+        "sources already had, not covering brand-new non-oncology names) reliably",
+        "records. See",
         "`data/collected/HANDOFF_AUDIO_COLLECTION.md` for sources tried and the",
         "paid/licensed options (USP Dictionary of USAN, a citable MedlinePlus key,",
         "a Drugs.com data license) that would close the rest.",

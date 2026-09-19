@@ -1,16 +1,18 @@
 # Reference Audio -- Coverage
 
 Human-recorded pronunciation audio for the 284 unique ingredients across
-the 274 DOSE rows, from 4 sources: Drugs.com, Merriam-Webster (full name), UMich, ClinCalc (full name).
+the 274 DOSE rows, from 5 sources: Drugs.com, Merriam-Webster (full name), UMich, ClinCalc (full name), NCI Dictionary of Cancer Terms.
 Merriam-Webster's Medical API; Drugs.com collected by hand -- see
 `data/collected/HANDOFF_AUDIO_COLLECTION.md`, drugs.com 403s this environment
 on every request; UMich's student pronunciation page via the Wayback Machine,
 since the live site 403s behind a Cloudflare challenge; ClinCalc's Top 250
 Drugs pronunciation pages, fetched live -- the only source that records a
 generic name and a brand name as two separate clips instead of one page's
-one recording. "Coverage" below means a clip that pronounces the *whole*
-ingredient name, since that is what DOSE scores; Merriam-Webster's and
-ClinCalc's word-/name-level partial clips are reported separately.
+one recording; the NCI Dictionary of Cancer Terms's own backing JSON API
+(`webapis.cancer.gov/glossary/v1/`), a real hosted government recording per
+term, fetched live. "Coverage" below means a clip that pronounces the
+*whole* ingredient name, since that is what DOSE scores; Merriam-Webster's
+and ClinCalc's word-/name-level partial clips are reported separately.
 
 ## Headline
 
@@ -21,25 +23,28 @@ ClinCalc's word-/name-level partial clips are reported separately.
 | Merriam-Webster (full name) audio | 82 | 29% |
 | UMich audio | 7 | 2% |
 | ClinCalc (full name) audio | 65 | 23% |
-| Union -- any audio | 179 | 63% |
-| 2+ sources (cross-checkable) | 90 | 32% |
-| All 4 sources | 5 | 2% |
-| Only Drugs.com | 86 | 30% |
+| NCI Dictionary of Cancer Terms audio | 50 | 18% |
+| Union -- any audio | 182 | 64% |
+| 2+ sources (cross-checkable) | 110 | 39% |
+| All 5 sources | 2 | 1% |
+| Only Drugs.com | 66 | 23% |
 | Only Merriam-Webster (full name) | 3 | 1% |
 | Only UMich | 0 | 0% |
 | Only ClinCalc (full name) | 0 | 0% |
-| No audio anywhere | 105 | 37% |
+| Only NCI Dictionary of Cancer Terms | 3 | 1% |
+| No audio anywhere | 102 | 36% |
 
 ## By name type
 
 | Group | brand | generic | total |
 | --- | --- | --- | --- |
-| 2+ sources | 47 | 43 | 90 |
-| Only Drugs.com | 55 | 31 | 86 |
+| 2+ sources | 60 | 50 | 110 |
+| Only Drugs.com | 42 | 24 | 66 |
 | Only Merriam-Webster (full name) | 0 | 3 | 3 |
 | Only UMich | 0 | 0 | 0 |
 | Only ClinCalc (full name) | 0 | 0 | 0 |
-| No audio anywhere | 41 | 64 | 105 |
+| Only NCI Dictionary of Cancer Terms | 0 | 3 | 3 |
+| No audio anywhere | 41 | 61 | 102 |
 
 ## By reference-layer confidence tier
 
@@ -50,9 +55,9 @@ independent verification helps most.
 
 | Tier | 2+ sources | 1 source | no audio |
 | --- | --- | --- | --- |
-| high | 22 | 4 | 2 |
-| medium | 67 | 6 | 10 |
-| low | 1 | 79 | 93 |
+| high | 88 | 12 | 12 |
+| medium | 22 | 59 | 87 |
+| low | 0 | 1 | 3 |
 
 ## Cross-source agreement
 
@@ -69,94 +74,114 @@ its whole batch, not isolated to one name.
 | --- | --- |
 | Abilify | Drugs.com 1.047s, Merriam-Webster (full name) 2.135s, ClinCalc (full name) 1.848s |
 | Advair | Drugs.com 1.666s, Merriam-Webster (full name) 1.857s, ClinCalc (full name) 2.214s |
-| Advil | Drugs.com 0.734s, Merriam-Webster (full name) 0.450s |
-| Ambien | Drugs.com 0.879s, Merriam-Webster (full name) 0.768s, ClinCalc (full name) 1.587s |
-| Aspirin | Drugs.com 0.883s, Merriam-Webster (full name) 0.553s, ClinCalc (full name) 1.587s |
+| Advil | Drugs.com 0.734s, Merriam-Webster (full name) 0.450s, NCI Dictionary of Cancer Terms 0.888s |
+| Ambien | Drugs.com 0.879s, Merriam-Webster (full name) 0.768s, ClinCalc (full name) 1.587s, NCI Dictionary of Cancer Terms 1.175s |
+| Anktiva | Drugs.com 1.535s, NCI Dictionary of Cancer Terms 1.471s |
+| Aspirin | Drugs.com 0.883s, Merriam-Webster (full name) 0.553s, ClinCalc (full name) 1.587s, NCI Dictionary of Cancer Terms 0.914s |
+| Aucatzyl | Drugs.com 1.428s, NCI Dictionary of Cancer Terms 1.675s |
 | Benadryl | Drugs.com 0.768s, Merriam-Webster (full name) 0.606s, ClinCalc (full name) 0.891s |
+| Bizengri | Drugs.com 1.407s, NCI Dictionary of Cancer Terms 1.549s |
 | Byetta | Drugs.com 0.754s, ClinCalc (full name) 0.740s |
-| Chantix | Drugs.com 1.017s, Merriam-Webster (full name) 1.300s, ClinCalc (full name) 1.665s |
+| Chantix | Drugs.com 1.017s, Merriam-Webster (full name) 1.300s, ClinCalc (full name) 1.665s, NCI Dictionary of Cancer Terms 1.071s |
 | Claritin | Drugs.com 0.992s, Merriam-Webster (full name) 0.717s |
-| Crestor | Drugs.com 0.902s, Merriam-Webster (full name) 0.763s, UMich 1.500s, ClinCalc (full name) 1.482s |
-| Cymbalta | Drugs.com 1.066s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.508s |
+| Crestor | Drugs.com 0.902s, Merriam-Webster (full name) 0.763s, UMich 1.500s, ClinCalc (full name) 1.482s, NCI Dictionary of Cancer Terms 1.045s |
+| Cymbalta | Drugs.com 1.066s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.508s, NCI Dictionary of Cancer Terms 1.280s |
+| Datroway | Drugs.com 1.492s, NCI Dictionary of Cancer Terms 1.589s |
 | Eliquis | Drugs.com 0.805s, Merriam-Webster (full name) 1.300s, ClinCalc (full name) 1.639s |
+| Elrexfio | Drugs.com 1.556s, NCI Dictionary of Cancer Terms 2.200s |
 | Enbrel | Drugs.com 0.733s, Merriam-Webster (full name) 1.022s, ClinCalc (full name) 0.713s |
+| Ensacove | Drugs.com 1.535s, NCI Dictionary of Cancer Terms 1.759s |
 | Farxiga | Drugs.com 0.670s, Merriam-Webster (full name) 1.207s |
 | Flonase | Drugs.com 0.909s, Merriam-Webster (full name) 0.939s |
 | Humira | Drugs.com 0.930s, Merriam-Webster (full name) 1.022s, ClinCalc (full name) 1.404s |
+| Imfinzi | Drugs.com 1.207s, NCI Dictionary of Cancer Terms 1.593s |
 | Januvia | Drugs.com 0.935s, Merriam-Webster (full name) 1.022s, ClinCalc (full name) 0.976s |
+| Kisqali | Drugs.com 0.836s, NCI Dictionary of Cancer Terms 1.489s |
 | Latuda | Drugs.com 0.950s, Merriam-Webster (full name) 1.022s |
-| Lipitor | Drugs.com 0.932s, Merriam-Webster (full name) 0.783s, UMich 1.250s, ClinCalc (full name) 1.560s |
-| Lyrica | Drugs.com 0.839s, Merriam-Webster (full name) 0.929s, ClinCalc (full name) 0.894s |
+| Lipitor | Drugs.com 0.932s, Merriam-Webster (full name) 0.783s, UMich 1.250s, ClinCalc (full name) 1.560s, NCI Dictionary of Cancer Terms 1.045s |
+| Lyrica | Drugs.com 0.839s, Merriam-Webster (full name) 0.929s, ClinCalc (full name) 0.894s, NCI Dictionary of Cancer Terms 1.019s |
 | Metformin | Drugs.com 1.239s, Merriam-Webster (full name) 0.868s, ClinCalc (full name) 1.796s |
-| Motrin | Drugs.com 1.625s, Merriam-Webster (full name) 0.605s |
+| Motrin | Drugs.com 1.625s, Merriam-Webster (full name) 0.605s, NCI Dictionary of Cancer Terms 1.045s |
 | Mounjaro | Drugs.com 1.440s, Merriam-Webster (full name) 1.536s |
-| Nexium | Drugs.com 0.934s, Merriam-Webster (full name) 0.942s, ClinCalc (full name) 1.743s |
+| Nexium | Drugs.com 0.934s, Merriam-Webster (full name) 0.942s, ClinCalc (full name) 1.743s, NCI Dictionary of Cancer Terms 1.463s |
+| Ojemda | Drugs.com 1.577s, NCI Dictionary of Cancer Terms 1.399s |
 | Ozempic | Drugs.com 0.952s, Merriam-Webster (full name) 1.451s |
 | Plavix | Drugs.com 0.961s, UMich 1.250s, ClinCalc (full name) 0.683s |
 | Prilosec | Drugs.com 0.921s, Merriam-Webster (full name) 1.115s, ClinCalc (full name) 2.005s |
 | Prozac | Drugs.com 0.877s, Merriam-Webster (full name) 0.655s, ClinCalc (full name) 1.639s |
+| Revuforj | Drugs.com 1.705s, NCI Dictionary of Cancer Terms 1.941s |
 | Rybelsus | Drugs.com 1.532s, Merriam-Webster (full name) 1.365s |
 | Seroquel | Drugs.com 1.200s, Merriam-Webster (full name) 1.300s, ClinCalc (full name) 1.508s |
 | Spiriva | Drugs.com 1.100s, Merriam-Webster (full name) 0.929s, ClinCalc (full name) 1.900s |
 | Symbicort | Drugs.com 0.972s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.717s |
 | Synthroid | Drugs.com 0.948s, Merriam-Webster (full name) 0.796s, ClinCalc (full name) 1.691s |
+| Tagrisso | Drugs.com 1.115s, NCI Dictionary of Cancer Terms 1.584s |
 | Tecfidera | Drugs.com 1.050s, Merriam-Webster (full name) 1.300s |
 | Trulicity | Drugs.com 0.785s, Merriam-Webster (full name) 1.451s |
 | Tylenol | Drugs.com 1.003s, Merriam-Webster (full name) 0.815s |
-| Valium | Drugs.com 0.817s, Merriam-Webster (full name) 0.602s, ClinCalc (full name) 1.482s |
+| Valium | Drugs.com 0.817s, Merriam-Webster (full name) 0.602s, ClinCalc (full name) 1.482s, NCI Dictionary of Cancer Terms 1.071s |
+| Voranigo | Drugs.com 1.577s, NCI Dictionary of Cancer Terms 1.949s |
+| Vyloy | Drugs.com 1.663s, NCI Dictionary of Cancer Terms 1.342s |
 | Vyvanse | Drugs.com 1.091s, Merriam-Webster (full name) 1.115s, ClinCalc (full name) 0.878s |
 | Wegovy | Drugs.com 1.620s, Merriam-Webster (full name) 1.195s |
-| Xanax | Drugs.com 0.853s, Merriam-Webster (full name) 0.807s, ClinCalc (full name) 1.613s |
+| Xanax | Drugs.com 0.853s, Merriam-Webster (full name) 0.807s, ClinCalc (full name) 1.613s, NCI Dictionary of Cancer Terms 1.254s |
 | Xarelto | Drugs.com 0.912s, Merriam-Webster (full name) 1.115s, ClinCalc (full name) 0.994s |
 | Xeljanz | Drugs.com 0.954s, Merriam-Webster (full name) 1.300s |
 | Xolair | Drugs.com 0.758s, Merriam-Webster (full name) 1.022s |
 | Zantac | Drugs.com 0.842s, Merriam-Webster (full name) 0.750s, ClinCalc (full name) 0.923s |
 | Zepbound | Drugs.com 1.556s, Merriam-Webster (full name) 1.621s |
-| Zoloft | Drugs.com 1.037s, Merriam-Webster (full name) 0.761s, ClinCalc (full name) 0.813s |
+| Zoloft | Drugs.com 1.037s, Merriam-Webster (full name) 0.761s, ClinCalc (full name) 0.813s, NCI Dictionary of Cancer Terms 0.914s |
 | Zyrtec | Drugs.com 0.905s, Merriam-Webster (full name) 0.733s |
-| acetaminophen | Drugs.com 1.203s, Merriam-Webster (full name) 0.935s |
+| acetaminophen | Drugs.com 1.203s, Merriam-Webster (full name) 0.935s, NCI Dictionary of Cancer Terms 1.411s |
 | adalimumab | Drugs.com 1.202s, Merriam-Webster (full name) 1.300s, ClinCalc (full name) 1.926s |
-| alprazolam | Drugs.com 1.212s, Merriam-Webster (full name) 0.970s, ClinCalc (full name) 2.188s |
+| alprazolam | Drugs.com 1.212s, Merriam-Webster (full name) 0.970s, ClinCalc (full name) 2.188s, NCI Dictionary of Cancer Terms 1.463s |
 | apixaban | Drugs.com 1.000s, Merriam-Webster (full name) 1.393s, ClinCalc (full name) 1.796s |
 | aripiprazole | Drugs.com 1.277s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.952s |
 | atorvastatin | Drugs.com 1.247s, Merriam-Webster (full name) 1.003s, UMich 1.750s, ClinCalc (full name) 1.243s |
-| budesonide | Drugs.com 1.124s, Merriam-Webster (full name) 0.918s, ClinCalc (full name) 1.717s |
-| cefepime | Drugs.com 1.017s, UMich 1.500s |
+| bevacizumab-vikg | Drugs.com 1.432s, NCI Dictionary of Cancer Terms 1.384s |
+| budesonide | Drugs.com 1.124s, Merriam-Webster (full name) 0.918s, ClinCalc (full name) 1.717s, NCI Dictionary of Cancer Terms 1.724s |
+| cefepime | Drugs.com 1.017s, UMich 1.500s, NCI Dictionary of Cancer Terms 1.463s |
 | cetirizine | Drugs.com 1.169s, Merriam-Webster (full name) 1.250s |
 | clopidogrel | Drugs.com 1.112s, Merriam-Webster (full name) 1.007s, UMich 1.750s, ClinCalc (full name) 1.978s |
 | dapagliflozin | Drugs.com 1.950s, Merriam-Webster (full name) 1.393s |
-| diazepam | Drugs.com 1.104s, Merriam-Webster (full name) 0.920s, ClinCalc (full name) 0.964s |
-| diphenhydramine | Drugs.com 1.455s, Merriam-Webster (full name) 1.101s, ClinCalc (full name) 1.213s |
+| datopotamab deruxtecan | Drugs.com 3.732s, NCI Dictionary of Cancer Terms 3.342s |
+| diazepam | Drugs.com 1.104s, Merriam-Webster (full name) 0.920s, ClinCalc (full name) 0.964s, NCI Dictionary of Cancer Terms 1.463s |
+| diphenhydramine | Drugs.com 1.455s, Merriam-Webster (full name) 1.101s, ClinCalc (full name) 1.213s, NCI Dictionary of Cancer Terms 1.620s |
 | dulaglutide | Drugs.com 1.109s, Merriam-Webster (full name) 1.707s |
 | duloxetine | Drugs.com 1.169s, Merriam-Webster (full name) 1.486s, ClinCalc (full name) 2.240s |
 | esomeprazole | Drugs.com 1.406s, Merriam-Webster (full name) 1.323s, ClinCalc (full name) 2.083s |
-| etanercept | Drugs.com 1.234s, Merriam-Webster (full name) 1.393s, ClinCalc (full name) 1.796s |
+| etanercept | Drugs.com 1.234s, Merriam-Webster (full name) 1.393s, ClinCalc (full name) 1.796s, NCI Dictionary of Cancer Terms 1.254s |
 | exenatide | Drugs.com 1.347s, ClinCalc (full name) 1.013s |
 | famotidine | Drugs.com 1.052s, Merriam-Webster (full name) 0.896s, ClinCalc (full name) 1.030s |
-| fluoxetine | Drugs.com 1.281s, Merriam-Webster (full name) 1.061s, ClinCalc (full name) 1.300s |
+| fluoxetine | Drugs.com 1.281s, Merriam-Webster (full name) 1.061s, ClinCalc (full name) 1.300s, NCI Dictionary of Cancer Terms 1.698s |
 | fluticasone propionate | Drugs.com 1.278s, ClinCalc (full name) 1.149s |
 | formoterol fumarate dihydrate | Drugs.com 1.026s, ClinCalc (full name) 1.848s |
-| ibuprofen | Drugs.com 1.184s, ClinCalc (full name) 0.969s |
-| insulin glargine | Drugs.com 1.858s, Merriam-Webster (full name) 1.555s, ClinCalc (full name) 2.083s |
+| ibuprofen | Drugs.com 1.184s, ClinCalc (full name) 0.969s, NCI Dictionary of Cancer Terms 1.698s |
+| insulin glargine | Drugs.com 1.858s, Merriam-Webster (full name) 1.555s, ClinCalc (full name) 2.083s, NCI Dictionary of Cancer Terms 2.325s |
 | levothyroxine | Drugs.com 1.542s, ClinCalc (full name) 2.423s |
 | lisdexamfetamine | Drugs.com 2.039s, ClinCalc (full name) 2.240s |
 | loratadine | Drugs.com 1.296s, Merriam-Webster (full name) 0.891s, ClinCalc (full name) 1.126s |
 | lurasidone | Drugs.com 1.184s, Merriam-Webster (full name) 1.207s |
-| omeprazole | Drugs.com 1.146s, Merriam-Webster (full name) 0.896s, ClinCalc (full name) 1.900s |
-| pregabalin | Drugs.com 0.987s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.848s |
+| nogapendekin alfa inbakicept-pmln | Drugs.com 4.348s, NCI Dictionary of Cancer Terms 3.893s |
+| obecabtagene autoleucel | Drugs.com 3.240s, NCI Dictionary of Cancer Terms 3.277s |
+| omeprazole | Drugs.com 1.146s, Merriam-Webster (full name) 0.896s, ClinCalc (full name) 1.900s, NCI Dictionary of Cancer Terms 1.593s |
+| pregabalin | Drugs.com 0.987s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.848s, NCI Dictionary of Cancer Terms 1.384s |
 | quetiapine | Drugs.com 1.181s, Merriam-Webster (full name) 1.300s, ClinCalc (full name) 1.665s |
 | rivaroxaban | Drugs.com 1.372s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 2.214s |
 | rosuvastatin | Drugs.com 1.502s, Merriam-Webster (full name) 1.411s, ClinCalc (full name) 1.136s |
 | salmeterol | Drugs.com 1.195s, Merriam-Webster (full name) 1.045s, ClinCalc (full name) 0.915s |
-| sertraline | Drugs.com 0.968s, Merriam-Webster (full name) 0.878s, ClinCalc (full name) 2.397s |
+| sertraline | Drugs.com 0.968s, Merriam-Webster (full name) 0.878s, ClinCalc (full name) 2.397s, NCI Dictionary of Cancer Terms 1.724s |
 | sitagliptin | Drugs.com 1.427s, Merriam-Webster (full name) 1.207s, ClinCalc (full name) 1.030s |
+| talquetamab | Drugs.com 1.599s, NCI Dictionary of Cancer Terms 1.975s |
 | testosterone undecanoate | Drugs.com 1.174s, ClinCalc (full name) 2.266s |
 | tiotropium bromide | Drugs.com 1.258s, ClinCalc (full name) 2.240s |
 | tirzepatide | Drugs.com 1.556s, Merriam-Webster (full name) 1.792s |
 | tofacitinib | Drugs.com 2.067s, Merriam-Webster (full name) 1.300s |
+| tovorafenib | Drugs.com 2.238s, NCI Dictionary of Cancer Terms 2.163s |
 | valsartan | Drugs.com 1.017s, Merriam-Webster (full name) 1.107s, UMich 1.500s, ClinCalc (full name) 0.965s |
 | varenicline | Drugs.com 1.219s, Merriam-Webster (full name) 1.672s, ClinCalc (full name) 0.882s |
-| zolpidem | Drugs.com 1.106s, Merriam-Webster (full name) 1.022s, ClinCalc (full name) 0.946s |
+| zolbetuximab | Drugs.com 2.025s, NCI Dictionary of Cancer Terms 2.100s |
+| zolpidem | Drugs.com 1.106s, Merriam-Webster (full name) 1.022s, ClinCalc (full name) 0.946s, NCI Dictionary of Cancer Terms 1.019s |
 
 ## Merriam-Webster: reconciling row counts
 
@@ -371,13 +396,15 @@ correct, not a bug; see the ClinCalc reconciliation section above.
 
 ## What is still missing
 
-105 ingredients (37%) have no audio
-from any source: 64 generic, 41 brand. The gap skews generic --
+102 ingredients (36%) have no audio
+from any source: 61 generic, 41 brand. The gap skews generic --
 coined INN names are exactly what neither a general dictionary, a consumer
 drug-information site, an older pharmacy-school teaching list (UMich's,
-which barely overlaps DOSE's newer names), nor a commonly-prescribed-drugs
-pronunciation page (ClinCalc's, which skews the same way) reliably records.
-See
+which barely overlaps DOSE's newer names), a commonly-prescribed-drugs
+pronunciation page (ClinCalc's, which skews the same way), nor a cancer-
+specific dictionary (NCI's, whose real gain was cross-checking names other
+sources already had, not covering brand-new non-oncology names) reliably
+records. See
 `data/collected/HANDOFF_AUDIO_COLLECTION.md` for sources tried and the
 paid/licensed options (USP Dictionary of USAN, a citable MedlinePlus key,
 a Drugs.com data license) that would close the rest.
