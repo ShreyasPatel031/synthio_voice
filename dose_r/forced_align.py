@@ -59,11 +59,17 @@ Mechanism
    min/max frame boundaries of that range's segments.
 7. Convert frame indices to seconds using this clip's own measured frame
    stride (duration / num_frames -- not a hardcoded constant, since the
-   exact value depends on input length and the model's conv stack padding),
-   apply a small pad (much smaller than audio_span.py's 0.12s, since these
-   boundaries are exact rather than approximate), clamped to the
-   neighboring phoneme segment's own boundary so padding can never bleed
-   into an adjacent word, and slice the original PCM.
+   exact value depends on input length and the model's conv stack padding).
+   The boundary to each neighboring word is placed at the MIDPOINT of the
+   blank gap between them, not at the drug's own raw labeled-frame span --
+   CTC posteriors are "peaky" (a token spikes for only 1-3 frames and
+   defaults to blank elsewhere, even during that word's own real speech),
+   so the raw span alone systematically undershoots a short/fast word's
+   true duration. Confirmed on "Advair": its 4 phonemes spiked across only
+   ~0.34s while ~0.5s of its real attack/decay sat in blank gaps on either
+   side and was silently discarded, producing an audibly truncated 0.4s
+   clip -- caught by the user listening, the same way the two Cloud-STT
+   bugs were. See `_locate_drug_word_indices`'s caller below for the fix.
 
 This module does not need audio_span.py's duration-plausibility or
 retranscription-verification guardrails -- those existed specifically to
@@ -184,25 +190,34 @@ def extract_drug_span_forced_align(audio_bytes: bytes, sentence: str, drug: str,
         return None  # alignment degenerate; don't guess
 
     frame_stride = duration_s / log_probs.shape[1]
-    drug_segments = [segments[i] for i in drug_token_positions]
-    start_s = min(s for _, s, _ in drug_segments) * frame_stride
-    end_s = max(e for _, _, e in drug_segments) * frame_stride
-
-    # Pad, clamped to the neighboring phoneme segment's own boundary so
-    # padding can never bleed into an adjacent word (mirrors
-    # audio_span._clamp_padding's reasoning, against exact forced-align
-    # boundaries instead of approximate Cloud STT ones).
     first_pos, last_pos = min(drug_token_positions), max(drug_token_positions)
+    drug_start_frame = segments[first_pos][1]
+    drug_end_frame = segments[last_pos][2]
+
+    # CTC posteriors are "peaky": the model spikes on a token's own label for
+    # only 1-3 frames and defaults to blank almost everywhere else, even
+    # during that same word's real speech (attack/decay, coarticulation with
+    # its neighbor) -- blank does NOT mean silence. Taking the raw labeled
+    # span alone (as a first version of this function did) systematically
+    # undershoots word duration, confirmed on "Advair": its 4 phonemes
+    # (ɐ-d-v-ɛɹ) spiked across only ~0.34s of labeled frames while ~0.5s of
+    # real speech on either side sat in blank gaps and was discarded,
+    # producing an audibly truncated 0.4s clip. The standard fix (used in
+    # CTC segmentation literature, e.g. Kürzinger et al. 2020) is to split
+    # each blank gap to a neighboring word AT ITS MIDPOINT rather than
+    # attribute it to neither side -- an unbiased assumption, in the absence
+    # of any signal saying which side that transition audio really belongs
+    # to, that recovers most of a short/fast word's true duration.
     if first_pos > 0:
-        prev_end_s = segments[first_pos - 1][2] * frame_stride
-        start_s = max(prev_end_s, start_s - pad_s)
+        prev_end_frame = segments[first_pos - 1][2]
+        start_s = (prev_end_frame + drug_start_frame) / 2 * frame_stride
     else:
-        start_s = max(0.0, start_s - pad_s)
+        start_s = max(0.0, drug_start_frame * frame_stride - pad_s)
     if last_pos < len(segments) - 1:
-        next_start_s = segments[last_pos + 1][1] * frame_stride
-        end_s = min(next_start_s, end_s + pad_s)
+        next_start_frame = segments[last_pos + 1][1]
+        end_s = (drug_end_frame + next_start_frame) / 2 * frame_stride
     else:
-        end_s = min(duration_s, end_s + pad_s)
+        end_s = min(duration_s, drug_end_frame * frame_stride + pad_s)
 
     with wave.open(BytesIO(audio_bytes), "rb") as w:
         rate, width, channels = w.getframerate(), w.getsampwidth(), w.getnchannels()
