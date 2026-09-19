@@ -1,0 +1,1646 @@
+[
+  {
+    "item_id": "abilify",
+    "n_phon": 7,
+    "dur": 0.7810416666666666,
+    "dur_per_phon": 0.1116
+  },
+  {
+    "item_id": "advair",
+    "n_phon": 4,
+    "dur": 0.590625,
+    "dur_per_phon": 0.1477
+  },
+  {
+    "item_id": "adquey",
+    "n_phon": 5,
+    "dur": 0.660625,
+    "dur_per_phon": 0.1321
+  },
+  {
+    "item_id": "advil",
+    "n_phon": 5,
+    "dur": 0.6108333333333333,
+    "dur_per_phon": 0.1222
+  },
+  {
+    "item_id": "alyftrek",
+    "n_phon": 8,
+    "dur": 0.9711666666666666,
+    "dur_per_phon": 0.1214
+  },
+  {
+    "item_id": "alhemo",
+    "n_phon": 6,
+    "dur": 0.8808333333333334,
+    "dur_per_phon": 0.1468
+  },
+  {
+    "item_id": "ambelvist",
+    "n_phon": 9,
+    "dur": 0.9510833333333333,
+    "dur_per_phon": 0.1057
+  },
+  {
+    "item_id": "ambien",
+    "n_phon": 5,
+    "dur": 0.560625,
+    "dur_per_phon": 0.1121
+  },
+  {
+    "item_id": "anktiva",
+    "n_phon": 7,
+    "dur": 0.7807083333333333,
+    "dur_per_phon": 0.1115
+  },
+  {
+    "item_id": "aspirin",
+    "n_phon": 6,
+    "dur": 0.5107916666666666,
+    "dur_per_phon": 0.0851
+  },
+  {
+    "item_id": "attruby",
+    "n_phon": 6,
+    "dur": 0.72075,
+    "dur_per_phon": 0.1201
+  },
+  {
+    "item_id": "aucatzyl",
+    "n_phon": 7,
+    "dur": 0.941,
+    "dur_per_phon": 0.1344
+  },
+  {
+    "item_id": "avlayah",
+    "n_phon": 5,
+    "dur": 0.6207083333333333,
+    "dur_per_phon": 0.1241
+  },
+  {
+    "item_id": "baxfendy",
+    "n_phon": 9,
+    "dur": 0.851125,
+    "dur_per_phon": 0.0946
+  },
+  {
+    "item_id": "benadryl",
+    "n_phon": 8,
+    "dur": 0.721,
+    "dur_per_phon": 0.0901
+  },
+  {
+    "item_id": "awiqli",
+    "n_phon": 6,
+    "dur": 0.9609166666666666,
+    "dur_per_phon": 0.1602
+  },
+  {
+    "item_id": "beqalzi",
+    "n_phon": 8,
+    "dur": 0.820875,
+    "dur_per_phon": 0.1026
+  },
+  {
+    "item_id": "biktarvy",
+    "n_phon": 7,
+    "dur": 0.7408333333333333,
+    "dur_per_phon": 0.1058
+  },
+  {
+    "item_id": "bizengri",
+    "n_phon": 8,
+    "dur": 0.79075,
+    "dur_per_phon": 0.0988
+  },
+  {
+    "item_id": "blujepa",
+    "n_phon": 7,
+    "dur": 0.7707916666666667,
+    "dur_per_phon": 0.1101
+  },
+  {
+    "item_id": "byetta",
+    "n_phon": 5,
+    "dur": 0.6207083333333333,
+    "dur_per_phon": 0.1241
+  },
+  {
+    "item_id": "bysanti",
+    "n_phon": 7,
+    "dur": 0.6607083333333333,
+    "dur_per_phon": 0.0944
+  },
+  {
+    "item_id": "casgevy",
+    "n_phon": 7,
+    "dur": 0.7307083333333333,
+    "dur_per_phon": 0.1044
+  },
+  {
+    "item_id": "chantix",
+    "n_phon": 7,
+    "dur": 0.680875,
+    "dur_per_phon": 0.0973
+  },
+  {
+    "item_id": "claritin",
+    "n_phon": 8,
+    "dur": 0.691,
+    "dur_per_phon": 0.0864
+  },
+  {
+    "item_id": "cobenfy",
+    "n_phon": 7,
+    "dur": 0.710875,
+    "dur_per_phon": 0.1016
+  },
+  {
+    "item_id": "cosentyx",
+    "n_phon": 9,
+    "dur": 0.911125,
+    "dur_per_phon": 0.1012
+  },
+  {
+    "item_id": "cymbalta",
+    "n_phon": 8,
+    "dur": 0.7210833333333333,
+    "dur_per_phon": 0.0901
+  },
+  {
+    "item_id": "crestor",
+    "n_phon": 6,
+    "dur": 0.5807083333333334,
+    "dur_per_phon": 0.0968
+  },
+  {
+    "item_id": "cypsedo",
+    "n_phon": 7,
+    "dur": 0.951125,
+    "dur_per_phon": 0.1359
+  },
+  {
+    "item_id": "dupixent",
+    "n_phon": 9,
+    "dur": 0.7609166666666667,
+    "dur_per_phon": 0.0845
+  },
+  {
+    "item_id": "datroway",
+    "n_phon": 7,
+    "dur": 0.69075,
+    "dur_per_phon": 0.0987
+  },
+  {
+    "item_id": "decnupaz",
+    "n_phon": 8,
+    "dur": 1.021,
+    "dur_per_phon": 0.1276
+  },
+  {
+    "item_id": "eliquis",
+    "n_phon": 7,
+    "dur": 0.6609583333333333,
+    "dur_per_phon": 0.0944
+  },
+  {
+    "item_id": "ebglyss",
+    "n_phon": 6,
+    "dur": 0.8007083333333334,
+    "dur_per_phon": 0.1335
+  },
+  {
+    "item_id": "enbrel",
+    "n_phon": 6,
+    "dur": 0.6607916666666667,
+    "dur_per_phon": 0.1101
+  },
+  {
+    "item_id": "elrexfio",
+    "n_phon": 9,
+    "dur": 0.8108333333333333,
+    "dur_per_phon": 0.0901
+  },
+  {
+    "item_id": "ensacove",
+    "n_phon": 7,
+    "dur": 0.790875,
+    "dur_per_phon": 0.113
+  },
+  {
+    "item_id": "entresto",
+    "n_phon": 8,
+    "dur": 0.7107083333333334,
+    "dur_per_phon": 0.0888
+  },
+  {
+    "item_id": "farxiga",
+    "n_phon": 7,
+    "dur": 0.9309166666666666,
+    "dur_per_phon": 0.133
+  },
+  {
+    "item_id": "flonase",
+    "n_phon": 6,
+    "dur": 0.6709166666666667,
+    "dur_per_phon": 0.1118
+  },
+  {
+    "item_id": "acetaminophen",
+    "n_phon": 12,
+    "dur": 1.1315833333333334,
+    "dur_per_phon": 0.0943
+  },
+  {
+    "item_id": "foundayo",
+    "n_phon": 6,
+    "dur": 0.8008333333333333,
+    "dur_per_phon": 0.1335
+  },
+  {
+    "item_id": "acoramidis",
+    "n_phon": 10,
+    "dur": 0.881125,
+    "dur_per_phon": 0.0881
+  },
+  {
+    "item_id": "acoltremon",
+    "n_phon": 10,
+    "dur": 1.0009583333333334,
+    "dur_per_phon": 0.1001
+  },
+  {
+    "item_id": "adalimumab",
+    "n_phon": 11,
+    "dur": 1.001,
+    "dur_per_phon": 0.091
+  },
+  {
+    "item_id": "alprazolam",
+    "n_phon": 10,
+    "dur": 0.801125,
+    "dur_per_phon": 0.0801
+  },
+  {
+    "item_id": "apixaban",
+    "n_phon": 9,
+    "dur": 0.9511666666666667,
+    "dur_per_phon": 0.1057
+  },
+  {
+    "item_id": "apremilast",
+    "n_phon": 10,
+    "dur": 1.0711666666666666,
+    "dur_per_phon": 0.1071
+  },
+  {
+    "item_id": "aripiprazole",
+    "n_phon": 11,
+    "dur": 1.0111666666666668,
+    "dur_per_phon": 0.0919
+  },
+  {
+    "item_id": "atogepant",
+    "n_phon": 8,
+    "dur": 0.9409583333333333,
+    "dur_per_phon": 0.1176
+  },
+  {
+    "item_id": "atacicept-vymj",
+    "n_phon": 13,
+    "dur": 1.6015833333333334,
+    "dur_per_phon": 0.1232
+  },
+  {
+    "item_id": "atorvastatin",
+    "n_phon": 11,
+    "dur": 1.1210833333333334,
+    "dur_per_phon": 0.1019
+  },
+  {
+    "item_id": "baxdrostat",
+    "n_phon": 11,
+    "dur": 1.091375,
+    "dur_per_phon": 0.0992
+  },
+  {
+    "item_id": "baloxavir-marboxil",
+    "n_phon": 17,
+    "dur": 1.781875,
+    "dur_per_phon": 0.1048
+  },
+  {
+    "item_id": "bevacizumab-vikg",
+    "n_phon": 16,
+    "dur": 1.6315833333333334,
+    "dur_per_phon": 0.102
+  },
+  {
+    "item_id": "bictegravir,-emtricitabine,-and-tenofovir-alafenamide",
+    "n_phon": 42,
+    "dur": 5.1767916666666665,
+    "dur_per_phon": 0.1233
+  },
+  {
+    "item_id": "budesonide-and-formoterol-fumarate-dihydrate",
+    "n_phon": 37,
+    "dur": 3.4434583333333335,
+    "dur_per_phon": 0.0931
+  },
+  {
+    "item_id": "bulevirtide-gmod",
+    "n_phon": 15,
+    "dur": 1.401875,
+    "dur_per_phon": 0.0935
+  },
+  {
+    "item_id": "canakinumab",
+    "n_phon": 11,
+    "dur": 1.2212916666666667,
+    "dur_per_phon": 0.111
+  },
+  {
+    "item_id": "cariprazine",
+    "n_phon": 10,
+    "dur": 0.9609583333333334,
+    "dur_per_phon": 0.0961
+  },
+  {
+    "item_id": "cefepime-and-zidebactam",
+    "n_phon": 19,
+    "dur": 2.4022916666666667,
+    "dur_per_phon": 0.1264
+  },
+  {
+    "item_id": "cetirizine",
+    "n_phon": 9,
+    "dur": 0.85125,
+    "dur_per_phon": 0.0946
+  },
+  {
+    "item_id": "centanafadine",
+    "n_phon": 12,
+    "dur": 1.1710833333333333,
+    "dur_per_phon": 0.0976
+  },
+  {
+    "item_id": "clopidogrel",
+    "n_phon": 10,
+    "dur": 0.680875,
+    "dur_per_phon": 0.0681
+  },
+  {
+    "item_id": "cipepofol",
+    "n_phon": 8,
+    "dur": 1.031125,
+    "dur_per_phon": 0.1289
+  },
+  {
+    "item_id": "concizumab",
+    "n_phon": 11,
+    "dur": 1.0710833333333334,
+    "dur_per_phon": 0.0974
+  },
+  {
+    "item_id": "copper-histidinate",
+    "n_phon": 14,
+    "dur": 1.2913333333333334,
+    "dur_per_phon": 0.0922
+  },
+  {
+    "item_id": "dapagliflozin",
+    "n_phon": 13,
+    "dur": 1.2912083333333333,
+    "dur_per_phon": 0.0993
+  },
+  {
+    "item_id": "diazepam",
+    "n_phon": 8,
+    "dur": 1.0111666666666668,
+    "dur_per_phon": 0.1264
+  },
+  {
+    "item_id": "datopotamab-deruxtecan",
+    "n_phon": 22,
+    "dur": 2.562125,
+    "dur_per_phon": 0.1165
+  },
+  {
+    "item_id": "difamilast",
+    "n_phon": 10,
+    "dur": 0.9508333333333333,
+    "dur_per_phon": 0.0951
+  },
+  {
+    "item_id": "dimethyl-fumarate",
+    "n_phon": 14,
+    "dur": 1.3019583333333333,
+    "dur_per_phon": 0.093
+  },
+  {
+    "item_id": "diphenhydramine",
+    "n_phon": 13,
+    "dur": 1.371375,
+    "dur_per_phon": 0.1055
+  },
+  {
+    "item_id": "doravirine-and-islatravir",
+    "n_phon": 21,
+    "dur": 2.412333333333333,
+    "dur_per_phon": 0.1149
+  },
+  {
+    "item_id": "dulaglutide",
+    "n_phon": 10,
+    "dur": 0.8609166666666667,
+    "dur_per_phon": 0.0861
+  },
+  {
+    "item_id": "dupilumab",
+    "n_phon": 9,
+    "dur": 0.99125,
+    "dur_per_phon": 0.1101
+  },
+  {
+    "item_id": "durvalumab",
+    "n_phon": 10,
+    "dur": 1.1811666666666667,
+    "dur_per_phon": 0.1181
+  },
+  {
+    "item_id": "duloxetine",
+    "n_phon": 10,
+    "dur": 1.1410416666666667,
+    "dur_per_phon": 0.1141
+  },
+  {
+    "item_id": "elranatamab-bcmm",
+    "n_phon": 19,
+    "dur": 1.922,
+    "dur_per_phon": 0.1012
+  },
+  {
+    "item_id": "efgartigimod-alfa",
+    "n_phon": 15,
+    "dur": 2.0017916666666666,
+    "dur_per_phon": 0.1335
+  },
+  {
+    "item_id": "elexacaftor,-tezacaftor,-and-ivacaftor",
+    "n_phon": 31,
+    "dur": 3.603458333333333,
+    "dur_per_phon": 0.1162
+  },
+  {
+    "item_id": "empagliflozin",
+    "n_phon": 13,
+    "dur": 1.0510416666666667,
+    "dur_per_phon": 0.0808
+  },
+  {
+    "item_id": "enlicitide-decanoate",
+    "n_phon": 16,
+    "dur": 1.5716666666666668,
+    "dur_per_phon": 0.0982
+  },
+  {
+    "item_id": "ensitrelvir",
+    "n_phon": 10,
+    "dur": 0.911125,
+    "dur_per_phon": 0.0911
+  },
+  {
+    "item_id": "ensartinib",
+    "n_phon": 9,
+    "dur": 1.0110416666666666,
+    "dur_per_phon": 0.1123
+  },
+  {
+    "item_id": "esomeprazole",
+    "n_phon": 10,
+    "dur": 1.021125,
+    "dur_per_phon": 0.1021
+  },
+  {
+    "item_id": "etanercept",
+    "n_phon": 9,
+    "dur": 0.8511666666666666,
+    "dur_per_phon": 0.0946
+  },
+  {
+    "item_id": "exagamglogene-autotemcel",
+    "n_phon": 21,
+    "dur": 2.5022083333333334,
+    "dur_per_phon": 0.1192
+  },
+  {
+    "item_id": "exenatide",
+    "n_phon": 9,
+    "dur": 1.181125,
+    "dur_per_phon": 0.1312
+  },
+  {
+    "item_id": "famotidine",
+    "n_phon": 9,
+    "dur": 0.9009583333333333,
+    "dur_per_phon": 0.1001
+  },
+  {
+    "item_id": "faricimab-svoa",
+    "n_phon": 14,
+    "dur": 1.4312916666666666,
+    "dur_per_phon": 0.1022
+  },
+  {
+    "item_id": "fezolinetant",
+    "n_phon": 11,
+    "dur": 0.9608333333333333,
+    "dur_per_phon": 0.0873
+  },
+  {
+    "item_id": "fluoxetine",
+    "n_phon": 11,
+    "dur": 1.0113333333333334,
+    "dur_per_phon": 0.0919
+  },
+  {
+    "item_id": "fluticasone-propionate",
+    "n_phon": 19,
+    "dur": 1.7922916666666666,
+    "dur_per_phon": 0.0943
+  },
+  {
+    "item_id": "fluticasone-propionate-and-salmeterol",
+    "n_phon": 32,
+    "dur": 3.073125,
+    "dur_per_phon": 0.096
+  },
+  {
+    "item_id": "gedatolisib",
+    "n_phon": 11,
+    "dur": 1.21125,
+    "dur_per_phon": 0.1101
+  },
+  {
+    "item_id": "gadoquatrane",
+    "n_phon": 11,
+    "dur": 1.23125,
+    "dur_per_phon": 0.1119
+  },
+  {
+    "item_id": "ibuprofen",
+    "n_phon": 10,
+    "dur": 0.9515833333333333,
+    "dur_per_phon": 0.0952
+  },
+  {
+    "item_id": "gepotidacin",
+    "n_phon": 11,
+    "dur": 1.18175,
+    "dur_per_phon": 0.1074
+  },
+  {
+    "item_id": "icotrokinra",
+    "n_phon": 11,
+    "dur": 1.0510833333333334,
+    "dur_per_phon": 0.0956
+  },
+  {
+    "item_id": "insulin-glargine",
+    "n_phon": 13,
+    "dur": 1.4215,
+    "dur_per_phon": 0.1093
+  },
+  {
+    "item_id": "insulin-icodec-abae",
+    "n_phon": 16,
+    "dur": 2.061958333333333,
+    "dur_per_phon": 0.1289
+  },
+  {
+    "item_id": "lebrikizumab-lbkz",
+    "n_phon": 21,
+    "dur": 2.062291666666667,
+    "dur_per_phon": 0.0982
+  },
+  {
+    "item_id": "levothyroxine",
+    "n_phon": 12,
+    "dur": 1.2314583333333333,
+    "dur_per_phon": 0.1026
+  },
+  {
+    "item_id": "lecanemab",
+    "n_phon": 8,
+    "dur": 0.84075,
+    "dur_per_phon": 0.1051
+  },
+  {
+    "item_id": "linerixibat",
+    "n_phon": 11,
+    "dur": 1.1912916666666666,
+    "dur_per_phon": 0.1083
+  },
+  {
+    "item_id": "loratadine",
+    "n_phon": 9,
+    "dur": 0.8413333333333334,
+    "dur_per_phon": 0.0935
+  },
+  {
+    "item_id": "lisdexamfetamine",
+    "n_phon": 16,
+    "dur": 1.2412083333333332,
+    "dur_per_phon": 0.0776
+  },
+  {
+    "item_id": "milsaperidone",
+    "n_phon": 12,
+    "dur": 1.0613333333333332,
+    "dur_per_phon": 0.0884
+  },
+  {
+    "item_id": "lurasidone",
+    "n_phon": 9,
+    "dur": 0.911,
+    "dur_per_phon": 0.1012
+  },
+  {
+    "item_id": "navepegritide",
+    "n_phon": 11,
+    "dur": 1.531375,
+    "dur_per_phon": 0.1392
+  },
+  {
+    "item_id": "nipocalimab-aahu",
+    "n_phon": 14,
+    "dur": 1.7515833333333333,
+    "dur_per_phon": 0.1251
+  },
+  {
+    "item_id": "nogapendekin-alfa-inbakicept-pmln",
+    "n_phon": 34,
+    "dur": 3.692875,
+    "dur_per_phon": 0.1086
+  },
+  {
+    "item_id": "olezarsen",
+    "n_phon": 7,
+    "dur": 0.9209166666666667,
+    "dur_per_phon": 0.1316
+  },
+  {
+    "item_id": "obecabtagene-autoleucel",
+    "n_phon": 17,
+    "dur": 2.2819166666666666,
+    "dur_per_phon": 0.1342
+  },
+  {
+    "item_id": "omalizumab",
+    "n_phon": 11,
+    "dur": 1.3315,
+    "dur_per_phon": 0.121
+  },
+  {
+    "item_id": "omeprazole",
+    "n_phon": 8,
+    "dur": 0.8211666666666667,
+    "dur_per_phon": 0.1026
+  },
+  {
+    "item_id": "orforglipron",
+    "n_phon": 10,
+    "dur": 1.232875,
+    "dur_per_phon": 0.1233
+  },
+  {
+    "item_id": "osimertinib",
+    "n_phon": 10,
+    "dur": 0.9109583333333333,
+    "dur_per_phon": 0.0911
+  },
+  {
+    "item_id": "oveporexton",
+    "n_phon": 12,
+    "dur": 1.2514583333333333,
+    "dur_per_phon": 0.1043
+  },
+  {
+    "item_id": "pegvaliase-pqpz",
+    "n_phon": 18,
+    "dur": 2.4122916666666665,
+    "dur_per_phon": 0.134
+  },
+  {
+    "item_id": "pegzilarginase-nbln",
+    "n_phon": 20,
+    "dur": 2.24225,
+    "dur_per_phon": 0.1121
+  },
+  {
+    "item_id": "perfluorohexyloctane",
+    "n_phon": 18,
+    "dur": 2.15225,
+    "dur_per_phon": 0.1196
+  },
+  {
+    "item_id": "pitolisant",
+    "n_phon": 10,
+    "dur": 0.9410833333333334,
+    "dur_per_phon": 0.0941
+  },
+  {
+    "item_id": "prademagene-zamikeracel",
+    "n_phon": 19,
+    "dur": 2.03175,
+    "dur_per_phon": 0.1069
+  },
+  {
+    "item_id": "pregabalin",
+    "n_phon": 10,
+    "dur": 0.8711666666666666,
+    "dur_per_phon": 0.0871
+  },
+  {
+    "item_id": "pivekimab-sunirine-pvzy",
+    "n_phon": 24,
+    "dur": 3.8229166666666665,
+    "dur_per_phon": 0.1593
+  },
+  {
+    "item_id": "remibrutinib",
+    "n_phon": 12,
+    "dur": 1.1430416666666667,
+    "dur_per_phon": 0.0953
+  },
+  {
+    "item_id": "relacorilant",
+    "n_phon": 12,
+    "dur": 1.0509166666666667,
+    "dur_per_phon": 0.0876
+  },
+  {
+    "item_id": "quetiapine",
+    "n_phon": 9,
+    "dur": 2.4010833333333332,
+    "dur_per_phon": 0.2668
+  },
+  {
+    "item_id": "resmetirom",
+    "n_phon": 10,
+    "dur": 0.8709166666666667,
+    "dur_per_phon": 0.0871
+  },
+  {
+    "item_id": "rilzabrutinib",
+    "n_phon": 13,
+    "dur": 1.2130833333333333,
+    "dur_per_phon": 0.0933
+  },
+  {
+    "item_id": "revumenib",
+    "n_phon": 10,
+    "dur": 0.8009166666666667,
+    "dur_per_phon": 0.0801
+  },
+  {
+    "item_id": "ribociclib",
+    "n_phon": 10,
+    "dur": 1.0510833333333334,
+    "dur_per_phon": 0.1051
+  },
+  {
+    "item_id": "rimegepant",
+    "n_phon": 9,
+    "dur": 0.961125,
+    "dur_per_phon": 0.1068
+  },
+  {
+    "item_id": "rivaroxaban",
+    "n_phon": 12,
+    "dur": 1.0712916666666668,
+    "dur_per_phon": 0.0893
+  },
+  {
+    "item_id": "risankizumab-rzaa",
+    "n_phon": 16,
+    "dur": 2.522125,
+    "dur_per_phon": 0.1576
+  },
+  {
+    "item_id": "rosuvastatin",
+    "n_phon": 12,
+    "dur": 1.1912083333333334,
+    "dur_per_phon": 0.0993
+  },
+  {
+    "item_id": "sacubitril-and-valsartan",
+    "n_phon": 21,
+    "dur": 2.1922916666666667,
+    "dur_per_phon": 0.1044
+  },
+  {
+    "item_id": "secukinumab",
+    "n_phon": 12,
+    "dur": 0.9109166666666667,
+    "dur_per_phon": 0.0759
+  },
+  {
+    "item_id": "sitagliptin",
+    "n_phon": 11,
+    "dur": 1.0814166666666667,
+    "dur_per_phon": 0.0983
+  },
+  {
+    "item_id": "semaglutide",
+    "n_phon": 10,
+    "dur": 1.1010833333333334,
+    "dur_per_phon": 0.1101
+  },
+  {
+    "item_id": "sertraline",
+    "n_phon": 8,
+    "dur": 0.7307083333333333,
+    "dur_per_phon": 0.0913
+  },
+  {
+    "item_id": "sonrotoclax",
+    "n_phon": 12,
+    "dur": 1.1313333333333333,
+    "dur_per_phon": 0.0943
+  },
+  {
+    "item_id": "suzetrigine",
+    "n_phon": 10,
+    "dur": 0.9024583333333334,
+    "dur_per_phon": 0.0902
+  },
+  {
+    "item_id": "sotatercept-csrk",
+    "n_phon": 17,
+    "dur": 2.312333333333333,
+    "dur_per_phon": 0.136
+  },
+  {
+    "item_id": "sotagliflozin",
+    "n_phon": 13,
+    "dur": 1.281,
+    "dur_per_phon": 0.0985
+  },
+  {
+    "item_id": "tenecteplase",
+    "n_phon": 11,
+    "dur": 1.0411666666666666,
+    "dur_per_phon": 0.0947
+  },
+  {
+    "item_id": "talquetamab",
+    "n_phon": 11,
+    "dur": 0.870875,
+    "dur_per_phon": 0.0792
+  },
+  {
+    "item_id": "tebipenem-pivoxil",
+    "n_phon": 16,
+    "dur": 1.7016666666666667,
+    "dur_per_phon": 0.1064
+  },
+  {
+    "item_id": "testosterone-undecanoate",
+    "n_phon": 20,
+    "dur": 2.15225,
+    "dur_per_phon": 0.1076
+  },
+  {
+    "item_id": "teplizumab-mzwv",
+    "n_phon": 23,
+    "dur": 2.582625,
+    "dur_per_phon": 0.1123
+  },
+  {
+    "item_id": "tiotropium-bromide",
+    "n_phon": 15,
+    "dur": 1.5015833333333333,
+    "dur_per_phon": 0.1001
+  },
+  {
+    "item_id": "tofacitinib",
+    "n_phon": 11,
+    "dur": 1.141375,
+    "dur_per_phon": 0.1038
+  },
+  {
+    "item_id": "tividenofusp-alfa-eknm",
+    "n_phon": 20,
+    "dur": 2.1124583333333335,
+    "dur_per_phon": 0.1056
+  },
+  {
+    "item_id": "tirzepatide",
+    "n_phon": 9,
+    "dur": 0.9809166666666667,
+    "dur_per_phon": 0.109
+  },
+  {
+    "item_id": "tovorafenib",
+    "n_phon": 10,
+    "dur": 0.9709583333333334,
+    "dur_per_phon": 0.0971
+  },
+  {
+    "item_id": "troriluzole",
+    "n_phon": 10,
+    "dur": 1.191125,
+    "dur_per_phon": 0.1191
+  },
+  {
+    "item_id": "ubrogepant",
+    "n_phon": 9,
+    "dur": 1.0510833333333334,
+    "dur_per_phon": 0.1168
+  },
+  {
+    "item_id": "upadacitinib",
+    "n_phon": 13,
+    "dur": 1.251375,
+    "dur_per_phon": 0.0963
+  },
+  {
+    "item_id": "valbenazine",
+    "n_phon": 10,
+    "dur": 0.9912083333333334,
+    "dur_per_phon": 0.0991
+  },
+  {
+    "item_id": "varenicline",
+    "n_phon": 10,
+    "dur": 0.9212916666666666,
+    "dur_per_phon": 0.0921
+  },
+  {
+    "item_id": "vanzacaftor,-tezacaftor,-and-deutivacaftor",
+    "n_phon": 34,
+    "dur": 4.583958333333333,
+    "dur_per_phon": 0.1348
+  },
+  {
+    "item_id": "vorasidenib",
+    "n_phon": 10,
+    "dur": 0.8209583333333333,
+    "dur_per_phon": 0.0821
+  },
+  {
+    "item_id": "vepdegestrant",
+    "n_phon": 13,
+    "dur": 1.0910416666666667,
+    "dur_per_phon": 0.0839
+  },
+  {
+    "item_id": "veligrotug-vvze",
+    "n_phon": 17,
+    "dur": 1.5114583333333333,
+    "dur_per_phon": 0.0889
+  },
+  {
+    "item_id": "xanomeline-and-trospium-chloride",
+    "n_phon": 24,
+    "dur": 2.9425416666666666,
+    "dur_per_phon": 0.1226
+  },
+  {
+    "item_id": "zidesamtinib",
+    "n_phon": 11,
+    "dur": 1.07125,
+    "dur_per_phon": 0.0974
+  },
+  {
+    "item_id": "zenocutuzumab",
+    "n_phon": 15,
+    "dur": 1.5716666666666668,
+    "dur_per_phon": 0.1048
+  },
+  {
+    "item_id": "zolpidem",
+    "n_phon": 8,
+    "dur": 0.6006666666666667,
+    "dur_per_phon": 0.0751
+  },
+  {
+    "item_id": "zolbetuximab",
+    "n_phon": 13,
+    "dur": 1.0009166666666667,
+    "dur_per_phon": 0.077
+  },
+  {
+    "item_id": "zoliflodacin",
+    "n_phon": 12,
+    "dur": 1.2911666666666666,
+    "dur_per_phon": 0.1076
+  },
+  {
+    "item_id": "humira",
+    "n_phon": 7,
+    "dur": 0.67075,
+    "dur_per_phon": 0.0958
+  },
+  {
+    "item_id": "icotyde",
+    "n_phon": 6,
+    "dur": 0.91125,
+    "dur_per_phon": 0.1519
+  },
+  {
+    "item_id": "hepcludex",
+    "n_phon": 10,
+    "dur": 0.9909583333333334,
+    "dur_per_phon": 0.0991
+  },
+  {
+    "item_id": "idvynso",
+    "n_phon": 7,
+    "dur": 0.8810416666666666,
+    "dur_per_phon": 0.1259
+  },
+  {
+    "item_id": "ilaris",
+    "n_phon": 6,
+    "dur": 0.81075,
+    "dur_per_phon": 0.1351
+  },
+  {
+    "item_id": "imaavy",
+    "n_phon": 5,
+    "dur": 0.4805,
+    "dur_per_phon": 0.0961
+  },
+  {
+    "item_id": "imfinzi",
+    "n_phon": 7,
+    "dur": 0.8608333333333333,
+    "dur_per_phon": 0.123
+  },
+  {
+    "item_id": "ingrezza",
+    "n_phon": 7,
+    "dur": 0.6707916666666667,
+    "dur_per_phon": 0.0958
+  },
+  {
+    "item_id": "inpefa",
+    "n_phon": 6,
+    "dur": 0.640875,
+    "dur_per_phon": 0.1068
+  },
+  {
+    "item_id": "jardiance",
+    "n_phon": 6,
+    "dur": 0.570625,
+    "dur_per_phon": 0.0951
+  },
+  {
+    "item_id": "januvia",
+    "n_phon": 6,
+    "dur": 0.77075,
+    "dur_per_phon": 0.1285
+  },
+  {
+    "item_id": "jideytro",
+    "n_phon": 7,
+    "dur": 0.6306666666666667,
+    "dur_per_phon": 0.0901
+  },
+  {
+    "item_id": "journavx",
+    "n_phon": 7,
+    "dur": 0.740875,
+    "dur_per_phon": 0.1058
+  },
+  {
+    "item_id": "kisqali",
+    "n_phon": 7,
+    "dur": 0.7807916666666667,
+    "dur_per_phon": 0.1115
+  },
+  {
+    "item_id": "kyzatrex",
+    "n_phon": 9,
+    "dur": 0.8709166666666667,
+    "dur_per_phon": 0.0968
+  },
+  {
+    "item_id": "latuda",
+    "n_phon": 6,
+    "dur": 0.5307916666666667,
+    "dur_per_phon": 0.0885
+  },
+  {
+    "item_id": "leqembi",
+    "n_phon": 7,
+    "dur": 0.761,
+    "dur_per_phon": 0.1087
+  },
+  {
+    "item_id": "lifyorli",
+    "n_phon": 7,
+    "dur": 0.6806666666666666,
+    "dur_per_phon": 0.0972
+  },
+  {
+    "item_id": "lipfendra",
+    "n_phon": 9,
+    "dur": 0.7807916666666667,
+    "dur_per_phon": 0.0868
+  },
+  {
+    "item_id": "lipitor",
+    "n_phon": 6,
+    "dur": 0.5505416666666667,
+    "dur_per_phon": 0.0918
+  },
+  {
+    "item_id": "loargys",
+    "n_phon": 5,
+    "dur": 0.910875,
+    "dur_per_phon": 0.1822
+  },
+  {
+    "item_id": "lumvoa",
+    "n_phon": 6,
+    "dur": 0.8210416666666667,
+    "dur_per_phon": 0.1368
+  },
+  {
+    "item_id": "lynavoy",
+    "n_phon": 6,
+    "dur": 0.62075,
+    "dur_per_phon": 0.1035
+  },
+  {
+    "item_id": "lyrica",
+    "n_phon": 6,
+    "dur": 0.6108333333333333,
+    "dur_per_phon": 0.1018
+  },
+  {
+    "item_id": "meibo",
+    "n_phon": 4,
+    "dur": 0.4706666666666667,
+    "dur_per_phon": 0.1177
+  },
+  {
+    "item_id": "lytenava",
+    "n_phon": 8,
+    "dur": 0.7907916666666667,
+    "dur_per_phon": 0.0988
+  },
+  {
+    "item_id": "motrin",
+    "n_phon": 6,
+    "dur": 0.6709583333333333,
+    "dur_per_phon": 0.1118
+  },
+  {
+    "item_id": "metformin",
+    "n_phon": 8,
+    "dur": 0.70075,
+    "dur_per_phon": 0.0876
+  },
+  {
+    "item_id": "nexium",
+    "n_phon": 6,
+    "dur": 0.7310833333333333,
+    "dur_per_phon": 0.1218
+  },
+  {
+    "item_id": "mounjaro",
+    "n_phon": 7,
+    "dur": 0.7207083333333333,
+    "dur_per_phon": 0.103
+  },
+  {
+    "item_id": "nurtec",
+    "n_phon": 5,
+    "dur": 0.7507916666666666,
+    "dur_per_phon": 0.1502
+  },
+  {
+    "item_id": "nuzolvence",
+    "n_phon": 9,
+    "dur": 0.9310833333333334,
+    "dur_per_phon": 0.1035
+  },
+  {
+    "item_id": "ojemda",
+    "n_phon": 5,
+    "dur": 0.7908333333333334,
+    "dur_per_phon": 0.1582
+  },
+  {
+    "item_id": "obicetrapib",
+    "n_phon": 10,
+    "dur": 1.1611666666666667,
+    "dur_per_phon": 0.1161
+  },
+  {
+    "item_id": "orzeyful",
+    "n_phon": 5,
+    "dur": 0.7909166666666667,
+    "dur_per_phon": 0.1582
+  },
+  {
+    "item_id": "otezla",
+    "n_phon": 5,
+    "dur": 0.710875,
+    "dur_per_phon": 0.1422
+  },
+  {
+    "item_id": "ozempic",
+    "n_phon": 6,
+    "dur": 0.8210833333333334,
+    "dur_per_phon": 0.1368
+  },
+  {
+    "item_id": "palynziq",
+    "n_phon": 8,
+    "dur": 0.67075,
+    "dur_per_phon": 0.0838
+  },
+  {
+    "item_id": "plavix",
+    "n_phon": 7,
+    "dur": 0.7407916666666666,
+    "dur_per_phon": 0.1058
+  },
+  {
+    "item_id": "prilosec",
+    "n_phon": 8,
+    "dur": 0.8611666666666666,
+    "dur_per_phon": 0.1076
+  },
+  {
+    "item_id": "plozasiran",
+    "n_phon": 10,
+    "dur": 1.020875,
+    "dur_per_phon": 0.1021
+  },
+  {
+    "item_id": "prozac",
+    "n_phon": 6,
+    "dur": 0.7009166666666666,
+    "dur_per_phon": 0.1168
+  },
+  {
+    "item_id": "qulipta",
+    "n_phon": 8,
+    "dur": 0.74075,
+    "dur_per_phon": 0.0926
+  },
+  {
+    "item_id": "revtorpyk",
+    "n_phon": 8,
+    "dur": 0.7709166666666667,
+    "dur_per_phon": 0.0964
+  },
+  {
+    "item_id": "retatrutide",
+    "n_phon": 10,
+    "dur": 1.1712083333333334,
+    "dur_per_phon": 0.1171
+  },
+  {
+    "item_id": "revuforj",
+    "n_phon": 8,
+    "dur": 0.8309166666666666,
+    "dur_per_phon": 0.1039
+  },
+  {
+    "item_id": "rhapsido",
+    "n_phon": 7,
+    "dur": 0.7507083333333333,
+    "dur_per_phon": 0.1072
+  },
+  {
+    "item_id": "rezdiffra",
+    "n_phon": 8,
+    "dur": 0.8307083333333334,
+    "dur_per_phon": 0.1038
+  },
+  {
+    "item_id": "rinvoq",
+    "n_phon": 6,
+    "dur": 0.6707916666666667,
+    "dur_per_phon": 0.1118
+  },
+  {
+    "item_id": "seroquel",
+    "n_phon": 7,
+    "dur": 0.640875,
+    "dur_per_phon": 0.0916
+  },
+  {
+    "item_id": "rybelsus",
+    "n_phon": 8,
+    "dur": 0.9810416666666667,
+    "dur_per_phon": 0.1226
+  },
+  {
+    "item_id": "simtriyo",
+    "n_phon": 8,
+    "dur": 0.6407083333333333,
+    "dur_per_phon": 0.0801
+  },
+  {
+    "item_id": "skyrizi",
+    "n_phon": 7,
+    "dur": 0.8807916666666666,
+    "dur_per_phon": 0.1258
+  },
+  {
+    "item_id": "spiriva",
+    "n_phon": 7,
+    "dur": 0.851,
+    "dur_per_phon": 0.1216
+  },
+  {
+    "item_id": "symbicort",
+    "n_phon": 8,
+    "dur": 0.86075,
+    "dur_per_phon": 0.1076
+  },
+  {
+    "item_id": "synthroid",
+    "n_phon": 7,
+    "dur": 0.901,
+    "dur_per_phon": 0.1287
+  },
+  {
+    "item_id": "tagrisso",
+    "n_phon": 7,
+    "dur": 0.8508333333333333,
+    "dur_per_phon": 0.1215
+  },
+  {
+    "item_id": "talvey",
+    "n_phon": 5,
+    "dur": 0.5304583333333334,
+    "dur_per_phon": 0.1061
+  },
+  {
+    "item_id": "tecfidera",
+    "n_phon": 9,
+    "dur": 0.810875,
+    "dur_per_phon": 0.0901
+  },
+  {
+    "item_id": "tnkase",
+    "n_phon": 5,
+    "dur": 0.9910416666666667,
+    "dur_per_phon": 0.1982
+  },
+  {
+    "item_id": "toujeo",
+    "n_phon": 5,
+    "dur": 0.490625,
+    "dur_per_phon": 0.0981
+  },
+  {
+    "item_id": "trikafta",
+    "n_phon": 8,
+    "dur": 0.9310416666666667,
+    "dur_per_phon": 0.1164
+  },
+  {
+    "item_id": "trutakna",
+    "n_phon": 8,
+    "dur": 0.7407083333333333,
+    "dur_per_phon": 0.0926
+  },
+  {
+    "item_id": "trulicity",
+    "n_phon": 9,
+    "dur": 0.7106666666666667,
+    "dur_per_phon": 0.079
+  },
+  {
+    "item_id": "tryngolza",
+    "n_phon": 9,
+    "dur": 0.8807083333333333,
+    "dur_per_phon": 0.0979
+  },
+  {
+    "item_id": "tylenol",
+    "n_phon": 7,
+    "dur": 0.8110416666666667,
+    "dur_per_phon": 0.1159
+  },
+  {
+    "item_id": "tryptyr",
+    "n_phon": 6,
+    "dur": 0.5605416666666667,
+    "dur_per_phon": 0.0934
+  },
+  {
+    "item_id": "tzield",
+    "n_phon": 6,
+    "dur": 0.821,
+    "dur_per_phon": 0.1368
+  },
+  {
+    "item_id": "utebzi",
+    "n_phon": 7,
+    "dur": 0.7007916666666667,
+    "dur_per_phon": 0.1001
+  },
+  {
+    "item_id": "ubrelvy",
+    "n_phon": 7,
+    "dur": 0.710875,
+    "dur_per_phon": 0.1016
+  },
+  {
+    "item_id": "vabysmo",
+    "n_phon": 7,
+    "dur": 0.7408333333333333,
+    "dur_per_phon": 0.1058
+  },
+  {
+    "item_id": "valium",
+    "n_phon": 5,
+    "dur": 0.6509166666666667,
+    "dur_per_phon": 0.1302
+  },
+  {
+    "item_id": "veozah",
+    "n_phon": 5,
+    "dur": 0.7109583333333334,
+    "dur_per_phon": 0.1422
+  },
+  {
+    "item_id": "veppanu",
+    "n_phon": 6,
+    "dur": 0.7308333333333333,
+    "dur_per_phon": 0.1218
+  },
+  {
+    "item_id": "voranigo",
+    "n_phon": 8,
+    "dur": 0.941,
+    "dur_per_phon": 0.1176
+  },
+  {
+    "item_id": "vraylar",
+    "n_phon": 5,
+    "dur": 0.5706666666666667,
+    "dur_per_phon": 0.1141
+  },
+  {
+    "item_id": "vyglxia",
+    "n_phon": 8,
+    "dur": 1.0610416666666667,
+    "dur_per_phon": 0.1326
+  },
+  {
+    "item_id": "vyvanse",
+    "n_phon": 6,
+    "dur": 0.6608333333333334,
+    "dur_per_phon": 0.1101
+  },
+  {
+    "item_id": "vyloy",
+    "n_phon": 4,
+    "dur": 0.8107083333333334,
+    "dur_per_phon": 0.2027
+  },
+  {
+    "item_id": "vyvgart",
+    "n_phon": 6,
+    "dur": 0.6707083333333334,
+    "dur_per_phon": 0.1118
+  },
+  {
+    "item_id": "wakix",
+    "n_phon": 6,
+    "dur": 0.6308333333333334,
+    "dur_per_phon": 0.1051
+  },
+  {
+    "item_id": "wayrilz",
+    "n_phon": 6,
+    "dur": 0.7207916666666667,
+    "dur_per_phon": 0.1201
+  },
+  {
+    "item_id": "wegovy",
+    "n_phon": 6,
+    "dur": 0.6306666666666667,
+    "dur_per_phon": 0.1051
+  },
+  {
+    "item_id": "xanax",
+    "n_phon": 6,
+    "dur": 0.6810833333333334,
+    "dur_per_phon": 0.1135
+  },
+  {
+    "item_id": "winrevair",
+    "n_phon": 7,
+    "dur": 1.181125,
+    "dur_per_phon": 0.1687
+  },
+  {
+    "item_id": "xarelto",
+    "n_phon": 5,
+    "dur": 0.6508333333333334,
+    "dur_per_phon": 0.1302
+  },
+  {
+    "item_id": "xeljanz",
+    "n_phon": 8,
+    "dur": 0.791,
+    "dur_per_phon": 0.0989
+  },
+  {
+    "item_id": "xocova",
+    "n_phon": 6,
+    "dur": 0.6908333333333333,
+    "dur_per_phon": 0.1151
+  },
+  {
+    "item_id": "xofluza",
+    "n_phon": 7,
+    "dur": 0.5707083333333334,
+    "dur_per_phon": 0.0815
+  },
+  {
+    "item_id": "xolair",
+    "n_phon": 4,
+    "dur": 0.580625,
+    "dur_per_phon": 0.1452
+  },
+  {
+    "item_id": "zaiidra",
+    "n_phon": 6,
+    "dur": 0.61075,
+    "dur_per_phon": 0.1018
+  },
+  {
+    "item_id": "zantac",
+    "n_phon": 6,
+    "dur": 0.741125,
+    "dur_per_phon": 0.1235
+  },
+  {
+    "item_id": "yuviwel",
+    "n_phon": 6,
+    "dur": 0.6807083333333334,
+    "dur_per_phon": 0.1135
+  },
+  {
+    "item_id": "zaynich",
+    "n_phon": 5,
+    "dur": 0.5405416666666667,
+    "dur_per_phon": 0.1081
+  },
+  {
+    "item_id": "zepbound",
+    "n_phon": 7,
+    "dur": 0.81075,
+    "dur_per_phon": 0.1158
+  },
+  {
+    "item_id": "zevaskyn",
+    "n_phon": 8,
+    "dur": 0.871,
+    "dur_per_phon": 0.1089
+  },
+  {
+    "item_id": "zoloft",
+    "n_phon": 6,
+    "dur": 0.6207916666666666,
+    "dur_per_phon": 0.1035
+  },
+  {
+    "item_id": "zipalertinib",
+    "n_phon": 11,
+    "dur": 1.2709583333333334,
+    "dur_per_phon": 0.1155
+  },
+  {
+    "item_id": "zycubo",
+    "n_phon": 7,
+    "dur": 0.64075,
+    "dur_per_phon": 0.0915
+  },
+  {
+    "item_id": "zyrtec",
+    "n_phon": 6,
+    "dur": 0.6207916666666666,
+    "dur_per_phon": 0.1035
+  },
+  {
+    "item_id": "zorevunersen",
+    "n_phon": 10,
+    "dur": 1.2211666666666667,
+    "dur_per_phon": 0.1221
+  }
+]
