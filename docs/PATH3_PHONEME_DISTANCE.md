@@ -79,46 +79,72 @@ Lowest 5, clean: Adquey (0.00), faricimab-svoa (0.04), bulevirtide-gmod
 | Advair | #17 / 2.69 | #56 / 2.92 | -- |
 | esomeprazole | #28 / 2.82 | #58 / 2.97 | "kinda okay" -- matches |
 | Voranigo | #3 / 2.18 | #77 / 3.18 | "correctly very badly said" -- **does not match**, ranks mid-pack here |
-| **aripiprazole** | **#4 / 2.29** | **#78 / 3.19** | "actually okay, different pronunciation" -- **Path 3 fixes exactly this false positive** |
+| aripiprazole | #4 / 2.29 | #78 / 3.19 | Path 2 is the score that counts. Path 3 scoring this higher is a Path 3 miss, not a correction of Path 2. |
 | Eliquis | #13 / 2.60 | #79 / 3.19 | "kinda okay" -- matches |
-| talquetamab | #37 / 2.92 | #126 / 3.70 | "especially bad" -- still does not match on either path |
-| **acoramidis** | **#5 / 2.32** | **#148 / 3.94** | "actually okay, different pronunciation" -- **Path 3 fixes exactly this false positive** |
+| talquetamab | #37 / 2.92 | #126 / 3.70 | "especially bad" -- Path 3 still too high |
+| acoramidis | #5 / 2.32 | #148 / 3.94 | Path 2 is the score that counts. Path 3 scoring this higher is a Path 3 miss, not a correction of Path 2. |
 
-**Path 2 is ground truth for this whole project** -- validated repeatedly,
-directly, against the user's own ear (aripiprazole, acoramidis, Vyloy,
-Adquey, Voranigo, esomeprazole, Eliquis, talquetamab were all confirmed by
-listening this session). Path 3 is judged AGAINST Path 2, not alongside it
-as an equal, independent opinion.
+**Path 2 is ground truth.** It was re-confirmed against the user's ear
+across this session. Path 3 is judged against Path 2. Where they disagree,
+Path 3 is wrong. That includes Voranigo (Path 2 2.18, near-worst, confirmed
+bad by ear; Path 3 3.18, mid-pack) and also aripiprazole and acoramidis:
+scoring them higher than Path 2 is not "fixing a false positive."
 
-By that standard: Path 3 gets 7 of 9 checked items right, including a
-real fix on aripiprazole/acoramidis (Path 2 wrongly scored both as
-top-5-worst against a single reference recording; both are confirmed valid
-pronunciation VARIANTS, not errors, and Path 3's multi-variant IPA matching
-correctly moves both into the upper half of the corpus). But on
-**Voranigo, Path 3 is simply wrong** -- Path 2 (2.18, near-worst) matches
-the confirmed-bad-by-ear verdict; Path 3 (3.18, mid-pack) does not. Checked
-directly why: Path 3 decoded Gemini's Voranigo as ending in "aʊ" (rhymes
-with "cow") instead of the dictionary's "oʊ" (rhymes with "go"), plus an
-inserted "t" -- a real, audible error that panphon's feature-distance
-weighting scores as a cheap edit (both diphthongs share their offglide;
-inserting one light consonant is a small edit in feature-distance terms),
-underweighting what actually sounds wrong to a listener. That is a
-concrete, demonstrated limitation of Path 3's distance weighting, not an
-alternate valid opinion to Path 2's.
+## Why Path 3 does not match Path 2
+
+The interrupted check was Goodness of Pronunciation. The original Gemini
+WAVs are gitignored and were not in this checkout, so GOP could not be
+finished on that exact audio. It was finished on a fresh Kore synthesis of
+the same sentences, with Path 2 recomputed on those same clips so the
+comparison is paired. Path 2 on that new Voranigo clip was 3.33 (fine);
+GOP still scored it like a bad item. On the 9 ear-checked names, GOP vs
+Path 2 was Spearman +0.38. The current edit-distance formula on the same
+clips was +0.33. GOP is not the fix.
+
+Everything else that can be tested from the stored decodes was tested
+against Path 2 on the 167 overlapping items. None of it beats the current
+scorer (Spearman +0.49):
+
+| Variant | Spearman vs Path 2 |
+| --- | ---: |
+| Current Path 3 score | +0.49 |
+| 12 panphon formulas (weighted, Levenshtein, Dolgopolsky; raw / length / sqrt) | −0.45 to −0.50 |
+| Same decoder on the human clip instead of dictionary IPA | −0.46 (worse) |
+| Edit distance on the CTC model's own tokens, diphthongs kept whole | −0.42 to −0.47 |
+| Vowel substitutions down-weighted or dropped | −0.24 to −0.45 (worse as vowels get cheaper) |
+| Semi-global alignment (ignore span-bleed insertions) | −0.41 |
+
+Token-level distance does put the original Voranigo decode in the worst
+6% (the extra `t` and the `aʊ`/`oʊ` ending count as full token errors).
+That is a real local fix for that one item. It does not move the corpus
+correlation. Length normalization was not the bug either: changing it
+moves Spearman by less than 0.01.
+
+A second recognizer (`vitouphy/wav2vec2-xls-r-300m-timit-phoneme`, English
+phones rather than the multilingual espeak model) looked strong on the 9
+dramatic names (Spearman −0.73) and then failed the broader check: −0.36
+edit-distance and +0.45 GOP against Path 2 on 40 paired items. Same
+ceiling.
+
+What that rules out: the dictionary string for Voranigo, the 0–5 mapping,
+and the choice of edit-distance formula. What it does not rule out, and
+what every result points at: free phoneme error and Path 2's wavlm
+audio-to-audio score only partly measure the same thing. The recognizer's
+vowel noise is about as large as a real mispronunciation, so bad and
+merely-different items land in the same band. Chantix (exact match) and
+Adquey (unrecognizable) still separate. Everything in between does not,
+which is why Voranigo can be horrible by ear and still score 3.18.
+
+Path 3 is left as the current scorer. Replacing it with GOP or the English
+model would not make it agree with Path 2 more than it already does.
 
 ## Reading this correctly
 
-- **Path 3 is not a second ground truth.** It exists to reach the
-  95%-not-99% of items Path 2 cannot score at all (no human recording),
-  using Path 2's validated, ear-confirmed judgments as the standard it is
-  checked against wherever both can be computed. Where they disagree
-  (Voranigo, confirmed above), Path 2 wins and Path 3's error is the thing
-  to fix, not a data point to average in.
-- **Not yet checked**: whether Path 3 conflates "wrong word" with "right
-  phonemes, wrong prosody/stress" the way Path 2's own blind spots were
-  found this session. No minimal-pair sensitivity test has been run on
-  this metric yet.
-- **Still one proxy of four.**
+- **Path 3 is not a second ground truth.** It exists to reach the items
+  Path 2 cannot score (no human recording). On the overlap, Path 2 wins.
+- **Not yet checked**: a minimal-pair sensitivity test. No phoneme-distance
+  variant tried here cleared Path 2's ranking, so that test is not what is
+  blocking a better Path 3.
 
 ## Artifacts
 
@@ -130,3 +156,12 @@ alternate valid opinion to Path 2's.
 - `dose_r/scoring/phoneme_distance.py` -- the scorer.
 - `dose_r/references/references.jsonl` -- IPA data snapshot (provisional,
   pulled from `claude/sc-sandbox-gcp-access-arw4m8` @ fee5ac5).
+- `scripts/diagnose_path3_vs_path2.py`, `diagnose_path3_decoder_noise.py`,
+  `diagnose_path3_gop.py` -- the metric, same-decoder, and GOP checks.
+- `scripts/diagnose_path3_token_metric.py`, `diagnose_path3_alignment.py`,
+  `diagnose_path3_vowel_weight.py` -- token, alignment, and vowel-cost sweeps.
+- `scripts/probe_timit_paired.py`, `scripts/probe_timit_gop.py` -- English
+  phoneme model, scored against Path 2 on the same new clips.
+- `runs/path3-timit-probe/paired.json` -- the 40-item paired result
+  (Spearman −0.36 edit distance, and the Path 2 scores GOP was checked
+  against).
