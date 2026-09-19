@@ -1,0 +1,26 @@
+{
+  "gemini-2.5-flash-tts": {
+    "system_id": "gemini-2.5-flash-tts",
+    "n_items": 274,
+    "n_ok": 274,
+    "n_failed": 0,
+    "pass_rate": 7.0,
+    "n_scored": 171,
+    "score_mean": 3.303,
+    "score_median": 3.33,
+    "score_p10": 2.69,
+    "pass_rate_by_stratum": {
+      "brand": 7.8,
+      "generic": 5.8
+    },
+    "latency_mean_ms": 7258.0,
+    "latency_p50_ms": 7496.9,
+    "latency_p90_ms": 9038.6,
+    "latency_p99_ms": 11085.2,
+    "total_cost_usd": 0.53061,
+    "cost_per_utterance_usd": 0.00193653,
+    "cost_estimated": true,
+    "price_verified": false,
+    "retry_rate": 0.4
+  }
+}

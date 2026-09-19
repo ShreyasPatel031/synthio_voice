@@ -1,29 +1,38 @@
 # Path 2: Gemini Flash TTS vs. human pronunciation
 
 Workstream 2, 2026-09-19. `speech-similarity-v4` (SpeechBERTScore F1,
-wavlm-large, final layer, **forced-alignment span extraction**) run against
-the real `gemini-2.5-flash-tts` candidate (274/274 synthesized, zero
-synthesis failures).
+wavlm-large, final layer, **forced-alignment span extraction, gap-capped**)
+run against the real `gemini-2.5-flash-tts` candidate (274/274 synthesized,
+zero synthesis failures).
 
-**Superseded twice now -- read this version, not the v3 one.** The v3
-report used Cloud STT word timestamps to locate the drug's audio span, with
-three guardrails added after two confirmed contamination bugs (a padding
-buffer bleeding into a neighboring word; Cloud STT returning one corrupted
-5.1s timestamp for what should be one word). Even after those guardrails,
-the user listened to the "fixed" esomeprazole clip and found it STILL
-audibly cut into the tail of "start" -- Cloud STT's own timestamp can be
-subtly, not just grossly, wrong, and no plausibility/retranscription check
-catches that. This version replaces Cloud-STT-timestamp extraction entirely
-with **forced alignment** (`dose_r/forced_align.py`): the phoneme CTC model
-already used for Path 3 is run once per clip, and
-`torchaudio.functional.forced_align` finds the alignment constrained to the
-ALREADY-KNOWN sentence text, so there is no "recognize the right word" step
-to get wrong at all. Validated on the 4 items the user specifically flagged
-by ear (Eliquis, esomeprazole, Vyloy, talquetamab) plus a 250+-item
-extraction-only sweep with zero misses/errors, before this full rescore was
-run. The human-vs-human ceiling below was never affected by any of this (it
-compares two already-isolated reference clips, no span extraction involved)
-and is unchanged.
+**This is the third and current version of this report.** History, each
+superseded by the next after the user caught a real bug by listening:
+
+1. **v3 (Cloud STT timestamps).** Two contamination bugs found and
+   "fixed" with guardrails, but a "fixed" esomeprazole clip still audibly
+   bled into the preceding word -- Cloud STT's own timestamp can be subtly,
+   not just grossly, wrong. Replaced entirely.
+2. **v4, first pass (forced alignment, uncapped midpoint split).**
+   Alignment against the KNOWN sentence text (`dose_r/forced_align.py`)
+   removed the Cloud-STT failure modes, but "Advair" came out audibly
+   truncated (0.4s) -- CTC posteriors are "peaky" (a phoneme spikes for
+   1-3 frames and defaults to blank elsewhere, even during real speech), so
+   the raw labeled span undershoots. Fixed by splitting each blank gap to
+   its midpoint.
+3. **v4, final (gap-capped).** The uncapped midpoint fix then over-extended
+   on "quetiapine" (2.40s span, ~3x the corpus norm) -- confirmed by
+   per-word boundary inspection that its ENTIRE sentence has large
+   (0.4-1.0s) real pauses between every word (a genuinely slow, deliberate
+   Gemini rendering, not a glitch -- confirmed by the user listening to the
+   full clip), and splitting a real pause in half still pulls silence into
+   the span. Capped recoverable half-gap at 0.15s (genuine CTC undershoot,
+   confirmed on Advair, was only ~0.2-0.3s): Advair stays fixed (0.590s,
+   unaffected by the cap), quetiapine drops back to 1.921s (in line with
+   similar-length words). A full 274-item duration/phoneme-count sweep after
+   this fix showed no remaining outliers.
+
+The human-vs-human ceiling was never affected by any of this (it compares
+two already-isolated reference clips, no span extraction involved).
 
 ## The human ceiling
 
@@ -39,65 +48,65 @@ identical F1 pipeline used on Gemini (`scripts/compute_human_ceiling.py`):
 Even two humans saying the same word correctly only reach ~3.8/5 under this
 metric -- read every other number below relative to 3.8, not to 5.0.
 
-## Gemini Flash TTS, forced-alignment extraction (v4)
+## Gemini Flash TTS, final (v4, gap-capped forced alignment)
 
-| | Gemini (v4, forced align) | Gemini (v3-fixed, Cloud STT) | Human ceiling |
-| --- | ---: | ---: | ---: |
-| mean | 3.18 | 2.91 | 3.79 |
-| median | 3.21 | 2.91 | 3.83 |
-| p10 | 2.55 | -- | -- |
-| scoreable | 171/274 (62%) | 159/274 (58%) | -- |
+| | Gemini (v4 final) | Gemini (v4, uncapped) | Gemini (v3, Cloud STT) | Human ceiling |
+| --- | ---: | ---: | ---: | ---: |
+| mean | 3.30 | 3.18 | 2.91 | 3.79 |
+| median | 3.33 | 3.21 | 2.91 | 3.83 |
+| p10 | 2.69 | 2.55 | -- | -- |
+| scoreable | 171/274 (62%) | 171/274 (62%) | 159/274 (58%) | -- |
 
-**Both coverage and score went up.** Coverage recovered to the same 62% the
-very first (buggy) run had -- but for a legitimate reason this time:
-forced alignment can locate talquetamab (previously uncorrectably corrupted
-by Cloud STT) and other items Cloud STT's word-recognition step simply
-couldn't align at all, not because a contaminated span is being silently
-accepted again. Gap to the human ceiling narrowed from ~0.9 to ~0.6 points.
+Gap to the human ceiling narrowed from ~0.9 (v3) to ~0.6 (v4 uncapped) to
+~0.49 (v4 final) as each extraction bug was fixed.
 
-**Where the 4 user-flagged items landed, before vs. after forced alignment:**
+**Where the flagged items landed, final:**
 
-| Drug | v3-fixed score (rank) | v4 score (rank of 171) | What the user heard by ear |
+| Drug | Rank (of 171) | Score | User's verdict by ear |
 | --- | ---: | ---: | --- |
-| Vyloy | 1.59 (worst) | **1.41 (#1, still worst)** | "especially bad" -- matches |
-| Eliquis | 1.72 (#2) | 2.45 (#13) | "kinda okay" -- matches (moved off worst-3) |
-| esomeprazole | 1.76 (#3) | 2.67 (#30) | "kinda okay" -- matches (moved off worst-3) |
-| talquetamab | unscoreable | 2.87 (#51) | "especially bad" -- **does NOT match**: user's ear says this should rank near the bottom, but it lands solidly mid-pack |
+| Vyloy | #1 (worst) | 1.59 | "especially bad" -- **matches** |
+| adquey | #2 | 1.86 | "very obviously wrong" -- **matches** |
+| voranigo | #3 | 2.18 | "correctly very badly said" -- **matches** |
+| aripiprazole | #4 | 2.29 | "actually okay, different pronunciation" -- **does NOT match** |
+| acoramidis | #5 | 2.32 | "actually okay, different pronunciation" -- **does NOT match** |
+| Eliquis | #13 | 2.60 | "kinda okay" -- roughly matches (well off the worst) |
+| Advair | #17 | 2.69 | confirmed correct extraction after the truncation fix; not separately judged for pronunciation quality |
+| esomeprazole | #28 | 2.82 | "kinda okay" -- matches |
+| talquetamab | #37 | 2.92 | "especially bad" -- **does NOT match** |
+| quetiapine | #82 (mid-pack) | 3.31 | confirmed a real (if unusually slow) sentence, not a glitch, by listening to the full clip |
 
-Three of four now track the user's own ear reasonably well. talquetamab is
-a flagged, open discrepancy: either the F1 metric is insensitive to
-whatever's actually wrong with that clip's pronunciation, or something
-about that specific alignment/embedding pair is off in a way the aggregate
-number doesn't show. Not resolved -- surfaced, not glossed over.
+**Two open, unresolved discrepancies, not glossed over:**
+- **aripiprazole and acoramidis score as if mispronounced (top-5 worst)
+  when the user's own ear says they're just different, acceptable
+  pronunciation variants.** This is evidence the F1-over-wavlm metric
+  cannot yet distinguish "wrong" from "different but valid" -- a real
+  calibration gap, not an extraction issue (their spans were independently
+  reviewed above and are not currently suspected of contamination).
+- **talquetamab still doesn't rank near the bottom** despite being called
+  "especially bad" by ear, on either the buggy or the fully-fixed
+  extraction. Whatever's wrong with that clip's pronunciation, this metric
+  isn't picking it up.
 
-Brand: mean 3.15 (n=102). Generic: mean 3.22 (n=69).
-
-Hardest (lowest 6): Vyloy (1.41), advair (1.71), voranigo (1.80), adquey
-(2.01), toujeo (2.14), prademagene-zamikeracel (2.18).
-Easiest (highest 6): Valium (4.28), Zantac (4.21), diazepam (4.17),
-alprazolam (4.05), Prozac (4.04), Benadryl (4.04).
-
-Full lowest-25 bucket (for manual verification): vyloy, advair, voranigo,
-adquey, toujeo, prademagene-zamikeracel, aripiprazole, acoramidis, imaavy,
-cariprazine, zevaskyn, ebglyss, eliquis, vabysmo, attruby, xolair,
-winrevair, sitagliptin, vyvgart, aucatzyl, abilify, varenicline, tryngolza,
-gepotidacin, nipocalimab-aahu.
+Highest 10: Valium (4.29), Zantac (4.21), loratadine (4.17), fluoxetine
+(4.12), diazepam (4.12), Prozac (4.09), Entresto (4.09), Zoloft (4.06),
+Otezla (4.05), alprazolam (4.05).
 
 ## Reading this correctly
 
 - **pass@4.0 is still ~0%** and still must not be read as "fails
   everything" -- the human ceiling itself (3.79) sits below that
-  inherited, uncalibrated threshold. The meaningful number is the ~0.6-point
-  gap to the human ceiling (down from ~0.9 under the old extraction).
-- **talquetamab's mismatch with the user's own listening judgment is
-  unresolved.** This is the clearest open question raised by this rescore,
-  not a settled result -- worth investigating before trusting the metric's
-  ranking of items the user hasn't personally checked.
-- **Not every accepted span has been individually verified by ear.**
-  Forced alignment removed the two confirmed Cloud-STT failure modes and
-  passed a 250+-item extraction-only sweep with zero misses, which is a
-  much stronger check than v3 ever had -- but it is still not proof every
-  one of the 171 scored spans is clean.
+  inherited, uncalibrated threshold.
+- **This metric conflates "wrong" with "different but valid" at least
+  twice (aripiprazole, acoramidis) and misses at least one genuine problem
+  (talquetamab).** Before trusting this metric's ranking for items the user
+  hasn't personally checked, that calibration gap needs to be taken
+  seriously -- it is the main open finding of this whole exercise, not a
+  footnote.
+- **Coverage is still only 62% (171/274).** The other 103 items have no
+  human reference clip at all, and 99 of those 103 have no dictionary
+  respelling either -- there is no ground-truth pronunciation source of any
+  kind for 99/274 (36%) of the benchmark. Path 3/4 need to address this
+  gap; it is not solved by anything in this report.
 - **Still one proxy of four**, not Workstream 1's hybrid judge. The 4 Cloud
   TTS tiers have not yet been scored with speech-similarity-v4 for a
   same-metric cross-system comparison.
@@ -107,6 +116,8 @@ gepotidacin, nipocalimab-aahu.
 - `runs/gemini-flash-tts-v1-speech-similarity-v4/` -- results.jsonl
   (274 records, 171 scoreable), manifest.json, report.txt, summary.json.
 - `runs/gemini-flash-tts-v1-speech-similarity-v3-fixed/` -- prior run, kept
-  for the before/after comparison above, no longer the reference version.
+  for the before/after comparison, no longer the reference version.
 - `runs/human-ceiling-v1.json` -- the 79-pair human ceiling computation.
+- `runs/forced-align-durations-v1.json` -- the post-fix duration/phoneme
+  outlier sweep (274 items, no remaining outliers).
 - `dose_r/forced_align.py` -- the extraction method this run uses.
