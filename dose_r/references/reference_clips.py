@@ -85,6 +85,46 @@ def available_clips(
     return out
 
 
+def available_clips_all(
+    manifest_path: Path | None = None,
+) -> dict[str, list[ReferenceClip]]:
+    """ALL usable clips per ingredient, not just the single best one.
+
+    `available_clips()` picks one clip per ingredient (Merriam-Webster
+    preferred) for Path 2's own scoring, which is the right contract for a
+    single, stable reference per item -- but it silently discards the OTHER
+    clip for the 79 ingredients that have both a Drugs.com AND a
+    Merriam-Webster recording. That is fine for scoring a fixed candidate
+    consistently over time, but wrong for evaluating a NEW candidate model
+    against "how a human says this" in general: two real humans can say the
+    same drug correctly in genuinely different ways (see aspirin's
+    dictionary-documented schwa variant), so scoring against only one of them
+    risks the exact false-positive this project already found this session
+    (aripiprazole/acoramidis scoring as "wrong" against one reference despite
+    being valid alternate pronunciations). Candidate-model evaluation should
+    use ALL available clips and credit the candidate for matching ANY of
+    them -- see `scoring.candidate_eval.score_against_best_reference`.
+    """
+    records = audio_manifest.load(manifest_path or audio_manifest.MANIFEST_PATH)
+    by_ingredient: dict[str, list[dict[str, Any]]] = {}
+    for r in records:
+        if r.get("coverage") == "full" and _resolve(r).exists():
+            by_ingredient.setdefault(r["ingredient"], []).append(r)
+
+    out: dict[str, list[ReferenceClip]] = {}
+    for ingredient, recs in by_ingredient.items():
+        out[ingredient] = [
+            ReferenceClip(
+                ingredient=ingredient, name_type=r["name_type"], source=r["source"],
+                path=_resolve(r), audio_format=r["format"],
+                sample_rate_hz=r["sample_rate_hz"], duration_s=r["duration_s"],
+                respelling=r.get("respelling"),
+            )
+            for r in recs
+        ]
+    return out
+
+
 def stt_config_for_clip(clip: ReferenceClip) -> dict[str, Any]:
     """Build the Cloud STT `config` block for this clip's actual encoding.
 

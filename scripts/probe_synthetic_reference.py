@@ -70,7 +70,9 @@ _CLOUD_VOICE = "en-US-Standard-C"
 _SAMPLE_RATE = 24_000
 
 TARGETS = ["vyloy", "advair", "eliquis", "esomeprazole", "aripiprazole",
-           "acoramidis", "talquetamab"]
+           "acoramidis", "talquetamab",
+           "xolair", "winrevair", "imaavy",         # brand -- arbitrary, coined
+           "cariprazine", "sitagliptin", "varenicline"]  # generic -- USAN-regular
 
 # Pulled from references.jsonl (currently only on another branch -- read
 # directly here rather than depending on a cross-branch import).
@@ -82,6 +84,23 @@ IPA = {
     "aripiprazole": "ɑːrɪˈpɪpræzoʊl",
     "acoramidis": "ækoʊˈræmɪdɪs",
     "talquetamab": "tælˈkwɛtæmæb",
+    "xolair": "ˈzoʊˌlɛr",
+    "winrevair": "ˈwɪnrɛvɛər",
+    "imaavy": "ɪmˈɑːviː",
+    "cariprazine": "kɑːrˈɪpræziːn",
+    "sitagliptin": "sɪtæˈɡlɪptɪn",
+    "varenicline": "vɑːrˈɛnɪkliːn",
+}
+
+# Tagged so the summary can test: does "plain spelling works" track with
+# generic (USAN-regular affixes, e.g. -azole/-mab/-nib) vs. brand (arbitrary,
+# marketing-coined, no regularity a G2P could ever learn)?
+NAME_TYPE = {
+    "vyloy": "brand", "advair": "brand", "eliquis": "brand",
+    "esomeprazole": "generic", "aripiprazole": "generic",
+    "acoramidis": "generic", "talquetamab": "generic",
+    "xolair": "brand", "winrevair": "brand", "imaavy": "brand",
+    "cariprazine": "generic", "sitagliptin": "generic", "varenicline": "generic",
 }
 
 
@@ -228,8 +247,17 @@ def main() -> int:
         if vals:
             print(f"{m:20s} mean={sum(vals)/len(vals):.3f}  n={len(vals)}")
 
-    (REPO_ROOT / "runs" / "synthetic-reference-probe-v1.json").write_text(
-        json.dumps(results, indent=2)
+    print("\n=== brand vs generic breakdown ===")
+    for grp in ("brand", "generic"):
+        names_in_grp = [n for n in results if NAME_TYPE.get(n) == grp]
+        print(f"\n{grp} (n={len(names_in_grp)}): {names_in_grp}")
+        for m in methods:
+            vals = [results[n][m] for n in names_in_grp if m in results[n]]
+            if vals:
+                print(f"  {m:20s} mean={sum(vals)/len(vals):.3f}")
+
+    (REPO_ROOT / "runs" / "synthetic-reference-probe-v2.json").write_text(
+        json.dumps({"results": results, "name_type": NAME_TYPE}, indent=2)
     )
     return 0
 
