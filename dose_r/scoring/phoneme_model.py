@@ -132,27 +132,38 @@ def _get_phoneme_separator():
     return Separator(phone=" ", word="", syllable="")
 
 
-def transcribe_phonemes(audio_path_or_array, sample_rate: int | None = None) -> str:
-    """audio_path_or_array -> whitespace-separated espeak phoneme string.
+def transcribe_phonemes(audio_source, sample_rate: int | None = None) -> str:
+    """audio_source -> whitespace-separated espeak phoneme string.
 
-    Accepts either a path (str/Path) to any librosa-readable audio file, or an
-    already-loaded numpy float array (in which case `sample_rate` must be
-    given so it can be resampled to the model's required 16 kHz). Handles
-    resampling for our WAVs at 16k/22050/24000/44100/48000 -- whatever the
-    source rate is.
+    Accepts a path (str/Path) to any librosa-readable audio file, raw
+    in-memory WAV bytes (e.g. from `forced_align.extract_drug_span_forced_align`,
+    which never touches disk -- mirrors `speech_similarity.extract_frame_embeddings`'s
+    same three-way input handling), or an already-loaded numpy float array
+    (in which case `sample_rate` must be given so it can be resampled to the
+    model's required 16 kHz). Handles resampling for our WAVs at
+    16k/22050/24000/44100/48000 -- whatever the source rate is.
     """
     torch, processor, model = _get_model()
 
-    if isinstance(audio_path_or_array, np.ndarray):
+    if isinstance(audio_source, np.ndarray):
         if sample_rate is None:
             raise ValueError("sample_rate is required when passing a raw array")
-        audio = audio_path_or_array
+        audio = audio_source
         if sample_rate != _TARGET_SR:
             audio = librosa.resample(
                 audio.astype(np.float32), orig_sr=sample_rate, target_sr=_TARGET_SR
             )
+    elif isinstance(audio_source, (bytes, bytearray)):
+        import io
+
+        import soundfile as sf
+
+        raw, sr = sf.read(io.BytesIO(bytes(audio_source)), dtype="float32")
+        audio = raw if raw.ndim == 1 else raw.mean(axis=1)
+        if sr != _TARGET_SR:
+            audio = librosa.resample(audio, orig_sr=sr, target_sr=_TARGET_SR)
     else:
-        audio, _ = librosa.load(str(audio_path_or_array), sr=_TARGET_SR, mono=True)
+        audio, _ = librosa.load(str(audio_source), sr=_TARGET_SR, mono=True)
 
     inputs = processor(audio, sampling_rate=_TARGET_SR, return_tensors="pt")
     with torch.no_grad():

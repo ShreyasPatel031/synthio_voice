@@ -84,7 +84,36 @@ from __future__ import annotations
 import re
 from functools import lru_cache
 
+from ..adapters.base import SynthesisResult
+from ..dataset import DoseItem
+from ..forced_align import extract_drug_span_forced_align
+from ..references.ipa_references import ipa_variants_for
+from .base import ScoreResult, Scorer
+from .phoneme_model import transcribe_phonemes
+
 _STRESS_RE = re.compile(r"[ˈˌ]")
+
+# Anchor for the rate -> 0-5 mapping, taken directly from this module's own
+# validation (scripts/validate_phoneme_distance.py): deliberately-mismatched
+# audio/IPA pairs averaged rate=3.853 across 8 items. A linear map that puts
+# 0 there and 5 at rate=0 happens to place the correct-pair validation mean
+# (rate=0.876) at ~3.86/5 -- close to Path 2's independently-measured human
+# ceiling of 3.79/5, which is a reassuring cross-check between two unrelated
+# metrics, not something this mapping was tuned to hit. Simplest possible
+# mapping, deliberately not fit to a larger calibration set -- see
+# speech_similarity.py's own score_speech_similarity for the same philosophy.
+_MISMATCH_RATE_ANCHOR = 3.853
+
+# Multi-word ingredient names (e.g. "tenofovir alafenamide") were the
+# dominant failure mode in this module's own human-ceiling validation: the
+# human reference CLIP often only covers the first word, while the
+# dictionary IPA covers the full multi-word name, producing a spurious
+# length-mismatch distance that has nothing to do with pronunciation
+# accuracy. Confirmed on 4 of the worst 5 human-ceiling outliers. Flagged
+# in metadata rather than silently scored -- a known, unresolved data-scope
+# issue, not a defect in the distance metric itself.
+def _is_multiword_ingredient(drug: str) -> bool:
+    return " " in drug.strip()
 
 
 @lru_cache(maxsize=1)
@@ -146,3 +175,93 @@ def best_phoneme_distance(candidate: str, ipa_variants: list[str]) -> dict:
         "rate": round(best_dist / best_len, 4),
         "all_variants": {v: round(d / n, 4) for v, d, n in results},
     }
+
+
+def rate_to_score(rate: float) -> float:
+    """Length-normalized phoneme distance -> this project's 0-5 scale. See
+    `_MISMATCH_RATE_ANCHOR`'s docstring for where the anchor comes from.
+    """
+    return round(5.0 * max(0.0, min(1.0, 1.0 - rate / _MISMATCH_RATE_ANCHOR)), 3)
+
+
+class PhonemeDistanceScorer(Scorer):
+    """Path 3: phoneme-level pronunciation distance against dictionary IPA.
+    No synthesized reference audio, no human recording required -- built
+    specifically for the 99/274 items with neither, once mapped through
+    Workstream 1's IPA cleanup (`references.ipa_references`). See this
+    module's docstring for why Path 4 (synthesizing a reference clip) was
+    abandoned first, and `scripts/validate_phoneme_distance.py` for the
+    human-ceiling and discrimination checks this scorer's mapping is
+    grounded in.
+    """
+
+    measures_pronunciation = True
+
+    @property
+    def scorer_id(self) -> str:
+        return "phoneme-distance-v1"
+
+    def score(self, item: DoseItem, result: SynthesisResult) -> ScoreResult:
+        base = dict(scorer_id=self.scorer_id, item_id=item.item_id,
+                    system_id=result.system_id)
+
+        if not result.ok or not result.audio:
+            return ScoreResult(**base, score=0.0, scoreable=True,
+                               error=result.error or "no audio returned",
+                               notes="synthesis failed upstream")
+
+        ipa_variants = ipa_variants_for(item.drug)
+        if not ipa_variants:
+            return ScoreResult(
+                **base, score=None, scoreable=False,
+                error=f"no dictionary IPA available for {item.drug!r}",
+                notes="Path 3 covers ingredients with a sourced IPA variant "
+                      "in Workstream 1's references.jsonl snapshot "
+                      "(280/284 as of the commit this repo has).",
+            )
+
+        try:
+            span = extract_drug_span_forced_align(result.audio, item.sentence, item.drug)
+        except Exception as exc:
+            return ScoreResult(**base, score=None, scoreable=False,
+                               error=f"drug-span extraction failed: {exc}")
+        if span is None:
+            return ScoreResult(
+                **base, score=None, scoreable=False,
+                error="could not locate the drug name's audio span via forced "
+                      "alignment against the sentence text",
+            )
+
+        try:
+            decoded = transcribe_phonemes(span)
+            result_dist = best_phoneme_distance(decoded, ipa_variants)
+        except Exception as exc:
+            return ScoreResult(**base, score=None, scoreable=False,
+                               error=f"phoneme decoding/distance failed: {exc}")
+
+        score = rate_to_score(result_dist["rate"])
+        multiword = _is_multiword_ingredient(item.drug)
+
+        return ScoreResult(
+            **base, score=score,
+            components={"rate": result_dist["rate"], "distance": result_dist["distance"]},
+            metadata={
+                "decoded_phonemes": decoded,
+                "best_matching_ipa_variant": result_dist["best_variant"],
+                "all_variant_rates": result_dist["all_variants"],
+                "multiword_ingredient_caveat": multiword,
+            },
+            notes=(
+                "Phoneme-level edit distance (panphon-weighted) between the "
+                "candidate's decoded pronunciation and dictionary IPA -- no "
+                "synthesized reference audio or human recording involved. "
+                + ("CAVEAT: multi-word ingredient name -- this module's own "
+                   "validation found the dominant human-ceiling failure mode "
+                   "is a clip/IPA scope mismatch on multi-word names (the "
+                   "reference clip often covers only the first word); read "
+                   "this score with that in mind. " if multiword else "")
+                + "Not yet run at corpus scale; validated on discrimination "
+                "(mismatched pairs averaged 3.85 vs 0.88 for correct pairs) "
+                "and human-ceiling checks only."
+            ),
+        )
