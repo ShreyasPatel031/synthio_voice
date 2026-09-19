@@ -1,0 +1,67 @@
+{
+  "vyloy": {
+    "piper-ipa-injected": 0.6639,
+    "piper-text-default": 0.6925,
+    "gemini-baseline": 0.3175
+  },
+  "advair": {
+    "piper-ipa-injected": 0.6263,
+    "piper-text-default": 0.6164,
+    "gemini-baseline": 0.5375
+  },
+  "eliquis": {
+    "piper-ipa-injected": 0.8144,
+    "piper-text-default": 0.675,
+    "gemini-baseline": 0.5205
+  },
+  "esomeprazole": {
+    "piper-ipa-injected": 0.6751,
+    "piper-text-default": 0.6905,
+    "gemini-baseline": 0.5648
+  },
+  "aripiprazole": {
+    "piper-ipa-injected": 0.5615,
+    "piper-text-default": 0.7977,
+    "gemini-baseline": 0.4589
+  },
+  "acoramidis": {
+    "piper-ipa-injected": 0.5692,
+    "piper-text-default": 0.4857,
+    "gemini-baseline": 0.4636
+  },
+  "talquetamab": {
+    "piper-ipa-injected": 0.5781,
+    "piper-text-default": 0.6661,
+    "gemini-baseline": 0.5851
+  },
+  "xolair": {
+    "piper-ipa-injected": 0.5079,
+    "piper-text-default": 0.5919,
+    "gemini-baseline": 0.6331
+  },
+  "winrevair": {
+    "piper-ipa-injected": 0.5824,
+    "piper-text-default": 0.7658,
+    "gemini-baseline": 0.6234
+  },
+  "imaavy": {
+    "piper-ipa-injected": 0.6401,
+    "piper-text-default": 0.6476,
+    "gemini-baseline": 0.5081
+  },
+  "cariprazine": {
+    "piper-ipa-injected": 0.5578,
+    "piper-text-default": 0.5861,
+    "gemini-baseline": 0.4655
+  },
+  "sitagliptin": {
+    "piper-ipa-injected": 0.6646,
+    "piper-text-default": 0.7211,
+    "gemini-baseline": 0.5207
+  },
+  "varenicline": {
+    "piper-ipa-injected": 0.6804,
+    "piper-text-default": 0.6207,
+    "gemini-baseline": 0.5627
+  }
+}
