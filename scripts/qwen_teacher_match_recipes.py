@@ -357,7 +357,9 @@ def main() -> None:
     ap.add_argument("--names", default=",".join(DEFAULT_NAMES))
     ap.add_argument("--epochs", type=int, default=10)
     ap.add_argument("--repeats", type=int, default=12)
-    ap.add_argument("--batch-size", type=int, default=2)
+    # batch_size must be 1 when mixing short drug names: collate fails on
+    # unequal codec lengths (Expected size 77 but got size 83).
+    ap.add_argument("--batch-size", type=int, default=1)
     ap.add_argument("--lr", type=float, default=2e-5)
     ap.add_argument("--work", default=str(ROOT / "runs" / "teacher-match-recipes"))
     ap.add_argument("--skip-train", action="store_true")
