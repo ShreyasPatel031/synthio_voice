@@ -95,6 +95,7 @@ for the 40% too. Measured ranking of those switches is in
 It misses established-but-opaque brands (Vraylar, Xeljanz, Wegovy). Always-on
 IPA is the one that actually closes the tail.
 
-A 5-round human→IPA→sidecar loop on the 35-name gap set is in
-`HUMAN_IPA_LOOP.md`. It lifts that set 0.675 → 0.708 and still does not
-beat always-on plain on the 174 (real fixes only → 0.727).
+A 5-round human→IPA→sidecar loop is in `HUMAN_IPA_LOOP.md`. Official
+variants selected by the clip beat always-on plain on the 174
+(**0.743** vs 0.730). CTC-authored strings are not the sidecar.
+The coined holdout (Nurtec, Adquey, acoramidis) does not close.

@@ -84,3 +84,58 @@ the field for the 40% with no clip.
 
 `python3 scripts/iter_human_ipa.py --rounds 5`
 Machine copy: `runs/human-ipa-loop/results.json` (gitignored).
+
+## Pass 2 — residual + official variants
+
+Same loop, plus: Cloud sanitize (drop vowel-less junk, keep multiword
+spaces, retry schwa 400s), one-phone residual, and **official IPA
+variants from `references.jsonl` as proposals**. Human clip only
+selects. n = 94 names where sidecar still lost to plain or sat below
+0.70.
+
+| | Mean F1 |
+| --- | ---: |
+| Those 94, plain | 0.740 |
+| Those 94, sidecar | 0.702 |
+| Those 94, loop-best | **0.751** |
+
+Household names closed by picking the official string the clip already
+used (not CTC authoring):
+
+| Name | Sidecar | Official pick | Plain |
+| --- | ---: | ---: | ---: |
+| acetaminophen | 0.687 | **0.821** `əˌsiːtəˈmɪnəfən` | 0.821 |
+| Januvia | 0.730 | **0.848** `dʒəˈnuːviːə` | 0.848 |
+| Aspirin | 0.726 | **0.818** | 0.783 |
+| Spiriva | 0.708 | **0.780** `spɪˈriːvə` | 0.820 |
+| aripiprazole | 0.672 | **0.830** | 0.804 |
+| Advair | 0.522 | **0.566** `ˈædˌvɛr` | 0.566 |
+
+The hard holdout did **not** close:
+
+| Name | Best | Plain | Why |
+| --- | ---: | ---: | --- |
+| acoramidis | 0.711 | 0.473 | sidecar already wins; human CTC is `/dʒ/` junk |
+| Nurtec | 0.591 | 0.589 | clip tail; proposals worse |
+| atogepant | 0.647 | 0.537 | USAN already in sidecar |
+| Adquey | 0.623 | 0.783 | source `AD-kee`, clip `/adkwaɪ/` |
+| Imaavy / Aucatzyl / Wegovy | unchanged | — | residual did not beat sidecar |
+
+## Always-on 174 after both passes
+
+| Policy | Mean |
+| --- | ---: |
+| Plain | 0.730 |
+| Current sidecar | 0.723 |
+| Official-variant picks only (49 names) | **0.743** |
+| Oracle any-keep (includes CTC junk) | 0.755 |
+| Holdout-25 official+real | 0.706 (was 0.681) |
+
+**Yes, always-on can beat plain**, if the sidecar is the official
+variant the human clip selects. That is not a new alphabet and not
+CTC. It still cannot run on the 40% with no clip (those names keep
+the first official string). The coined-name tail (acoramidis already
+0.711; Nurtec/Adquey clip fights) is not closed by more iterations.
+
+Pass 2 machine copy: `runs/human-ipa-loop2/results.json`.
+`python3 scripts/iter_human_ipa.py --rounds 5` (open-gap default).
