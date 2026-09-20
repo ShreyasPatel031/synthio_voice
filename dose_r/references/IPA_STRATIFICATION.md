@@ -103,7 +103,8 @@ DailyMed string (`HU-mare-ah` stresses the wrong syllable).
 
 - **Nuzolvence** was `vence` → `vɛnsɛ` (now `vɛns`)
 - **Revuforj** was `you`/`forge` → `jɒʌ`/`ɡɛ` (now `juː`/`dʒ`)
-- **famotidine** was MW `dīn` → `dyen` → `djɛn` (now `daɪn`; human said `diːn`)
+- **famotidine** MW lists both `dīn` and `dēn`. We now keep official
+  `deen` (`fʌˈmoʊtʌdiːn`). IPA F1 0.618 → 0.711, still below plain 0.801.
 - **Humira** DailyMed `HU-mare-ah` still stresses the wrong syllable
 
 Always-on still loses because leftover source-string junk lands on names
@@ -121,7 +122,7 @@ rules to copy.
 | Nuzolvence | `…vɛnsɛ` | `nuːzoʊvɛnts` | `…vɛns` | 0.595 → **0.735** |
 | Revuforj | `ɹɛvjɒʌfɔːrɡɛ` | `ɹavifoːdʒ` | `ɹɛvjuːfɔːrdʒ` | 0.532 → **0.757** |
 | Ubrelvy | `jɒʌ…` | — | `juː…` | 0.692 → **0.780** |
-| famotidine | `djɛn` | `diːn` | `daɪn` | 0.607 → 0.618 |
+| famotidine | `djɛn` → `daɪn` | `diːn` | `diːn` (official `deen`) | 0.618 → **0.711** (plain 0.801) |
 
 Rules added: syllable `you` → /juː/; trailing `nce` silent-e; trailing
 `rge`/`Vge` → /dʒ/; `CyeC` (`dyen`) → /aɪ/. Always-on IPA moved

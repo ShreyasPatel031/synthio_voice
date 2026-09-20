@@ -18,7 +18,8 @@ Duration: plain 1.07s, compact 1.07s, IPA 1.07s, spaced 1.59s. The sidecar
 does not insert syllable pauses. That is why it is the first pronunciation
 channel that does not destroy the names the engine already knows *by
 length*. The remaining −0.007 mean is leftover conversion noise (Humira,
-famotidine, acetaminophen), not pauses. One CTC pass on the human clips
+acetaminophen) plus names the engine already says (famotidine official
+`/diːn/` sidecar 0.711 vs plain 0.801). One CTC pass on the human clips
 fixed `you`/`vence`/`forge` (Revuforj 0.532→0.757).
 
 ## The worst 25 (the actual gap)
