@@ -1,5 +1,8 @@
 # Cloud TTS + dictionary respelling vs plain spelling
 
+> Feed the **original** dictionary respelling if you feed respelling at
+> all. Do not convert it to IPA first. See `README.md`.
+
 Path 2 gold: `microsoft/wavlm-large` SpeechBERTScore F1 vs the same human
 clip. Voice: Cloud TTS `en-US-Standard-C`. No IPA.
 

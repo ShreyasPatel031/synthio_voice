@@ -434,8 +434,9 @@ def _quoted_words(text: str) -> set[str]:
 def stress_tokens_to_respelling(tokens: list[str]) -> str | None:
     """USAN/USP prime-stress syllable tokens (e.g. `["am", "bel'", "vist"]`,
     from `"am bel' vist"`) -> a hyphenated respelling with the primary-
-    stressed syllable uppercased (`"am-BEL-vist"`), the same shape
-    `respell_to_arpabet_ipa` expects. `None` if the tokens don't actually
+    stressed syllable uppercased (`"am-BEL-vist"`), the original-source
+    respelling shape. Do not then G2P that string to IPA
+    (`respell_to_arpabet_ipa` is banned). `None` if the tokens don't actually
     carry a stress mark or don't clean down to letters -- e.g. a bare repeat
     of the drug's own name with no internal structure at all.
 

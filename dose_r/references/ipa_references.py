@@ -1,6 +1,10 @@
 """Load the dictionary IPA reference data (`references.jsonl`) that Path 3
 (`scoring.phoneme_distance`) scores candidates against.
 
+BANNED as TTS / gold IPA: variants that were G2P'd from DailyMed/USAN/NCI
+respelling (Dupixent `ˈdʌpɪksɛnt` from `DU-pix-ent`). Prefer `sources[].raw`.
+Do not inject `ipa_variants[0]` into Cloud TTS. See README.md.
+
 `references.jsonl` is Workstream 1's deliverable, built and cleaned on
 `claude/sc-sandbox-gcp-access-arw4m8` (280/284 ingredients with at least one
 sourced IPA variant from USAN/DailyMed/Merriam-Webster/NCI/CMUdict/Wikipedia,

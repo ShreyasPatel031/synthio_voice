@@ -7,9 +7,9 @@ Why this exists, not just `SpeechSimilarityScorer`
 ----------------------------------------------------
 `scoring.speech_similarity.SpeechSimilarityScorer` (Path 2, the shipped
 production scorer) deliberately scores against ONE reference clip per
-ingredient (`references.reference_clips.available_clips()`, Merriam-Webster
-preferred) -- the right contract for scoring a FIXED candidate consistently
-across repeated runs over time.
+ingredient (`references.reference_clips.available_clips()`, NCI gold when
+present, else Merriam-Webster) -- the right contract for scoring a FIXED
+candidate consistently across repeated runs over time.
 
 Evaluating a brand-new candidate model is a different question: is this
 model's pronunciation an accepted one AT ALL, not "does it match this one

@@ -1,0 +1,30 @@
+---
+description: Never convert dictionary respelling to IPA. Use the original source string.
+alwaysApply: true
+---
+
+# Never convert respelling to IPA
+
+Do not G2P DailyMed, USAN/AMA, NCI, Gemini, or canonical ASCII respelling
+into IPA. Do not "fix" `wiki_notation.respell_to_arpabet_ipa` or
+`ipa_from_canonical`. Those functions must keep raising `RespellToIpaBanned`.
+
+This already failed in production:
+
+- DailyMed `DU-pix-ent` (DU like "do") became `ˈdʌpɪksɛnt` ("duh") because
+  Wikipedia's key maps bare `u` to `/ʌ/`.
+- DailyMed `ah-troo-be` became `ˈɑːtruːbɛ` instead of Google `æˈtruːbi` /
+  `əˈtɹuːbi`.
+- On those five Google IPA strings vs our converter, Google beat the
+  converter on every name (mean F1 0.788 vs 0.618).
+
+Use the **original source string**:
+
+- If the page published IPA (`/ˈduːpɪksɛnt/`, Wiktionary, Wikipedia `{{IPA}}`),
+  store and inject that IPA. Ask Gemini/Google **for IPA**, not for another
+  respelling to convert.
+- If the page published respelling (`DU-pix-ent`, `ah-troo-be`, `rye · BEL · sus`),
+  keep that respelling. Do not invent IPA from it.
+
+`dose_r/references/pronunciations.jsonl` `ipa` / `ipa_cloud` must stay empty
+unless the value is source-published IPA, never Wikipedia-key G2P.

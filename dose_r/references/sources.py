@@ -593,12 +593,10 @@ def nci_pronunciation(name: str) -> dict | None:
     `dictionaryEndpoint: "https://webapis.cancer.gov/glossary/v1/"`), it
     returns a structured JSON record per term with its own
     `pronunciation.key` (a capitalized-syllable, hyphenated respelling
-    already in the same notation `respell_to_arpabet_ipa` parses, e.g.
-    "(uh-see-tuh-MIH-nuh-fen)" for acetaminophen) and a real hosted
-    `pronunciation.audio` recording (`nci-media.cancer.gov`) -- both
-    stored here, even though only `key` is converted into a phonetic
-    variant; the audio URL is kept in the citation as a second,
-    independently checkable form of the same official record.
+    e.g. "(uh-see-tuh-MIH-nuh-fen)" for acetaminophen). Keep that
+    **original** string. Do not G2P it through `respell_to_arpabet_ipa`
+    (banned). The audio URL is a second, independently checkable form
+    of the same official record.
 
     Coverage here is narrow and oncology-skewed on purpose: this is a
     *cancer* terms dictionary, so it only carries the subset of DOSE's

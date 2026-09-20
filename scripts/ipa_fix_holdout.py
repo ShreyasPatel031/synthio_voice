@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-"""Holdout: worst Cloud-TTS-IPA-vs-plain names, after the AMA `ye`=/aɪ/ fix.
+"""Holdout IPA-vs-plain — DEAD converter experiment.
 
-Compares wavlm(F1) of the human clip against:
-  plain          Cloud TTS reading the spelling
-  ipa_old        SSML injection of stored first-IPA (broken `ye` -> /jɛ/)
-  ipa_fixed      SSML injection of the same source string, reconverted
-  ipa_mw         SSML injection of the MW IPA variant, when one exists
+Do not reconvert DailyMed/USAN through Wikipedia's key.
+See dose_r/references/README.md.
 """
 from __future__ import annotations
 
@@ -83,8 +80,8 @@ def f1(a, b) -> float:
 
 
 def load_clips():
-    """MW-preferred clips from the path3 worktree (workspace has no MW files)."""
-    pri = {"merriam-webster": 0, "drugs.com": 1, "umich": 2}
+    """NCI-preferred clips from the path3 worktree (workspace has no MW files)."""
+    pri = {"nci": 0, "merriam-webster": 1, "drugs.com": 2, "umich": 3}
     by = {}
     for line in (PATH3 / "data" / "reference_audio" / "manifest.jsonl").read_text().splitlines():
         r = json.loads(line)

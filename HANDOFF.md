@@ -1,5 +1,9 @@
 # DOSE-R Handoff
 
+> **Pronunciation:** Never convert dictionary respelling to IPA. Use the
+> original source string. Converter is banned (`RespellToIpaBanned`).
+> See `dose_r/references/README.md`.
+
 Last verified against the repo on 2026-09-18, branch
 `claude/sc-sandbox-gcp-access-arw4m8`. Where this file and the planning
 documents disagree, this file was checked against the code and they were not.

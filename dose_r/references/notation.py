@@ -1,5 +1,9 @@
 """Merriam-Webster pronunciation notation to IPA and ARPABET.
 
+This is MW's **own published** phonetic alphabet (macrons, schwa, stress
+marks), not Wikipedia-key G2P of DailyMed/USAN ASCII. Do not reuse this
+table on `DU-pix-ent`. See `dose_r/references/README.md`.
+
 MW writes drug pronunciations in its own respelling system, e.g.
 
     dapagliflozin   ˌda-pə-glə-ˈflō-zən

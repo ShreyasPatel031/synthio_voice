@@ -1,5 +1,8 @@
 # Stratified IPA vs plain — which switch actually beats plain
 
+> **BANNED:** These IPA sidecars were G2P of dictionary respelling. Do not
+> reuse `pronunciations.jsonl` `ipa` fields; they are now empty. See `README.md`.
+
 Always-on IPA does **not** beat plain (0.723 vs 0.730). These switches
 do, and none of them need a human clip.
 

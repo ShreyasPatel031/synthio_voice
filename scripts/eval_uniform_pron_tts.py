@@ -1,11 +1,14 @@
 """Uniform pronunciation fields vs plain spelling, Path 2 gold.
 
+BANNED: the IPA arm used `ipa_from_canonical` (Wikipedia-key G2P of
+DailyMed/USAN). That path is dead. Compact ASCII remains. If you need IPA,
+use source-published IPA only. See dose_r/references/README.md.
+
 Same Cloud TTS voice, same human clip, same wavlm F1 as the spaced-respelling
-eval. Two arms that can be applied to every name, including the 40% with no
+eval. Arms that can be applied to every name, including the 40% with no
 audio (they just cannot be *scored* here):
 
   compact   canonical respelling with hyphens stripped (weegohvee)
-  ipa       spelling unchanged + customPronunciations IPA sidecar
 
 Plain and spaced scores are reused from runs/plain-vs-respelling-tts when
 present so this run does not move the baseline.
@@ -36,12 +39,7 @@ import requests  # noqa: E402
 
 from dose_r.references.reference_clips import available_clips  # noqa: E402
 from dose_r.references.respelling import is_canonical  # noqa: E402
-from dose_r.references.tts_pronunciation import (  # noqa: E402
-    compact_ascii,
-    custom_pronunciation,
-    ipa_from_canonical,
-    to_cloud_en_us_ipa,
-)
+from dose_r.references.tts_pronunciation import compact_ascii  # noqa: E402
 
 ENDPOINT = "https://texttospeech.googleapis.com/v1/text:synthesize"
 VOICE = "en-US-Standard-C"
@@ -243,7 +241,8 @@ def main() -> int:
         human = clip.path.read_bytes()
         canon = rec["respelling"]
         compact = compact_ascii(canon)
-        ipa = to_cloud_en_us_ipa(ipa_from_canonical(canon))
+        ipa = ""
+        ipa_err = "banned: do not G2P respelling to IPA (see dose_r/references/README.md)"
 
         plain_path = tts_dir / f"{slug}.plain.wav"
         if not plain_path.exists() and (prior_tts / f"{slug}.plain.wav").exists():
@@ -251,19 +250,7 @@ def main() -> int:
         plain = cached(plain_path, tok, project, text=ing)
         comp = cached(tts_dir / f"{slug}.compact.wav", tok, project, text=compact)
         ipa_path = tts_dir / f"{slug}.ipa.wav"
-        ipa_err = None
-        try:
-            ipa_wav = cached(
-                ipa_path,
-                tok,
-                project,
-                text=ing,
-                pronunciations=custom_pronunciation(ing, ipa),
-            )
-        except RuntimeError as exc:
-            ipa_err = str(exc)[:240]
-            ipa_wav = None
-            print(f"IPA FAIL {ing}: {ipa_err}", flush=True)
+        ipa_wav = None
 
         prev = prior.get(slug, {})
         compact_score = f1(comp, human)

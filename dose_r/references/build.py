@@ -1,5 +1,10 @@
 """Assemble `references.jsonl`, the gold pronunciation layer for DOSE-R.
 
+BANNED: converting DailyMed/USAN/NCI respelling to IPA via
+`respell_to_arpabet_ipa`. That G2P is dead (`RespellToIpaBanned`).
+Keep `sources[].raw`. Do not rebuild fake IPA from it.
+See `dose_r/references/README.md`.
+
 One record per unique ingredient across the 274 DOSE rows (284 of them, since
 nine rows are combination products and a few ingredients repeat). Each record
 carries every accepted variant, its provenance, and a confidence tier that the
@@ -56,18 +61,10 @@ def ingredients() -> dict[str, str]:
 
 
 def _respelling_span_to_variant(raw: str) -> tuple[str, str]:
-    """A respelling from Gemini -> an (ARPABET, IPA) pair.
+    """A respelling from Gemini -> do not convert to IPA.
 
-    Usually `raw` is one hyphenated word ("bik-TEG-ra-vir"). For a
-    multi-word ingredient, Gemini often answers with one hyphen-group per
-    word, space-separated ("pra-DEM-a-jeen ZAM-i-KER-a-sel" for
-    "prademagene zamikeracel") -- `_extract_all_respellings` in
-    gemini_grounded.py captures that whole run as a single candidate
-    specifically so this doesn't happen, but converting it needs each
-    word's hyphen-group run through `respell_to_arpabet_ipa` on its own and
-    the results concatenated, the same way `_join` does for a name resolved
-    word by word. Splitting the whole string on "-" instead would collapse
-    two words' syllables into one nonsense chain.
+    This used to G2P each hyphen-group through `respell_to_arpabet_ipa`.
+    That is banned. Callers will hit `RespellToIpaBanned`.
     """
     parts = raw.split()
     variants = [respell_to_arpabet_ipa(p.split("-")) for p in parts]
@@ -833,8 +830,8 @@ def coverage_report(records: list[dict]) -> str:
         "reverse-engineered from the app's own JS bundle the same way the AMA USAN "
         "search API was found, returns a structured JSON record with both a text "
         "respelling (`pronunciation.key`, e.g. `(uh-see-tuh-MIH-nuh-fen)` for "
-        "acetaminophen -- the same capitalized-syllable notation "
-        "`respell_to_arpabet_ipa` already parses) and a real hosted audio recording "
+        "acetaminophen). Keep that original respelling; do not G2P it "
+        "(`respell_to_arpabet_ipa` is banned). Also a real hosted audio recording "
         "(`pronunciation.audio`, kept in the citation alongside the text). An "
         "official U.S. federal government source (NIH's National Cancer Institute), "
         "not a secondhand citation of one -- and it covers plenty of brand names "

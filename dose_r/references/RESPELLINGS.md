@@ -1,5 +1,9 @@
 # Dictionary respellings — homogenized
 
+> These strings **are** the original dictionary source (USAN then DailyMed
+> then NCI…). **Do not convert them to IPA.** `DU-pix-ent` stays
+> `DU-pix-ent`. See `README.md`.
+
 One ASCII hyphenated respelling per ingredient. One source.
 USAN/AMA first, then DailyMed, NCI, Merriam-Webster medical, Gemini.
 Wikipedia IPA, Wiktionary IPA, and CMUdict are never selected.
