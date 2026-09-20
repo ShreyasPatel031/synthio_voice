@@ -80,7 +80,8 @@ Eval: `python3 scripts/eval_uniform_pron_tts.py`
 Always-on IPA costs −0.010 because converted IPA overrides a good built-in
 G2P on household names. A switch that does **not** need audio: apply the
 sidecar only when strata `era=new` (OpenFDA approval date). That is available
-for the 40% too.
+for the 40% too. Measured ranking of those switches is in
+`IPA_STRATIFICATION.md`.
 
 | Policy | Mean | Holdout-25 |
 | --- | ---: | ---: |

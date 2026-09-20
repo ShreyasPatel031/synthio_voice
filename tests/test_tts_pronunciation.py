@@ -70,3 +70,28 @@ def test_pronunciations_jsonl_covers_every_canonical_respelling():
             assert "ɪə" not in p["ipa_cloud"]
         else:
             assert p["ipa"] == ""
+
+
+def test_sye_lye_zye_sidecar_is_aɪ_not_jɛ():
+    """Stored references.jsonl first-IPA still has the ye-bug. The sidecar must not."""
+    from pathlib import Path
+    import json
+
+    root = Path(__file__).resolve().parents[1]
+    flagged = {
+        "tofacitinib",
+        "omalizumab",
+        "upadacitinib",
+        "Zycubo",
+        "Zaiidra",
+        "Vabysmo",
+        "ribociclib",
+        "Lytenava",
+    }
+    for line in (root / "dose_r/references/pronunciations.jsonl").read_text().splitlines():
+        rec = json.loads(line)
+        if rec["ingredient"] not in flagged:
+            continue
+        assert rec["ipa"], rec
+        assert "jɛ" not in rec["ipa"], rec
+        assert "aɪ" in rec["ipa"], rec

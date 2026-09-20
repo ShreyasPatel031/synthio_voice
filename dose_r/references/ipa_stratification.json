@@ -1,0 +1,217 @@
+{
+  "scored_n": 174,
+  "plain_mean": 0.7299,
+  "policies": [
+    {
+      "policy": "new OR biologic_suffix",
+      "mean": 0.739,
+      "delta_vs_plain": 0.0091,
+      "n_ipa": 64,
+      "holdout_mean": 0.6626,
+      "holdout_n_ipa": 15
+    },
+    {
+      "policy": "new OR multiword",
+      "mean": 0.7384,
+      "delta_vs_plain": 0.0085,
+      "n_ipa": 69,
+      "holdout_mean": 0.6595,
+      "holdout_n_ipa": 18
+    },
+    {
+      "policy": "new+generic OR bio",
+      "mean": 0.738,
+      "delta_vs_plain": 0.0081,
+      "n_ipa": 25,
+      "holdout_mean": 0.6498,
+      "holdout_n_ipa": 11
+    },
+    {
+      "policy": "era=new",
+      "mean": 0.7377,
+      "delta_vs_plain": 0.0078,
+      "n_ipa": 63,
+      "holdout_mean": 0.6539,
+      "holdout_n_ipa": 14
+    },
+    {
+      "policy": "new+generic",
+      "mean": 0.7368,
+      "delta_vs_plain": 0.0069,
+      "n_ipa": 24,
+      "holdout_mean": 0.6411,
+      "holdout_n_ipa": 10
+    },
+    {
+      "policy": "year>=2020",
+      "mean": 0.7349,
+      "delta_vs_plain": 0.005,
+      "n_ipa": 62,
+      "holdout_mean": 0.643,
+      "holdout_n_ipa": 13
+    },
+    {
+      "policy": "usan-official source",
+      "mean": 0.734,
+      "delta_vs_plain": 0.0041,
+      "n_ipa": 45,
+      "holdout_mean": 0.6399,
+      "holdout_n_ipa": 14
+    },
+    {
+      "policy": "year>=2023",
+      "mean": 0.7329,
+      "delta_vs_plain": 0.003,
+      "n_ipa": 49,
+      "holdout_mean": 0.6331,
+      "holdout_n_ipa": 9
+    },
+    {
+      "policy": "plain",
+      "mean": 0.7299,
+      "delta_vs_plain": 0.0,
+      "n_ipa": 0,
+      "holdout_mean": 0.5803,
+      "holdout_n_ipa": 0
+    },
+    {
+      "policy": "generic",
+      "mean": 0.7293,
+      "delta_vs_plain": -0.0006,
+      "n_ipa": 67,
+      "holdout_mean": 0.6556,
+      "holdout_n_ipa": 14
+    },
+    {
+      "policy": "brand",
+      "mean": 0.7217,
+      "delta_vs_plain": -0.0082,
+      "n_ipa": 101,
+      "holdout_mean": 0.6051,
+      "holdout_n_ipa": 9
+    },
+    {
+      "policy": "always IPA",
+      "mean": 0.72,
+      "delta_vs_plain": -0.0099,
+      "n_ipa": 174,
+      "holdout_mean": 0.6805,
+      "holdout_n_ipa": 25
+    }
+  ],
+  "cells_era_x_type": [
+    {
+      "era": "?",
+      "name_type": "?",
+      "n": 6,
+      "plain": 0.7275,
+      "ipa": 0.6966,
+      "delta": -0.0309
+    },
+    {
+      "era": "established",
+      "name_type": "brand",
+      "n": 62,
+      "plain": 0.7641,
+      "ipa": 0.7385,
+      "delta": -0.0256
+    },
+    {
+      "era": "established",
+      "name_type": "generic",
+      "n": 43,
+      "plain": 0.7403,
+      "ipa": 0.71,
+      "delta": -0.0303
+    },
+    {
+      "era": "new",
+      "name_type": "brand",
+      "n": 39,
+      "plain": 0.7106,
+      "ipa": 0.7147,
+      "delta": 0.0041
+    },
+    {
+      "era": "new",
+      "name_type": "generic",
+      "n": 24,
+      "plain": 0.6548,
+      "ipa": 0.7048,
+      "delta": 0.05
+    }
+  ],
+  "audio_split": {
+    "dose_n": 274,
+    "with_clip": {
+      "n": 169,
+      "era": {
+        "new": 63,
+        "established": 106
+      }
+    },
+    "no_clip": {
+      "n": 105,
+      "era": {
+        "new": 84,
+        "established": 21
+      },
+      "year_2025plus": 60,
+      "has_ipa": 92
+    }
+  },
+  "projected_no_clip": {
+    "plain": {
+      "n": 105,
+      "n_ipa": 0,
+      "expected_delta": 0.0
+    },
+    "always IPA": {
+      "n": 105,
+      "n_ipa": 92,
+      "expected_delta": 0.0161
+    },
+    "era=new": {
+      "n": 105,
+      "n_ipa": 75,
+      "expected_delta": 0.0209
+    },
+    "new OR biologic_suffix": {
+      "n": 105,
+      "n_ipa": 77,
+      "expected_delta": 0.0203
+    },
+    "new+generic": {
+      "n": 105,
+      "n_ipa": 41,
+      "expected_delta": 0.0195
+    }
+  },
+  "projected_with_clip": {
+    "plain": {
+      "n": 169,
+      "n_ipa": 0,
+      "expected_delta": 0.0
+    },
+    "always IPA": {
+      "n": 169,
+      "n_ipa": 168,
+      "expected_delta": -0.0091
+    },
+    "era=new": {
+      "n": 169,
+      "n_ipa": 63,
+      "expected_delta": 0.008
+    },
+    "new OR biologic_suffix": {
+      "n": 169,
+      "n_ipa": 64,
+      "expected_delta": 0.0079
+    },
+    "new+generic": {
+      "n": 169,
+      "n_ipa": 24,
+      "expected_delta": 0.0071
+    }
+  }
+}
