@@ -51,4 +51,25 @@ def test_propose_rounds_are_distinct_and_cloud_safe():
         assert "ɪə" not in got
         seen.append(got)
     assert from_human_ctc(sidecar, human) == seen[0]
-    assert align_replace(sidecar, human) == seen[3]
+
+
+def test_sanitize_rejects_vowel_less_junk():
+    from dose_r.references.human_ipa_loop import sanitize_cloud_ipa
+
+    assert sanitize_cloud_ipa("prstnb", "juːpædæˈsaɪtɪnɪb") == "juːpædæˈsaɪtɪnɪb"
+
+
+def test_sanitize_collapses_rr_and_keeps_word_space():
+    from dose_r.references.human_ipa_loop import sanitize_cloud_ipa
+
+    got = sanitize_cloud_ipa("tɛstrroʊnʌndɛk", "tɛsˈtɒstɛraʊn ʌnˈdɛkænoʊeɪt")
+    assert "rr" not in got
+    assert " " in got
+
+
+def test_residual_changes_one_phone():
+    from dose_r.references.human_ipa_loop import residual_one_edit
+
+    got = residual_one_edit("ˈnɛksɛʌm", "n ɛ k s i ʌ m")
+    assert "i" in got
+    assert got != "ˈnɛksɛʌm"

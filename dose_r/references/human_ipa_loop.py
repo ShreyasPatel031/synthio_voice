@@ -198,12 +198,75 @@ def align_replace(sidecar_ipa: str, human_ctc: str) -> str:
 def residual_patch(sidecar_ipa: str, human_ctc: str, synth_ctc: str) -> str:
     """Move sidecar phones toward human where the last synth still differs."""
     if not synth_ctc:
-        return align_replace(sidecar_ipa, human_ctc)
+        return residual_one_edit(sidecar_ipa, human_ctc)
     hum = name_span(ctc_phones(human_ctc), tokenize_ipa(sidecar_ipa))
     syn = name_span(ctc_phones(synth_ctc), tokenize_ipa(sidecar_ipa))
     if "".join(cloud_phone(p) for p in hum) == "".join(cloud_phone(p) for p in syn):
         return sidecar_ipa
-    return align_replace(sidecar_ipa, human_ctc)
+    return residual_one_edit(sidecar_ipa, human_ctc)
+
+
+def residual_one_edit(sidecar_ipa: str, human_ctc: str) -> str:
+    """Change exactly one sidecar phone toward the human span."""
+    side = strip_stress(tokenize_ipa(sidecar_ipa))
+    hum = name_span(ctc_phones(human_ctc), tokenize_ipa(sidecar_ipa))
+    if not side or not hum:
+        return sidecar_ipa
+    matcher = difflib.SequenceMatcher(a=side, b=hum, autojunk=False)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        if tag == "replace" and i1 < len(side) and j1 < len(hum):
+            new = side[:]
+            new[i1] = hum[j1]
+            return apply_stress(new, sidecar_ipa)
+        if tag == "insert" and j1 < len(hum):
+            new = side[:i1] + [hum[j1]] + side[i1:]
+            return apply_stress(new, sidecar_ipa)
+        if tag == "delete" and i1 < len(side):
+            new = side[:i1] + side[i1 + 1 :]
+            if new:
+                return apply_stress(new, sidecar_ipa)
+    return sidecar_ipa
+
+
+def keep_word_spaces(ipa: str, sidecar: str) -> str:
+    """Cloud rejects a two-word phrase with one fused IPA blob."""
+    if " " not in (sidecar or "") or " " in ipa:
+        return ipa
+    words = sidecar.split()
+    phones = strip_stress(tokenize_ipa(ipa))
+    if not phones:
+        return ipa
+    lens = [max(1, len(strip_stress(tokenize_ipa(w)))) for w in words]
+    total = sum(lens)
+    out: list[str] = []
+    i = 0
+    for k, L in enumerate(lens):
+        take = max(1, round(len(phones) * L / total))
+        chunk = phones[i:] if k == len(lens) - 1 else phones[i : i + take]
+        i += take
+        out.append(apply_stress(chunk, words[k]))
+    return " ".join(p for p in out if p)
+
+
+def sanitize_cloud_ipa(ipa: str, sidecar: str = "") -> str:
+    """Reject vowel-less junk, collapse geminates, fold Cloud-hostile starts."""
+    ipa = to_cloud_en_us_ipa(ipa or "")
+    ipa = ipa.replace("rr", "r").replace("ll", "l")
+    ipa = ipa.replace("ˈə", "ˈʌ").replace("ˈər", "ˈɜr")
+    phones = strip_stress(tokenize_ipa(ipa))
+    vowels = [p for p in phones if is_vowel(p)]
+    if sidecar and len(phones) > 3 and len(vowels) < 2:
+        return sidecar
+    if sidecar:
+        ipa = keep_word_spaces(ipa, sidecar)
+    return to_cloud_en_us_ipa(ipa)
+
+
+def schwa_to_wedge(ipa: str) -> str:
+    """Retry map after a Cloud 400 on schwa."""
+    return to_cloud_en_us_ipa((ipa or "").replace("ə", "ʌ"))
 
 
 def propose_round(
@@ -211,14 +274,24 @@ def propose_round(
     human_ctc: str,
     synth_ctc: str | None,
     round_idx: int,
+    official: list[str] | None = None,
 ) -> str:
-    """One of five distinct proposals. `round_idx` is 1..5."""
+    """One proposal per round. Later rounds are one-phone residuals."""
+    official = official or []
     if round_idx == 1:
+        if official:
+            return official[0]
         return from_human_ctc(sidecar_ipa, human_ctc)
     if round_idx == 2:
+        if len(official) > 1:
+            return official[1]
         return transplant_vowels(sidecar_ipa, human_ctc)
     if round_idx == 3:
-        return transplant_consonants(sidecar_ipa, human_ctc)
+        return residual_one_edit(sidecar_ipa, human_ctc)
     if round_idx == 4:
-        return align_replace(sidecar_ipa, human_ctc)
-    return residual_patch(sidecar_ipa, human_ctc, synth_ctc or "")
+        return residual_patch(sidecar_ipa, human_ctc, synth_ctc or "")
+    # Round 5: schwa fold of the current best, else another one-phone edit.
+    folded = schwa_to_wedge(sidecar_ipa)
+    if folded != sidecar_ipa:
+        return folded
+    return residual_one_edit(sidecar_ipa, human_ctc)
