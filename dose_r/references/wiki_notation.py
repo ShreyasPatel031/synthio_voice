@@ -332,6 +332,15 @@ def _respell_segments(syllable: str) -> list[tuple[list[str], str]]:
     i = 0
     n = len(syllable)
     while i < n:
+        # AMA/USAN/DailyMed write "lye"/"sye"/"zye"/... for /laɪ saɪ zaɪ/.
+        # Wikipedia's key has no "ye" digraph: medial "y" is /j/ and "e" is
+        # /ɛ/, so "sye" became /sjɛ/ ("syeh") instead of /saɪ/ ("sigh").
+        # Only take this at the end of the syllable so "yes" stays /jɛs/.
+        if syllable[i:i + 2] == "ye" and (i + 2 >= n or not syllable[i + 2].isalpha()):
+            out.append((["AY"], "aɪ"))
+            i += 2
+            continue
+
         if syllable[i] == "y":
             if i + 1 < n:
                 out.append((["Y"], "j"))

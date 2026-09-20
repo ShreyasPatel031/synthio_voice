@@ -242,6 +242,22 @@ def test_respell_silent_final_e():
     assert arpa == "AY1 B Y UW0 P R OW0 F EH0 N"
 
 
+def test_respell_usan_ye_is_eye_not_yeh():
+    # USAN/DailyMed "sye"/"lye"/"zye" are AMA's spelling of /saɪ laɪ zaɪ/
+    # (tofacitinib "sye", omalizumab "lye", Zycubo "zye"). Wikipedia medial
+    # "y" is /j/, so these used to emit /sjɛ ljɛ zjɛ/.
+    _, ipa = respell_to_arpabet_ipa(["sye"])
+    assert "saɪ" in ipa
+    assert "jɛ" not in ipa
+    _, ipa = respell_to_arpabet_ipa(["lye"])
+    assert "laɪ" in ipa
+    _, ipa = respell_to_arpabet_ipa(["zye", "kyoo", "boe"])
+    assert ipa.startswith("zaɪ") or "zaɪ" in ipa
+    # "yes" must not be eaten by the ye-digraph.
+    _, ipa = respell_to_arpabet_ipa(["yes"])
+    assert "j" in ipa
+
+
 def test_respell_magic_e_requires_exactly_one_consonant():
     # Two consonants between the vowel and the "e" is NOT the magic-e
     # pattern (a made-up "holpe" is not "hole") -- deliberately left

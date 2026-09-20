@@ -155,7 +155,28 @@ class RetryPolicy:
         }
 
 
-@dataclass(frozen=True)
+@dataclass
+class SynthesisResult:
+    """Audio plus call metadata. Present so the WS2 scorers can import."""
+
+    system_id: str
+    item_id: str
+    ok: bool
+    audio: bytes | None = None
+    audio_format: str = "wav"
+    sample_rate_hz: int | None = None
+    ttfa_ms: float | None = None
+    total_ms: float | None = None
+    streaming: bool = False
+    billable_chars: int = 0
+    cost_usd: float | None = None
+    cost_estimated: bool = True
+    price_verified: bool = False
+    attempts: int = 1
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
 class SynthesisRequest:
     """One DOSE row. `item` carries the judge-relevant dataset fields so a
     manifest record is self-contained for scoring."""
