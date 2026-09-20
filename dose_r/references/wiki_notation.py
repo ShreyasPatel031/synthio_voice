@@ -328,6 +328,16 @@ RESPELL_TABLE = RESPELL_VOWELS + RESPELL_CONSONANTS
 
 
 def _respell_segments(syllable: str) -> list[tuple[list[str], str]]:
+    # Whole-syllable English words that letter-by-letter G2P mangles.
+    # Caught by wav2vec2-espeak CTC on human clips (Nuzolvence `vence`→
+    # extra /ɛ/, Revuforj `you`/`forge` → /jɒʌ/ /ɡɛ/).
+    if syllable == "you":
+        return [(["Y", "UW"], "juː")]
+    if len(syllable) >= 4 and syllable.endswith(("nce", "nse")):
+        return _respell_segments(syllable[:-3]) + [(["N"], "n"), (["S"], "s")]
+    if len(syllable) >= 3 and syllable.endswith("ge") and syllable[-3] in "aeiour":
+        return _respell_segments(syllable[:-2]) + [(["JH"], "dʒ")]
+
     out = []
     i = 0
     n = len(syllable)
@@ -335,11 +345,14 @@ def _respell_segments(syllable: str) -> list[tuple[list[str], str]]:
         # AMA/USAN/DailyMed write "lye"/"sye"/"zye"/... for /laɪ saɪ zaɪ/.
         # Wikipedia's key has no "ye" digraph: medial "y" is /j/ and "e" is
         # /ɛ/, so "sye" became /sjɛ/ ("syeh") instead of /saɪ/ ("sigh").
-        # Only take this at the end of the syllable so "yes" stays /jɛs/.
-        if syllable[i:i + 2] == "ye" and (i + 2 >= n or not syllable[i + 2].isalpha()):
-            out.append((["AY"], "aɪ"))
-            i += 2
-            continue
+        # End of syllable, or ye+one final C after an onset (`dyen` from
+        # MW ī → ye): both are /aɪ/. Bare "yes" stays /jɛs/ (i==0).
+        if syllable[i:i + 2] == "ye":
+            rest = syllable[i + 2:]
+            if rest == "" or (len(rest) == 1 and rest.isalpha() and i > 0):
+                out.append((["AY"], "aɪ"))
+                i += 2
+                continue
 
         if syllable[i] == "y":
             if i + 1 < n:

@@ -12,13 +12,14 @@ the spelling with a one-token ASCII string.
 | Plain spelling | `Wegovy` | **0.730** | — | 0.580 |
 | Spaced respelling (previous) | `wee goh vee` | 0.650 | −0.080 | (pauses) |
 | Compact ASCII | `weegohvee` | 0.695 | −0.035 | 0.627 |
-| **IPA sidecar** | `Wegovy` + `wiːˈɡoʊviː` | **0.720** | **−0.010** | **0.681** |
+| **IPA sidecar** | `Wegovy` + `wiːˈɡoʊviː` | **0.723** | **−0.007** | **0.681** |
 
 Duration: plain 1.07s, compact 1.07s, IPA 1.07s, spaced 1.59s. The sidecar
 does not insert syllable pauses. That is why it is the first pronunciation
 channel that does not destroy the names the engine already knows *by
-length*. The remaining −0.010 mean is conversion noise (Humira, Januvia,
-acetaminophen, Revuforj), not pauses.
+length*. The remaining −0.007 mean is leftover conversion noise (Humira,
+famotidine, acetaminophen), not pauses. One CTC pass on the human clips
+fixed `you`/`vence`/`forge` (Revuforj 0.532→0.757).
 
 ## The worst 25 (the actual gap)
 
@@ -77,7 +78,7 @@ Eval: `python3 scripts/eval_uniform_pron_tts.py`
 
 ## If the mean must not fall
 
-Always-on IPA costs −0.010 because converted IPA overrides a good built-in
+Always-on IPA costs −0.007 because converted IPA overrides a good built-in
 G2P on household names. A switch that does **not** need audio: apply the
 sidecar only when strata `era=new` (OpenFDA approval date). That is available
 for the 40% too. Measured ranking of those switches is in
@@ -86,8 +87,8 @@ for the 40% too. Measured ranking of those switches is in
 | Policy | Mean | Holdout-25 |
 | --- | ---: | ---: |
 | always plain | 0.730 | 0.580 |
-| always IPA | 0.720 | **0.681** |
-| IPA only on `era=new` (n=63) | **0.738** | 0.654 |
+| always IPA | 0.723 | **0.681** |
+| IPA only on `era=new` (n=63) | **0.740** | 0.654 |
 
 `era=new` is the only uniform, no-audio policy that beats plain on the mean.
 It misses established-but-opaque brands (Vraylar, Xeljanz, Wegovy). Always-on

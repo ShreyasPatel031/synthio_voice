@@ -3,100 +3,100 @@
   "plain_mean": 0.7299,
   "policies": [
     {
-      "policy": "new OR biologic_suffix",
-      "mean": 0.739,
-      "delta_vs_plain": 0.0091,
+      "mean": 0.7411,
+      "delta_vs_plain": 0.0112,
       "n_ipa": 64,
       "holdout_mean": 0.6626,
-      "holdout_n_ipa": 15
+      "holdout_n_ipa": 15,
+      "policy": "new OR biologic_suffix"
     },
     {
-      "policy": "new OR multiword",
-      "mean": 0.7384,
-      "delta_vs_plain": 0.0085,
+      "mean": 0.7405,
+      "delta_vs_plain": 0.0106,
       "n_ipa": 69,
       "holdout_mean": 0.6595,
-      "holdout_n_ipa": 18
+      "holdout_n_ipa": 18,
+      "policy": "new OR multiword"
     },
     {
-      "policy": "new+generic OR bio",
       "mean": 0.738,
       "delta_vs_plain": 0.0081,
       "n_ipa": 25,
       "holdout_mean": 0.6498,
-      "holdout_n_ipa": 11
+      "holdout_n_ipa": 11,
+      "policy": "new+generic OR bio"
     },
     {
-      "policy": "era=new",
-      "mean": 0.7377,
-      "delta_vs_plain": 0.0078,
+      "mean": 0.7398,
+      "delta_vs_plain": 0.0099,
       "n_ipa": 63,
       "holdout_mean": 0.6539,
-      "holdout_n_ipa": 14
+      "holdout_n_ipa": 14,
+      "policy": "era=new"
     },
     {
-      "policy": "new+generic",
       "mean": 0.7368,
       "delta_vs_plain": 0.0069,
       "n_ipa": 24,
       "holdout_mean": 0.6411,
-      "holdout_n_ipa": 10
+      "holdout_n_ipa": 10,
+      "policy": "new+generic"
     },
     {
-      "policy": "year>=2020",
-      "mean": 0.7349,
-      "delta_vs_plain": 0.005,
+      "mean": 0.737,
+      "delta_vs_plain": 0.0072,
       "n_ipa": 62,
       "holdout_mean": 0.643,
-      "holdout_n_ipa": 13
+      "holdout_n_ipa": 13,
+      "policy": "year>=2020"
     },
     {
-      "policy": "usan-official source",
       "mean": 0.734,
       "delta_vs_plain": 0.0041,
       "n_ipa": 45,
       "holdout_mean": 0.6399,
-      "holdout_n_ipa": 14
+      "holdout_n_ipa": 14,
+      "policy": "usan-official source"
     },
     {
-      "policy": "year>=2023",
-      "mean": 0.7329,
-      "delta_vs_plain": 0.003,
+      "mean": 0.735,
+      "delta_vs_plain": 0.0052,
       "n_ipa": 49,
       "holdout_mean": 0.6331,
-      "holdout_n_ipa": 9
+      "holdout_n_ipa": 9,
+      "policy": "year>=2023"
     },
     {
-      "policy": "plain",
       "mean": 0.7299,
       "delta_vs_plain": 0.0,
       "n_ipa": 0,
       "holdout_mean": 0.5803,
-      "holdout_n_ipa": 0
+      "holdout_n_ipa": 0,
+      "policy": "plain"
     },
     {
-      "policy": "generic",
-      "mean": 0.7293,
-      "delta_vs_plain": -0.0006,
+      "mean": 0.7294,
+      "delta_vs_plain": -0.0005,
       "n_ipa": 67,
       "holdout_mean": 0.6556,
-      "holdout_n_ipa": 14
+      "holdout_n_ipa": 14,
+      "policy": "generic"
     },
     {
-      "policy": "brand",
-      "mean": 0.7217,
-      "delta_vs_plain": -0.0082,
+      "mean": 0.7243,
+      "delta_vs_plain": -0.0056,
       "n_ipa": 101,
       "holdout_mean": 0.6051,
-      "holdout_n_ipa": 9
+      "holdout_n_ipa": 9,
+      "policy": "brand"
     },
     {
-      "policy": "always IPA",
-      "mean": 0.72,
-      "delta_vs_plain": -0.0099,
+      "mean": 0.7227,
+      "delta_vs_plain": -0.0072,
       "n_ipa": 174,
       "holdout_mean": 0.6805,
-      "holdout_n_ipa": 25
+      "holdout_n_ipa": 25,
+      "policy": "always IPA"
     }
   ],
   "cells_era_x_type": [
@@ -113,24 +113,24 @@
       "name_type": "brand",
       "n": 62,
       "plain": 0.7641,
-      "ipa": 0.7385,
-      "delta": -0.0256
+      "ipa": 0.7399,
+      "delta": -0.0241
     },
     {
       "era": "established",
       "name_type": "generic",
       "n": 43,
       "plain": 0.7403,
-      "ipa": 0.71,
-      "delta": -0.0303
+      "ipa": 0.7103,
+      "delta": -0.03
     },
     {
       "era": "new",
       "name_type": "brand",
       "n": 39,
       "plain": 0.7106,
-      "ipa": 0.7147,
-      "delta": 0.0041
+      "ipa": 0.7241,
+      "delta": 0.0135
     },
     {
       "era": "new",
@@ -169,17 +169,17 @@
     "always IPA": {
       "n": 105,
       "n_ipa": 92,
-      "expected_delta": 0.0161
+      "expected_delta": 0.0192
     },
     "era=new": {
       "n": 105,
       "n_ipa": 75,
-      "expected_delta": 0.0209
+      "expected_delta": 0.0239
     },
     "new OR biologic_suffix": {
       "n": 105,
       "n_ipa": 77,
-      "expected_delta": 0.0203
+      "expected_delta": 0.0233
     },
     "new+generic": {
       "n": 105,
@@ -196,22 +196,23 @@
     "always IPA": {
       "n": 169,
       "n_ipa": 168,
-      "expected_delta": -0.0091
+      "expected_delta": -0.0063
     },
     "era=new": {
       "n": 169,
       "n_ipa": 63,
-      "expected_delta": 0.008
+      "expected_delta": 0.0102
     },
     "new OR biologic_suffix": {
       "n": 169,
       "n_ipa": 64,
-      "expected_delta": 0.0079
+      "expected_delta": 0.01
     },
     "new+generic": {
       "n": 169,
       "n_ipa": 24,
       "expected_delta": 0.0071
     }
-  }
+  },
+  "always_ipa_mean": 0.7227
 }

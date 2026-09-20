@@ -95,3 +95,27 @@ def test_sye_lye_zye_sidecar_is_aɪ_not_jɛ():
         assert rec["ipa"], rec
         assert "jɛ" not in rec["ipa"], rec
         assert "aɪ" in rec["ipa"], rec
+
+
+def test_ctc_iteration_sidecar_fixes():
+    """wav2vec2-espeak on the human clip caught letter-by-letter junk."""
+    from pathlib import Path
+    import json
+
+    root = Path(__file__).resolve().parents[1]
+    want = {
+        "Nuzolvence": "nʌˈzɒlvɛns",
+        "Revuforj": "ˈrɛvjuːfɔːrdʒ",
+        "Ubrelvy": "ˈjuːbrɛlviː",
+        "Yuviwel": "ˈjuːvɪwɛll",
+        "famotidine": "fʌˈmoʊtʌdaɪn",
+    }
+    got = {}
+    for line in (root / "dose_r/references/pronunciations.jsonl").read_text().splitlines():
+        rec = json.loads(line)
+        if rec["ingredient"] in want:
+            got[rec["ingredient"]] = rec["ipa"]
+    assert got == want
+    assert not want["Nuzolvence"].endswith("vɛnsɛ")
+    assert "jɒʌ" not in want["Revuforj"]
+    assert "djɛn" not in want["famotidine"]

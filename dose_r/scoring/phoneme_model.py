@@ -107,7 +107,11 @@ def _get_model():
     import torch
     from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
-    processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
+    # Decoding CTC ids does not need espeak-ng. phonemizer/espeak is only
+    # required to phonemize *text*. This environment has no espeak binary,
+    # so skip the backend. `phonemize_word()` still needs espeak and will
+    # fail if called.
+    processor = Wav2Vec2Processor.from_pretrained(MODEL_ID, do_phonemize=False)
     model = Wav2Vec2ForCTC.from_pretrained(MODEL_ID)
     model.eval()
     return torch, processor, model

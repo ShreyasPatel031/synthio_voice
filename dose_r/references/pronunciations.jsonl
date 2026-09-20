@@ -71,7 +71,7 @@
 {"ingredient": "Mounjaro", "name_type": "brand", "respelling": "mown-JAHR-oh", "source": "dailymed", "compact": "mownjahroh", "ipa": "maʊnˈdʒɑːroʊ", "ipa_cloud": "maʊnˈdʒɑːroʊ"}
 {"ingredient": "Nexium", "name_type": "brand", "respelling": "NEX-e-um", "source": "dailymed", "compact": "nexeum", "ipa": "ˈnɛksɛʌm", "ipa_cloud": "ˈnɛksɛʌm"}
 {"ingredient": "Nurtec", "name_type": "brand", "respelling": "NUR-tek", "source": "gemini-grounded-search", "compact": "nurtek", "ipa": "ˈnɜːrtɛk", "ipa_cloud": "ˈnɜːrtɛk"}
-{"ingredient": "Nuzolvence", "name_type": "brand", "respelling": "nu-ZOL-vence", "source": "dailymed", "compact": "nuzolvence", "ipa": "nʌˈzɒlvɛnsɛ", "ipa_cloud": "nʌˈzɒlvɛnsɛ"}
+{"ingredient": "Nuzolvence", "name_type": "brand", "respelling": "nu-ZOL-vence", "source": "dailymed", "compact": "nuzolvence", "ipa": "nʌˈzɒlvɛns", "ipa_cloud": "nʌˈzɒlvɛns"}
 {"ingredient": "Obicetrapib", "name_type": "brand", "respelling": "oh-bi-SET-rah-pib", "source": "gemini-grounded-search", "compact": "ohbisetrahpib", "ipa": "oʊbɪˈsɛtrɑːpɪb", "ipa_cloud": "oʊbɪˈsɛtrɑːpɪb"}
 {"ingredient": "Ojemda", "name_type": "brand", "respelling": "oh-JEM-dah", "source": "dailymed", "compact": "ohjemdah", "ipa": "oʊˈdʒɛmdɑː", "ipa_cloud": "oʊˈdʒɛmdɑː"}
 {"ingredient": "Orzeyful", "name_type": "brand", "respelling": "OR-zay-full", "source": "gemini-grounded-search", "compact": "orzayfull", "ipa": "ˈɔːrzeɪfʌll", "ipa_cloud": "ˈɔːrzeɪfʌll"}
@@ -85,7 +85,7 @@
 {"ingredient": "Qulipta", "name_type": "brand", "respelling": "kew-LIP-tah", "source": "dailymed", "compact": "kewliptah", "ipa": "kjuːˈlɪptɑː", "ipa_cloud": "kjuːˈlɪptɑː"}
 {"ingredient": "Retatrutide", "name_type": "brand", "respelling": "", "source": null, "compact": "", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Revtorpyk", "name_type": "brand", "respelling": "REV-tor-pik", "source": "dailymed", "compact": "revtorpik", "ipa": "ˈrɛvtɔːrpɪk", "ipa_cloud": "ˈrɛvtɔːrpɪk"}
-{"ingredient": "Revuforj", "name_type": "brand", "respelling": "REV-you-forge", "source": "dailymed", "compact": "revyouforge", "ipa": "ˈrɛvjɒʌfɔːrɡɛ", "ipa_cloud": "ˈrɛvjɒʌfɔːrɡɛ"}
+{"ingredient": "Revuforj", "name_type": "brand", "respelling": "REV-you-forge", "source": "dailymed", "compact": "revyouforge", "ipa": "ˈrɛvjuːfɔːrdʒ", "ipa_cloud": "ˈrɛvjuːfɔːrdʒ"}
 {"ingredient": "Rezdiffra", "name_type": "brand", "respelling": "rez-DI-frah", "source": "dailymed", "compact": "rezdifrah", "ipa": "rɛzˈdɪfrɑː", "ipa_cloud": "rɛzˈdɪfrɑː"}
 {"ingredient": "Rhapsido", "name_type": "brand", "respelling": "RAP-si-doe", "source": "dailymed", "compact": "rapsidoe", "ipa": "ˈræpsɪdoʊ", "ipa_cloud": "ˈræpsɪdoʊ"}
 {"ingredient": "Rinvoq", "name_type": "brand", "respelling": "RIN-voke", "source": "dailymed", "compact": "rinvoke", "ipa": "ˈrɪnvoʊk", "ipa_cloud": "ˈrɪnvoʊk"}
@@ -108,7 +108,7 @@
 {"ingredient": "Tryptyr", "name_type": "brand", "respelling": "TRIP-tir", "source": "dailymed", "compact": "triptir", "ipa": "ˈtrɪptɪr", "ipa_cloud": "ˈtrɪptɪr"}
 {"ingredient": "Tylenol", "name_type": "brand", "respelling": "TYE-luh-nawl", "source": "merriam-webster/medical-api", "compact": "tyeluhnawl", "ipa": "ˈtaɪlʌnɔːl", "ipa_cloud": "ˈtaɪlʌnɔːl"}
 {"ingredient": "Tzield", "name_type": "brand", "respelling": "TEE-zeeld", "source": "dailymed", "compact": "teezeeld", "ipa": "ˈtiːziːld", "ipa_cloud": "ˈtiːziːld"}
-{"ingredient": "Ubrelvy", "name_type": "brand", "respelling": "YOU-brel-vee", "source": "dailymed", "compact": "youbrelvee", "ipa": "ˈjɒʌbrɛlviː", "ipa_cloud": "ˈjɒʌbrɛlviː"}
+{"ingredient": "Ubrelvy", "name_type": "brand", "respelling": "YOU-brel-vee", "source": "dailymed", "compact": "youbrelvee", "ipa": "ˈjuːbrɛlviː", "ipa_cloud": "ˈjuːbrɛlviː"}
 {"ingredient": "Utebzi", "name_type": "brand", "respelling": "yoo-TEB-zee", "source": "gemini-grounded-search", "compact": "yootebzee", "ipa": "juːˈtɛbziː", "ipa_cloud": "juːˈtɛbziː"}
 {"ingredient": "Vabysmo", "name_type": "brand", "respelling": "vah-BYE-smo", "source": "gemini-grounded-search", "compact": "vahbyesmo", "ipa": "vɑːˈbaɪsmɒ", "ipa_cloud": "vɑːˈbaɪsmɒ"}
 {"ingredient": "Valium", "name_type": "brand", "respelling": "VAL-ee-um", "source": "dailymed", "compact": "valeeum", "ipa": "ˈvæliːʌm", "ipa_cloud": "ˈvæliːʌm"}
@@ -130,7 +130,7 @@
 {"ingredient": "Xocova", "name_type": "brand", "respelling": "ZOE-koe-vah", "source": "dailymed", "compact": "zoekoevah", "ipa": "ˈzoʊkoʊvɑː", "ipa_cloud": "ˈzoʊkoʊvɑː"}
 {"ingredient": "Xofluza", "name_type": "brand", "respelling": "zoh-FLEW-zuh", "source": "dailymed", "compact": "zohflewzuh", "ipa": "zoʊˈfljuːzʌ", "ipa_cloud": "zoʊˈfljuːzʌ"}
 {"ingredient": "Xolair", "name_type": "brand", "respelling": "ZOHL-air", "source": "dailymed", "compact": "zohlair", "ipa": "ˈzoʊlɛər", "ipa_cloud": "ˈzoʊlɛər"}
-{"ingredient": "Yuviwel", "name_type": "brand", "respelling": "YOU-vih-well", "source": "dailymed", "compact": "youvihwell", "ipa": "ˈjɒʌvɪwɛll", "ipa_cloud": "ˈjɒʌvɪwɛll"}
+{"ingredient": "Yuviwel", "name_type": "brand", "respelling": "YOU-vih-well", "source": "dailymed", "compact": "youvihwell", "ipa": "ˈjuːvɪwɛll", "ipa_cloud": "ˈjuːvɪwɛll"}
 {"ingredient": "Zaiidra", "name_type": "brand", "respelling": "ZYE-druh", "source": "gemini-grounded-search", "compact": "zyedruh", "ipa": "ˈzaɪdrʌ", "ipa_cloud": "ˈzaɪdrʌ"}
 {"ingredient": "Zantac", "name_type": "brand", "respelling": "ZAN-tak", "source": "merriam-webster/medical-api", "compact": "zantak", "ipa": "ˈzæntæk", "ipa_cloud": "ˈzæntæk"}
 {"ingredient": "Zaynich", "name_type": "brand", "respelling": "ZAY-nich", "source": "gemini-grounded-search", "compact": "zaynich", "ipa": "ˈzeɪnɪtʃ", "ipa_cloud": "ˈzeɪnɪtʃ"}
@@ -191,7 +191,7 @@
 {"ingredient": "etanercept", "name_type": "generic", "respelling": "ee-TA-ner-cept", "source": "nci-dictionary-of-cancer-terms", "compact": "eetanercept", "ipa": "iːˈtænɛrsɛpt", "ipa_cloud": "iːˈtænɛrsɛpt"}
 {"ingredient": "exagamglogene autotemcel", "name_type": "generic", "respelling": "ex-GAM-gloe-jeen aw-toe-TEM-sel", "source": "usan-official", "compact": "exgamgloejeen awtoetemsel", "ipa": "ɛksˈɡæmɡloʊdʒiːn ɔːtoʊˈtɛmsɛl", "ipa_cloud": "ɛksˈɡæmɡloʊdʒiːn ɔːtoʊˈtɛmsɛl"}
 {"ingredient": "exenatide", "name_type": "generic", "respelling": "ex-EN-a-tide", "source": "usan-official", "compact": "exenatide", "ipa": "ɛksˈɛnætaɪd", "ipa_cloud": "ɛksˈɛnætaɪd"}
-{"ingredient": "famotidine", "name_type": "generic", "respelling": "fuh-MOHT-uh-dyen", "source": "merriam-webster/medical-api", "compact": "fuhmohtuhdyen", "ipa": "fʌˈmoʊtʌdjɛn", "ipa_cloud": "fʌˈmoʊtʌdjɛn"}
+{"ingredient": "famotidine", "name_type": "generic", "respelling": "fuh-MOHT-uh-dyen", "source": "merriam-webster/medical-api", "compact": "fuhmohtuhdyen", "ipa": "fʌˈmoʊtʌdaɪn", "ipa_cloud": "fʌˈmoʊtʌdaɪn"}
 {"ingredient": "faricimab-svoa", "name_type": "generic", "respelling": "far-IK-i-mab", "source": "usan-official", "compact": "farikimab", "ipa": "fɑːrˈɪkɪmæb", "ipa_cloud": "fɑːrˈɪkɪmæb"}
 {"ingredient": "fezolinetant", "name_type": "generic", "respelling": "fez-oh-LIN-e-tant", "source": "usan-official", "compact": "fezohlinetant", "ipa": "fɛzoʊˈlɪnɛtænt", "ipa_cloud": "fɛzoʊˈlɪnɛtænt"}
 {"ingredient": "fluoxetine", "name_type": "generic", "respelling": "floo-OK-seh-teen", "source": "nci-dictionary-of-cancer-terms", "compact": "floooksehteen", "ipa": "fluːˈɒksɛtiːn", "ipa_cloud": "fluːˈɒksɛtiːn"}

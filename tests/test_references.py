@@ -256,6 +256,22 @@ def test_respell_usan_ye_is_eye_not_yeh():
     # "yes" must not be eaten by the ye-digraph.
     _, ipa = respell_to_arpabet_ipa(["yes"])
     assert "j" in ipa
+    # MW ī → "ye" + coda (`dīn` homogenized to `dyen`). CTC on the
+    # famotidine clip is /diːn/, not /djɛn/; /aɪn/ is the ī reading.
+    _, ipa = respell_to_arpabet_ipa(["dyen"])
+    assert "daɪn" in ipa
+    assert "jɛ" not in ipa
+
+
+def test_respell_you_nce_forge_match_human_ctc():
+    # Human-clip CTC (wav2vec2-lv-60-espeak) vs the old letter-by-letter IPA.
+    _, ipa = respell_to_arpabet_ipa(["nu", "ZOL", "vence"])
+    assert ipa.endswith("vɛns")
+    assert not ipa.endswith("vɛnsɛ")
+    _, ipa = respell_to_arpabet_ipa(["REV", "you", "forge"])
+    assert "juː" in ipa
+    assert ipa.endswith("dʒ")
+    assert "ɡɛ" not in ipa
 
 
 def test_respell_magic_e_requires_exactly_one_consonant():
