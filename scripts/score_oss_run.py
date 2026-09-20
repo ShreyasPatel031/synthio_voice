@@ -33,7 +33,7 @@ from dose_r.references.reference_clips import available_clips_all
 from dose_r.scoring.candidate_eval import score_against_best_reference
 from dose_r.scoring.phoneme_distance import best_phoneme_distance, rate_to_score
 from dose_r.scoring.phoneme_model import transcribe_phonemes
-from oss_eval_items import load_items
+from oss_eval_items import load_full_items, load_items
 
 PASS = 4.0
 
@@ -61,8 +61,8 @@ def _clips_by_drug() -> dict[str, list]:
     return out
 
 
-def score_condition(condition: str, wav_dir: Path) -> None:
-    items = load_items()
+def score_condition(condition: str, wav_dir: Path, *, item_set: str = "hard", f1_only: bool = False) -> None:
+    items = load_full_items() if item_set == "full" else load_items()
     clips = _clips_by_drug()
     out_dir = ROOT / "runs" / "oss-eval" / condition
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -91,7 +91,9 @@ def score_condition(condition: str, wav_dir: Path) -> None:
             continue
 
         ipa = item["ipa_variants"]
-        if not ipa:
+        if f1_only:
+            row["phoneme_scoreable"] = False
+        elif not ipa:
             row["phoneme_scoreable"] = False
             row["phoneme_error"] = "no gold IPA"
         else:
@@ -172,8 +174,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--condition", required=True)
     ap.add_argument("--wav-dir", required=True)
+    ap.add_argument("--set", choices=("hard", "full"), default="hard")
+    ap.add_argument("--f1-only", action="store_true")
     args = ap.parse_args()
-    score_condition(args.condition, Path(args.wav_dir))
+    score_condition(args.condition, Path(args.wav_dir), item_set=args.set, f1_only=args.f1_only)
 
 
 if __name__ == "__main__":

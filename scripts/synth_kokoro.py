@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from oss_eval_items import load_items
+from oss_eval_items import inject_respelling, load_full_items, load_items
 
 VOICE = "af_heart"
 
@@ -55,7 +55,8 @@ def _replace_drug_phonemes(tokens, drug: str, phones: str) -> None:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=("plain", "phoneme"), required=True)
+    ap.add_argument("--mode", choices=("plain", "phoneme", "respell"), required=True)
+    ap.add_argument("--set", choices=("hard", "full"), default="hard")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     out = Path(args.out)
@@ -64,13 +65,23 @@ def main():
     pipeline = KPipeline(lang_code="a", repo_id="hexgrad/Kokoro-82M", device=device)
     vocab = _vocab() if args.mode == "phoneme" else set()
     failures = []
-    for item in load_items():
+    items = load_full_items() if args.set == "full" else load_items()
+    print(f"items={len(items)} set={args.set}", flush=True)
+    for item in items:
         dest = out / f"{item['item_id']}.wav"
         if dest.exists() and dest.stat().st_size > 1000:
             continue
         try:
             if args.mode == "plain":
                 result = next(pipeline(item["sentence"], voice=VOICE, speed=1))
+                audio = result.audio
+            elif args.mode == "respell":
+                respelling = item.get("respelling")
+                if not respelling:
+                    raise ValueError("no dictionary respelling")
+                text = inject_respelling(item["sentence"], item["spoken"], respelling)
+                print("INJECT", item["item_id"], item["respelling_source"], respelling, flush=True)
+                result = next(pipeline(text, voice=VOICE, speed=1))
                 audio = result.audio
             else:
                 ipa = (item["ipa_variants"] or [None])[0]
