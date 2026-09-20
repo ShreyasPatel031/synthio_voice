@@ -12,6 +12,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.cache/
 
 # Run artifacts (audio + logs are large / regenerable)
 runs/
