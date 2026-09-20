@@ -38,6 +38,8 @@ def test_mw_optional_and_first_variant_only():
     assert mw_to_respelling("ˈvī-ˌvan(t)s") == "VYE-vants"
     # Second MW alternate is dropped; one string per name.
     assert mw_to_respelling("lə-ˈrat-ə-ˌdēn, -ˌdīn") == "luh-RAT-uh-deen"
+    # Same pair listed the other way: keep official `deen` (/diːn/), not `dyen`.
+    assert mw_to_respelling("fə-ˈmōt-ə-ˌdīn, -ˌdēn") == "fuh-MOHT-uh-deen"
 
 
 def test_is_canonical_rejects_mixed_formats():

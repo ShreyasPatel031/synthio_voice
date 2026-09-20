@@ -108,7 +108,7 @@ def test_ctc_iteration_sidecar_fixes():
         "Revuforj": "ˈrɛvjuːfɔːrdʒ",
         "Ubrelvy": "ˈjuːbrɛlviː",
         "Yuviwel": "ˈjuːvɪwɛll",
-        "famotidine": "fʌˈmoʊtʌdaɪn",
+        "famotidine": "fʌˈmoʊtʌdiːn",
     }
     got = {}
     for line in (root / "dose_r/references/pronunciations.jsonl").read_text().splitlines():
@@ -119,3 +119,5 @@ def test_ctc_iteration_sidecar_fixes():
     assert not want["Nuzolvence"].endswith("vɛnsɛ")
     assert "jɒʌ" not in want["Revuforj"]
     assert "djɛn" not in want["famotidine"]
+    assert "daɪn" not in want["famotidine"]
+    assert want["famotidine"].endswith("diːn")

@@ -191,7 +191,7 @@
 {"ingredient": "etanercept", "name_type": "generic", "respelling": "ee-TA-ner-cept", "source": "nci-dictionary-of-cancer-terms", "compact": "eetanercept", "ipa": "iːˈtænɛrsɛpt", "ipa_cloud": "iːˈtænɛrsɛpt"}
 {"ingredient": "exagamglogene autotemcel", "name_type": "generic", "respelling": "ex-GAM-gloe-jeen aw-toe-TEM-sel", "source": "usan-official", "compact": "exgamgloejeen awtoetemsel", "ipa": "ɛksˈɡæmɡloʊdʒiːn ɔːtoʊˈtɛmsɛl", "ipa_cloud": "ɛksˈɡæmɡloʊdʒiːn ɔːtoʊˈtɛmsɛl"}
 {"ingredient": "exenatide", "name_type": "generic", "respelling": "ex-EN-a-tide", "source": "usan-official", "compact": "exenatide", "ipa": "ɛksˈɛnætaɪd", "ipa_cloud": "ɛksˈɛnætaɪd"}
-{"ingredient": "famotidine", "name_type": "generic", "respelling": "fuh-MOHT-uh-dyen", "source": "merriam-webster/medical-api", "compact": "fuhmohtuhdyen", "ipa": "fʌˈmoʊtʌdaɪn", "ipa_cloud": "fʌˈmoʊtʌdaɪn"}
+{"ingredient": "famotidine", "name_type": "generic", "respelling": "fuh-MOHT-uh-deen", "source": "merriam-webster/medical-api", "compact": "fuhmohtuhdeen", "ipa": "fʌˈmoʊtʌdiːn", "ipa_cloud": "fʌˈmoʊtʌdiːn"}
 {"ingredient": "faricimab-svoa", "name_type": "generic", "respelling": "far-IK-i-mab", "source": "usan-official", "compact": "farikimab", "ipa": "fɑːrˈɪkɪmæb", "ipa_cloud": "fɑːrˈɪkɪmæb"}
 {"ingredient": "fezolinetant", "name_type": "generic", "respelling": "fez-oh-LIN-e-tant", "source": "usan-official", "compact": "fezohlinetant", "ipa": "fɛzoʊˈlɪnɛtænt", "ipa_cloud": "fɛzoʊˈlɪnɛtænt"}
 {"ingredient": "fluoxetine", "name_type": "generic", "respelling": "floo-OK-seh-teen", "source": "nci-dictionary-of-cancer-terms", "compact": "floooksehteen", "ipa": "fluːˈɒksɛtiːn", "ipa_cloud": "fluːˈɒksɛtiːn"}

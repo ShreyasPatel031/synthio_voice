@@ -119,19 +119,14 @@ def _one_primary(parts: list[str], inferred: bool = False) -> tuple[str, bool]:
     return "-".join(out), inferred
 
 
-def mw_to_respelling(raw: str) -> str | None:
-    """Merriam-Webster phonetic (`ə-ˈbi-lə-ˌfī`) -> `uh-BI-luh-fye`."""
-    variants = split_variants(unicodedata.normalize("NFC", raw))
-    if not variants:
-        return None
-    text = variants[0]
+def _mw_one_variant(text: str) -> str | None:
+    """One already-expanded MW phonetic string -> hyphenated ASCII, or None."""
     text = re.sub(r"\([ˈˌ]\)", "", text)
     # Keep optional-sound letters, drop the parentheses: van(t)s -> vants,
     # p(ə-)rən -> pə-rən.
     text = re.sub(r"\(([^)]*)\)", lambda m: m.group(1), text)
     text = text.replace("·", "-")
     parts: list[str] = []
-    inferred = False
     for syllable in text.split("-"):
         syllable = syllable.strip()
         if not syllable:
@@ -170,6 +165,33 @@ def mw_to_respelling(raw: str) -> str | None:
         return None
     canon, _ = _one_primary(parts, inferred=False)
     return canon or None
+
+
+def _prefer_official_idine_deen(canons: list[str]) -> str:
+    """MW lists both `dīn` and `dēn` for -idine names. Keep `deen`.
+
+    First-variant-only would store `/daɪn/` for famotidine even though the
+    same MW entry, AMA (`fa-MOE-ti-deen`), and the human clip all have
+    `/diːn/`. This is a choice among official strings, not a CTC paste.
+    """
+    deens = [c for c in canons if re.search(r"(?i)-deen$", c)]
+    dyens = [c for c in canons if re.search(r"(?i)-dyen$", c)]
+    if deens and dyens:
+        return deens[0]
+    return canons[0]
+
+
+def mw_to_respelling(raw: str) -> str | None:
+    """Merriam-Webster phonetic (`ə-ˈbi-lə-ˌfī`) -> `uh-BI-luh-fye`."""
+    variants = split_variants(unicodedata.normalize("NFC", raw))
+    converted: list[str] = []
+    for text in variants:
+        got = _mw_one_variant(text)
+        if got and got not in converted:
+            converted.append(got)
+    if not converted:
+        return None
+    return _prefer_official_idine_deen(converted)
 
 
 def _looks_mw(raw: str) -> bool:
