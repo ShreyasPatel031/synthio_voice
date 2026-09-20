@@ -40,6 +40,7 @@ from dose_r.references.tts_pronunciation import (  # noqa: E402
     compact_ascii,
     custom_pronunciation,
     ipa_from_canonical,
+    to_cloud_en_us_ipa,
 )
 
 ENDPOINT = "https://texttospeech.googleapis.com/v1/text:synthesize"
@@ -179,8 +180,11 @@ def write_listen(rows: list[dict], tts_dir: Path, holdout: set[str]) -> None:
             ("3_compact", tts_dir / f"{slug}.compact.wav"),
             ("4_ipa", tts_dir / f"{slug}.ipa.wav"),
         ):
+            src_path = Path(src)
+            if not src_path.exists():
+                continue
             dest = LISTEN / f"{slug}__{label}.wav"
-            dest.write_bytes(Path(src).read_bytes())
+            dest.write_bytes(src_path.read_bytes())
         parts.append(f"<section id='{slug}'><h2>{rec['ingredient']}</h2>")
         parts.append(
             f"<p>canonical: <span class='ipa'>{rec['respelling']}</span><br>"
@@ -190,8 +194,9 @@ def write_listen(rows: list[dict], tts_dir: Path, holdout: set[str]) -> None:
         parts.append(
             f"<p class='meta'>plain {rec['plain']:.3f} &nbsp; "
             f"compact {rec['compact_f1']:.3f} ({rec['delta_compact']:+.3f}) &nbsp; "
-            f"ipa {rec['ipa_f1']:.3f} ({rec['delta_ipa']:+.3f}) &nbsp; "
-            f"spaced {rec['spaced_f1']:.3f}</p>"
+            f"ipa {rec['ipa_f1'] if rec['ipa_f1'] is not None else 'n/a'}"
+            f"{'' if rec['delta_ipa'] is None else f' ({rec['delta_ipa']:+.3f})'} &nbsp; "
+            f"spaced {rec['spaced_f1'] if rec['spaced_f1'] is not None else 'n/a'}</p>"
         )
         parts.append(f"<label>1. Human</label><audio controls src='{slug}__1_human.wav'></audio>")
         parts.append(f"<label>2. Plain spelling</label><audio controls src='{slug}__2_plain.wav'></audio>")
@@ -238,26 +243,35 @@ def main() -> int:
         human = clip.path.read_bytes()
         canon = rec["respelling"]
         compact = compact_ascii(canon)
-        ipa = ipa_from_canonical(canon)
+        ipa = to_cloud_en_us_ipa(ipa_from_canonical(canon))
 
         plain_path = tts_dir / f"{slug}.plain.wav"
         if not plain_path.exists() and (prior_tts / f"{slug}.plain.wav").exists():
             plain_path.write_bytes((prior_tts / f"{slug}.plain.wav").read_bytes())
         plain = cached(plain_path, tok, project, text=ing)
         comp = cached(tts_dir / f"{slug}.compact.wav", tok, project, text=compact)
-        ipa_wav = cached(
-            tts_dir / f"{slug}.ipa.wav",
-            tok,
-            project,
-            text=ing,
-            pronunciations=custom_pronunciation(ing, ipa),
-        )
+        ipa_path = tts_dir / f"{slug}.ipa.wav"
+        ipa_err = None
+        try:
+            ipa_wav = cached(
+                ipa_path,
+                tok,
+                project,
+                text=ing,
+                pronunciations=custom_pronunciation(ing, ipa),
+            )
+        except RuntimeError as exc:
+            ipa_err = str(exc)[:240]
+            ipa_wav = None
+            print(f"IPA FAIL {ing}: {ipa_err}", flush=True)
 
         prev = prior.get(slug, {})
+        compact_score = f1(comp, human)
+        ipa_score = f1(ipa_wav, human) if ipa_wav is not None else None
         scores = {
             "plain": prev["plain"] if "plain" in prev else f1(plain, human),
-            "compact": f1(comp, human),
-            "ipa": f1(ipa_wav, human),
+            "compact": compact_score,
+            "ipa": ipa_score,
             "spaced": prev.get("spaced_f1"),
         }
         row = {
@@ -268,24 +282,30 @@ def main() -> int:
             "respelling": canon,
             "compact": compact,
             "ipa": ipa,
+            "ipa_error": ipa_err,
             "human_path": str(clip.path),
             "plain": scores["plain"],
             "compact_f1": scores["compact"],
             "ipa_f1": scores["ipa"],
             "spaced_f1": scores["spaced"],
             "delta_compact": round(scores["compact"] - scores["plain"], 4),
-            "delta_ipa": round(scores["ipa"] - scores["plain"], 4),
+            "delta_ipa": (
+                round(scores["ipa"] - scores["plain"], 4) if scores["ipa"] is not None else None
+            ),
             "dur_human": round(clip.duration_s, 3),
             "dur_plain": round(wav_duration_s(plain), 3),
             "dur_compact": round(wav_duration_s(comp), 3),
-            "dur_ipa": round(wav_duration_s(ipa_wav), 3),
+            "dur_ipa": round(wav_duration_s(ipa_wav), 3) if ipa_wav is not None else None,
             "in_holdout": ing in holdout,
         }
         rows.append(row)
+        ipa_s = "na" if scores["ipa"] is None else f"{scores['ipa']:.3f}"
+        dlt = row["delta_ipa"]
+        dlt_s = "na" if dlt is None else f"{dlt:+.3f}"
         print(
             f"{i:3d}/{len(items)} {ing:28s} plain={scores['plain']:.3f} "
             f"compact={scores['compact']:.3f} ({row['delta_compact']:+.3f}) "
-            f"ipa={scores['ipa']:.3f} ({row['delta_ipa']:+.3f})",
+            f"ipa={ipa_s} ({dlt_s})",
             flush=True,
         )
 
@@ -294,32 +314,52 @@ def main() -> int:
         xs = [r[key] for r in xs if r.get(key) is not None]
         return sum(xs) / len(xs) if xs else None
 
+    def rmean(key, subset=None):
+        m = mean(key, subset)
+        return round(m, 4) if m is not None else None
+
+    def rmean3(key, subset=None):
+        m = mean(key, subset)
+        return round(m, 3) if m is not None else None
+
     hold_rows = [r for r in rows if r["in_holdout"]]
     summary = {
         "n": len(rows),
         "voice": VOICE,
-        "mean_plain": round(mean("plain"), 4),
-        "mean_compact": round(mean("compact_f1"), 4),
-        "mean_ipa": round(mean("ipa_f1"), 4),
-        "mean_spaced": round(mean("spaced_f1"), 4) if mean("spaced_f1") else None,
-        "mean_delta_compact": round(mean("delta_compact"), 4),
-        "mean_delta_ipa": round(mean("delta_ipa"), 4),
+        "mean_plain": rmean("plain"),
+        "mean_compact": rmean("compact_f1"),
+        "mean_ipa": rmean("ipa_f1"),
+        "mean_spaced": rmean("spaced_f1"),
+        "mean_delta_compact": rmean("delta_compact"),
+        "mean_delta_ipa": rmean("delta_ipa"),
         "compact_beats_plain": sum(1 for r in rows if r["delta_compact"] > 0.01),
-        "ipa_beats_plain": sum(1 for r in rows if r["delta_ipa"] > 0.01),
+        "ipa_beats_plain": sum(
+            1 for r in rows if r["delta_ipa"] is not None and r["delta_ipa"] > 0.01
+        ),
         "compact_worse": sum(1 for r in rows if r["delta_compact"] < -0.01),
-        "ipa_worse": sum(1 for r in rows if r["delta_ipa"] < -0.01),
+        "ipa_worse": sum(
+            1 for r in rows if r["delta_ipa"] is not None and r["delta_ipa"] < -0.01
+        ),
+        "ipa_errors": sum(1 for r in rows if r.get("ipa_error")),
         "holdout_n": len(hold_rows),
-        "holdout_mean_plain": round(mean("plain", hold_rows), 4) if hold_rows else None,
-        "holdout_mean_compact": round(mean("compact_f1", hold_rows), 4) if hold_rows else None,
-        "holdout_mean_ipa": round(mean("ipa_f1", hold_rows), 4) if hold_rows else None,
-        "mean_dur_human": round(mean("dur_human"), 3),
-        "mean_dur_plain": round(mean("dur_plain"), 3),
-        "mean_dur_compact": round(mean("dur_compact"), 3),
-        "mean_dur_ipa": round(mean("dur_ipa"), 3),
+        "holdout_mean_plain": rmean("plain", hold_rows) if hold_rows else None,
+        "holdout_mean_compact": rmean("compact_f1", hold_rows) if hold_rows else None,
+        "holdout_mean_ipa": rmean("ipa_f1", hold_rows) if hold_rows else None,
+        "mean_dur_human": rmean3("dur_human"),
+        "mean_dur_plain": rmean3("dur_plain"),
+        "mean_dur_compact": rmean3("dur_compact"),
+        "mean_dur_ipa": rmean3("dur_ipa"),
         "best_compact": sorted(rows, key=lambda r: r["delta_compact"], reverse=True)[:8],
-        "best_ipa": sorted(rows, key=lambda r: r["delta_ipa"], reverse=True)[:8],
+        "best_ipa": sorted(
+            [r for r in rows if r["delta_ipa"] is not None],
+            key=lambda r: r["delta_ipa"],
+            reverse=True,
+        )[:8],
         "worst_compact": sorted(rows, key=lambda r: r["delta_compact"])[:8],
-        "worst_ipa": sorted(rows, key=lambda r: r["delta_ipa"])[:8],
+        "worst_ipa": sorted(
+            [r for r in rows if r["delta_ipa"] is not None],
+            key=lambda r: r["delta_ipa"],
+        )[:8],
     }
     skip = {"best_compact", "best_ipa", "worst_compact", "worst_ipa"}
     print("\nMEANS", json.dumps({k: summary[k] for k in summary if k not in skip}), flush=True)

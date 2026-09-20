@@ -53,6 +53,26 @@ def ipa_from_canonical(canonical: str) -> str:
     return " ".join(parts)
 
 
+# Cloud TTS en-US customPronunciations rejects British centering
+# diphthongs (Lyrica `ˈlɪərɪkɑː` -> HTTP 400). Fold them to the rhotic
+# sequences in Google's published en-US inventory. Other non-US symbols
+# (`ɒ`, `ɜː`, `ɛə`) have been accepted on this voice and are left alone.
+_CLOUD_EN_US = (
+    ("ɪər", "ɪr"),
+    ("ɪə", "ɪr"),
+    ("ʊər", "ʊr"),
+    ("ʊə", "ʊr"),
+)
+
+
+def to_cloud_en_us_ipa(ipa: str) -> str:
+    """Rewrite IPA so Cloud TTS en-US customPronunciations will accept it."""
+    out = ipa
+    for src, dst in _CLOUD_EN_US:
+        out = out.replace(src, dst)
+    return out
+
+
 def custom_pronunciation(phrase: str, ipa: str) -> dict:
     """Cloud TTS `SynthesisInput.customPronunciations` block.
 
