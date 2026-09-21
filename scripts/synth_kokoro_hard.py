@@ -33,13 +33,20 @@ from kokoro import KPipeline
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from dose_r.misaki_fold import (  # noqa: E402
+    STRESSES,
+    VOWELS,
+    fold_documented,
+    ipa_pieces,
+    ipa_to_misaki,
+    restress,
+)
+
 GOLD_MANIFEST = ROOT / "data" / "gold_gemini_ipa" / "manifest.jsonl"
 DOSE = ROOT / "data" / "dose_v1.jsonl"
 HARD = ROOT / "runs" / "hard-subset-v1.json"
 VOICE = "af_heart"
 ARMS = ("plain", "ipa", "stress", "docs", "lexicon")
-STRESSES = "ˌˈ"
-VOWELS = frozenset("AIOQWYaiuæɑɒɔəɛɜɪʊʌᵻ")
 
 
 def slug(name: str) -> str:
@@ -49,100 +56,6 @@ def slug(name: str) -> str:
 def vocab() -> set[str]:
     path = hf_hub_download("hexgrad/Kokoro-82M", "config.json")
     return set(json.loads(Path(path).read_text())["vocab"])
-
-
-def ipa_to_misaki(raw: str, symbols: set[str]) -> str:
-    """Fold published IPA into Misaki's American symbols. Do not invent phones."""
-    s = raw.strip().strip("/[]")
-    # Slashes in the gold string are separators, not phonemes
-    # (e.g. a two-word name stored as "ipa/ /ipa").
-    s = s.replace("/", "")
-    s = s.replace("'", "ˈ").replace(".", "")
-    for old, new in (
-        ("tʃ", "ʧ"),
-        ("dʒ", "ʤ"),
-        ("eɪ", "A"),
-        ("aɪ", "I"),
-        ("aʊ", "W"),
-        ("ɔɪ", "Y"),
-        ("oʊ", "O"),
-        ("əʊ", "O"),
-        ("ɝ", "ɜɹ"),
-        ("ɚ", "əɹ"),
-    ):
-        s = s.replace(old, new)
-    s = s.replace("ː", "").replace("r", "ɹ").replace("g", "ɡ").replace(" ", "")
-    missing = sorted({ch for ch in s if ch not in symbols})
-    if missing:
-        raise ValueError(f"not in Misaki vocab: {missing} from {raw!r} -> {s!r}")
-    return s
-
-
-def ipa_pieces(raw: str) -> list[str]:
-    return [p for p in re.split(r"[\s/]+", raw.strip()) if p]
-
-
-def fold_documented(raw: str, symbols: set[str]) -> str:
-    """American fold from misaki EN_PHONES.md (from_espeak) and en.G2P.
-
-    https://github.com/hexgrad/misaki/blob/main/EN_PHONES.md
-    Longest tie/diphthong first, then the American-only rewrites:
-    bare e→A, leftover o→ɔ, ɜː→ɜɹ, ɪə→iə, ː dropped.
-    British-only symbols become their American pair (a→æ, ɒ→ɑ).
-    Live G2P then rewrites ɾ→T and ʔ→t unless version is 2.0.
-    """
-    s = raw.strip().strip("/[]").replace("'", "ˈ").replace(".", "")
-    for old, new in (
-        ("tʃ", "ʧ"),
-        ("dʒ", "ʤ"),
-        ("eɪ", "A"),
-        ("aɪ", "I"),
-        ("aʊ", "W"),
-        ("ɔɪ", "Y"),
-        ("oʊ", "O"),
-        ("əʊ", "O"),
-        ("ɝ", "ɜɹ"),
-        ("ɚ", "əɹ"),
-        ("ɜːɹ", "ɜɹ"),
-        ("ɜː", "ɜɹ"),
-        ("ɐ", "ə"),
-        ("x", "k"),
-        ("ç", "k"),
-    ):
-        s = s.replace(old, new)
-    # After eɪ is gone, so this does not rewrite the ɪ inside eɪ.
-    s = s.replace("ɪə", "iə")
-    s = s.replace("ː", "")
-    s = s.replace("r", "ɹ").replace("g", "ɡ")
-    s = s.replace("e", "A").replace("o", "ɔ")
-    s = s.replace("a", "æ").replace("ɒ", "ɑ")
-    s = re.sub(r"(\S)\u0329", r"ᵊ\1", s)
-    s = s.replace("ɾ", "T").replace("ʔ", "t")
-    s = s.replace(" ", "")
-    missing = sorted({ch for ch in s if ch not in symbols})
-    if missing:
-        raise ValueError(f"not in Misaki vocab: {missing} from {raw!r} -> {s!r}")
-    return s
-
-
-def restress(ps: str) -> str:
-    """Misaki's restress: ˈ and ˌ move to immediately before the next vowel.
-
-    IPA writes the tick at the start of the syllable (ˈɹɪn). Kokoro was
-    trained on the tick sitting in front of the vowel (ɹˈɪn).
-    """
-    ips = list(enumerate(ps))
-    moved = {}
-    for i, p in ips:
-        if p not in STRESSES:
-            continue
-        nxt = next((j for j, v in ips[i + 1 :] if v in VOWELS), None)
-        if nxt is None:
-            raise ValueError(f"stress with no following vowel: {ps!r}")
-        moved[i] = nxt
-    for i, j in moved.items():
-        ips[i] = (j - 0.5, ips[i][1])
-    return "".join(p for _, p in sorted(ips))
 
 
 def load_gold() -> dict[str, str]:

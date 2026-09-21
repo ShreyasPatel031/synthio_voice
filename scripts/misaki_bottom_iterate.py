@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Three passes over the bottom half of the full DoSE Kokoro benchmark.
+"""Bottom-half Kokoro search seeded from locked gold IPA.
 
-Starts from plain Misaki and the documented American fold of gold IPA
-(EN_PHONES.md). Does not write data/gold_gemini_ipa. Each pass takes the
-drugs in the lower half of sentence CTC F1, tries five Misaki strings,
-and keeps a string only when the sentence cut beats the current one.
+Starts from plain Misaki vs the documented American fold of gold IPA.
+Does not write data/gold_gemini_ipa. A stored string is kept only when
+sentence CTC F1 beats the current one by more than 0.005. Candidates are
+gold-IPA folds, not Gemini guesses or last-vowel roulette.
 
 Every candidate is appended to runs/misaki-iter/iterations.jsonl.
 """
@@ -47,6 +47,8 @@ replace_drug = _kokoro.replace_drug
 restress = _kokoro.restress
 slug = _kokoro.slug
 vocab = _kokoro.vocab
+
+from dose_r.misaki_fold import gold_misaki_candidates  # noqa: E402
 
 VOICE = "af_heart"
 ROUNDS = 3
@@ -371,7 +373,6 @@ def main() -> None:
         flush=True,
     )
 
-    emb_cache = {}
     for rnd in range(1, ROUNDS + 1):
         ranked = sorted(best_f1, key=lambda k: best_f1[k])
         half = ranked[: max(1, len(ranked) // 2)]
@@ -384,68 +385,40 @@ def main() -> None:
             gold = gold_wav(it["drug"])
             if gold is None:
                 continue
-            cands = []
+            ipa = gold_ipa.get(it["drug"].lower(), "")
+            cands: list[str] = []
+            for _, extra in gold_misaki_candidates(ipa, it["spoken"], symbols) if ipa else []:
+                if extra and extra not in cands:
+                    cands.append(extra)
             for extra in (phones_plain.get(key), phones_docs.get(key)):
                 if extra and extra not in cands:
                     cands.append(extra)
-            for v in variants(current, symbols):
-                if v not in cands:
-                    cands.append(v)
             cands = [c for c in cands if c != current][:N_VARIANTS]
-            if key not in emb_cache:
-                emb_cache[key] = extract_frame_embeddings(gold.read_bytes())
             scored = []
             for j, phones in enumerate(cands):
-                iso = trial_dir / "iso" / f"{key}-{j}.wav"
+                sent_try = trial_dir / "sent" / f"{key}-{j}.wav"
                 try:
-                    write_isolated(pipeline, phones, iso)
-                    f1 = isolated_f1(iso, emb_cache[key])
+                    write_sentence(pipeline, it, phones, sent_try, speed=1.0)
+                    f1 = sentence_f1(sent_try, it, gold)
                 except Exception as exc:
                     print("variant fail", key, exc, flush=True)
                     continue
-                scored.append((f1, phones, iso))
+                if f1 is None:
+                    continue
+                scored.append((f1, phones, sent_try))
                 log_row({
                     "round": rnd,
                     "slug": key,
                     "drug": it["drug"],
                     "phonemes": phones,
-                    "isolated_f1": round(f1, 4),
+                    "sentence_f1": round(f1, 4),
+                    "source": "gold-seed",
                     "kept": False,
                 })
             if not scored:
                 continue
             scored.sort(key=lambda row: -row[0])
-            # Gemini hears the target and the current best isolated attempt.
-            if n <= 15:
-                proposal = gemini_proposal(gold, scored[0][2], current, symbols)
-                if proposal and proposal not in {current, *(p for _, p, _ in scored)}:
-                    iso = trial_dir / "iso" / f"{key}-g.wav"
-                    try:
-                        write_isolated(pipeline, proposal, iso)
-                        f1 = isolated_f1(iso, emb_cache[key])
-                        scored.append((f1, proposal, iso))
-                        log_row({
-                            "round": rnd,
-                            "slug": key,
-                            "drug": it["drug"],
-                            "phonemes": proposal,
-                            "isolated_f1": round(f1, 4),
-                            "source": "gemini",
-                            "kept": False,
-                        })
-                    except Exception as exc:
-                        print("gemini variant fail", key, exc, flush=True)
-            scored.sort(key=lambda row: -row[0])
-            _, phones, _ = scored[0]
-            sent = trial_dir / "sent" / f"{key}.wav"
-            try:
-                write_sentence(pipeline, it, phones, sent)
-                f1 = sentence_f1(sent, it, gold)
-            except Exception as exc:
-                print("sentence fail", key, exc, flush=True)
-                continue
-            if f1 is None:
-                continue
+            f1, phones, sent = scored[0]
             kept = f1 > best_f1[key] + 0.005
             log_row({
                 "round": rnd,
