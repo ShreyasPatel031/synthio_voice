@@ -11,9 +11,9 @@ This loop:
   * synthesizes at speed 1.0 on GPU
   * never calls Gemini and never swaps a vowel just to chase F1
   * freezes names in user_pins.json
-  * replaces a stored string only when a gold-derived candidate wins F1
-    by more than 0.005, or immediately when the stored string is not a
-    gold-IPA fold (that is the drift the old loop introduced)
+  * replaces a stored string only when a gold-derived candidate beats it
+    by more than 0.005 sentence CTC F1, scored at the same speed
+  * never overwrites a string that is winning on F1
 
 Does not write data/gold_gemini_ipa.
 """
@@ -136,8 +136,7 @@ def main(argv: list[str] | None = None) -> int:
         gold_set = {p for _, p in cands}
         current_is_gold = current in gold_set
         to_score: list[tuple[str, str]] = []
-        # Drifted strings scored higher by gaming CTC. Do not resynth them.
-        if current and current_is_gold:
+        if current:
             to_score.append(("current", current))
         for src, phones in cands:
             if phones != current:
@@ -180,26 +179,23 @@ def main(argv: list[str] | None = None) -> int:
         if not gold_rows:
             print("no gold cand", key, flush=True)
             continue
-        best_gold = max(gold_rows, key=lambda r: r[0])
+        best_gold = max(gold_rows, key=lambda r: r[0]) if gold_rows else None
         current_f1 = current_row[0] if current_row else best_f1.get(key)
-        if not current_is_gold:
-            keep = True
-            reason = "reset-drift"
-        elif current_f1 is None:
-            keep = True
-            reason = "no-current"
+        if best_gold is None or current_f1 is None:
+            keep = False
+            reason = "keep-current"
         else:
             keep = best_gold[2] != current and best_gold[0] > current_f1 + KEEP_DELTA
-            reason = "gold-better" if keep else "keep-current-gold"
+            reason = "gold-better" if keep else "keep-current"
         row = {
             "slug": key,
             "ipa": ipa,
             "current": current,
             "current_is_gold": current_is_gold,
             "current_f1": None if current_f1 is None else round(current_f1, 4),
-            "gold_src": best_gold[1],
-            "gold_misaki": best_gold[2],
-            "gold_f1": round(best_gold[0], 4),
+            "gold_src": None if best_gold is None else best_gold[1],
+            "gold_misaki": None if best_gold is None else best_gold[2],
+            "gold_f1": None if best_gold is None else round(best_gold[0], 4),
             "decision": reason,
             "kept": keep,
         }
@@ -208,24 +204,22 @@ def main(argv: list[str] | None = None) -> int:
             "round": "gold-seed",
             "slug": key,
             "drug": it["drug"],
-            "phonemes": best_gold[2] if keep else current,
-            "sentence_f1": round(best_gold[0] if keep else (current_f1 or 0), 4),
+            "phonemes": best_gold[2] if keep and best_gold else current,
+            "sentence_f1": round((best_gold[0] if keep and best_gold else current_f1) or 0, 4),
             "previous_f1": None if current_f1 is None else round(current_f1, 4),
             "speed": SPEED,
             "source": reason,
             "kept": keep,
         })
-        if keep:
+        if keep and best_gold is not None:
             best_f1[key] = best_gold[0]
             best_phones[key] = best_gold[2]
             (best_dir / f"{key}.wav").write_bytes(best_gold[3].read_bytes())
             switched += 1
-        elif current_row is not None:
-            # Stored F1 was speed 0.5. Refresh the number at speed 1 if we kept current.
-            best_f1[key] = current_row[0]
         print(
             f"{n}/{len(keys)} {key} {reason} "
-            f"cur={row['current_f1']} gold={row['gold_f1']} {best_gold[2]}",
+            f"cur={row['current_f1']} gold={row['gold_f1']} "
+            f"{(best_gold[2] if best_gold else current)}",
             flush=True,
         )
         if n % 10 == 0:
