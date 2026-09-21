@@ -11,8 +11,9 @@ This loop:
   * synthesizes at speed 1.0 on GPU
   * never calls Gemini and never swaps a vowel just to chase F1
   * freezes names in user_pins.json
-  * replaces a stored string only when a gold-derived candidate wins F1,
-    or when the stored string is not gold-derived and gold is within 0.01
+  * replaces a stored string only when a gold-derived candidate wins F1
+    by more than 0.005, or immediately when the stored string is not a
+    gold-IPA fold (that is the drift the old loop introduced)
 
 Does not write data/gold_gemini_ipa.
 """
@@ -47,7 +48,6 @@ STORE = _iter.STORE
 WAV_ROOT = _iter.WAV_ROOT
 SPEED = 1.0
 KEEP_DELTA = 0.005
-DRIFT_SLACK = 0.01
 PINS = STORE / "user_pins.json"
 GOLD_SYNC = STORE / "gold-sync"
 REPORT = STORE / "gold-seed-report.json"
@@ -136,7 +136,8 @@ def main(argv: list[str] | None = None) -> int:
         gold_set = {p for _, p in cands}
         current_is_gold = current in gold_set
         to_score: list[tuple[str, str]] = []
-        if current:
+        # Drifted strings scored higher by gaming CTC. Do not resynth them.
+        if current and current_is_gold:
             to_score.append(("current", current))
         for src, phones in cands:
             if phones != current:
@@ -168,22 +169,25 @@ def main(argv: list[str] | None = None) -> int:
             continue
         current_row = next((r for r in scored if r[1] == "current"), None)
         gold_rows = [r for r in scored if r[1] != "current"]
-        if not gold_rows:
+        if not gold_rows and current_is_gold:
             rows.append({
                 "slug": key,
-                "decision": "no-gold-cand",
+                "decision": "already-gold",
                 "current": current,
                 "ipa": ipa,
             })
             continue
+        if not gold_rows:
+            print("no gold cand", key, flush=True)
+            continue
         best_gold = max(gold_rows, key=lambda r: r[0])
         current_f1 = current_row[0] if current_row else best_f1.get(key)
-        if current_f1 is None:
+        if not current_is_gold:
+            keep = True
+            reason = "reset-drift"
+        elif current_f1 is None:
             keep = True
             reason = "no-current"
-        elif not current_is_gold:
-            keep = best_gold[0] >= current_f1 - DRIFT_SLACK
-            reason = "reset-drift" if keep else "gold-too-low"
         else:
             keep = best_gold[2] != current and best_gold[0] > current_f1 + KEEP_DELTA
             reason = "gold-better" if keep else "keep-current-gold"
