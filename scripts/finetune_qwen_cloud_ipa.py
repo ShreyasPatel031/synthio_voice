@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fine-tune Qwen3-TTS on cloud IPA teacher clips; compare plain vs FT F1.
 
-Train: spoken_text -> en-US-Standard-C teacher wav (data/finetune_cloud_ipa).
+Train: spoken_text -> Gemini 3.1 + validated IPA teacher wav (data/gold_gemini_ipa).
 Eval (167 scored names): synthesize spoken_text only, score SpeechBERTScore
 F1 against (1) human reference clips and (2) the teacher wav itself.
 """
@@ -17,8 +17,8 @@ import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACK = ROOT / "data" / "finetune_cloud_ipa"
-REF_AUDIO = str(ROOT / "data" / "finetune_cloud_ipa" / "qwen_ref_clone.wav")
+PACK = ROOT / "data" / "gold_gemini_ipa"
+REF_AUDIO = "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-TTS-Repo/clone.wav"
 REF_AUDIO_URL = "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-TTS-Repo/clone.wav"
 REF_TEXT = (
     "Okay. Yeah. I resent you. I love you. I respect you. But you know what? "

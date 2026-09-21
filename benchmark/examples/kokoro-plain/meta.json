@@ -1,0 +1,58 @@
+[
+  {
+    "drug": "Abilify",
+    "sentence": "We plan to start Abilify at ten milligrams daily to help manage the patient's schizophrenia symptoms effectively.",
+    "slug": "abilify",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/abilify.wav"
+  },
+  {
+    "drug": "Advair",
+    "sentence": "We are starting the patient on Advair twice daily because combining an inhaled corticosteroid with a LABA will better control her asthma symptoms.",
+    "slug": "advair",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/advair.wav"
+  },
+  {
+    "drug": "Aspirin",
+    "sentence": "I recommend taking this coated Aspirin with plenty of water to help manage your minor aches and pains throughout the day.",
+    "slug": "aspirin",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/aspirin.wav"
+  },
+  {
+    "drug": "Benadryl",
+    "sentence": "You can administer Benadryl to help relieve your child's sneezing and runny nose caused by upper respiratory allergies.",
+    "slug": "benadryl",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/benadryl.wav"
+  },
+  {
+    "drug": "Eliquis",
+    "sentence": "We should start the patient on Eliquis twice daily to reduce their risk of stroke from nonvalvular atrial fibrillation.",
+    "slug": "eliquis",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/eliquis.wav"
+  },
+  {
+    "drug": "tezacaftor",
+    "sentence": "Starting elexacaftor, tezacaftor, and ivacaftor will help facilitate CFTR protein trafficking and restore essential chloride transport.",
+    "slug": "tezacaftor",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/tezacaftor.wav"
+  },
+  {
+    "drug": "vorasidenib",
+    "sentence": "Let's initiate vorasidenib therapy for this patient to target the mutant IDH1 and IDH2 enzymes in the tumor.",
+    "slug": "vorasidenib",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/vorasidenib.wav"
+  },
+  {
+    "drug": "Veppanu",
+    "sentence": "We can initiate oral Veppanu now that plasma testing confirmed an ESR1 mutation in her metastatic breast cancer.",
+    "slug": "veppanu",
+    "span_ok": true,
+    "gold": "data/gold_gemini_ipa/wavs/veppanu.wav"
+  }
+]

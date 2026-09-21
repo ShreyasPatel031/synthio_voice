@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "runs" / "listen-qwen-ft-vs-plain"
 PLAIN = ROOT / "runs" / "finetune-qwen-cloud-ipa" / "qwen17-plain-synth"
 FT = ROOT / "runs" / "finetune-qwen-cloud-ipa" / "qwen17-ft-synth"
-TEACH = ROOT / "data" / "finetune_cloud_ipa" / "wavs"
+TEACH = ROOT / "data" / "gold_gemini_ipa" / "wavs"
 
 
 def slug(name: str) -> str:
@@ -24,7 +24,7 @@ def main() -> None:
     OUT.mkdir(parents=True)
 
     manifest = {}
-    for line in (ROOT / "data" / "finetune_cloud_ipa" / "manifest.jsonl").open():
+    for line in (ROOT / "data" / "gold_gemini_ipa" / "manifest.jsonl").open():
         row = json.loads(line)
         manifest[row["ingredient"].lower()] = row
     plain, ft = {}, {}

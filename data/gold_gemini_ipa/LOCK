@@ -1,0 +1,7 @@
+LOCKED
+
+ipa.json, manifest.jsonl, summary.json, and wavs/ are read-only.
+
+Do not regenerate. Do not resynthesize. Do not chmod.
+
+Change only after the user explicitly approves that specific edit, and only after appending the reason to changes.jsonl.

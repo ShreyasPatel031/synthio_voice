@@ -12,5 +12,8 @@ It does not G2P `a-TA-ki-sept` / `zoe-li-floe-DAY-sin`.
 (`zye-de-SAM-ti-nib`) to Gemini 3.1 Flash TTS and scores it against
 the human clip and Cloud Standard-C + source IPA.
 
+`eval_gemini31_ipa_vs_cloud.py` is Gemini 3.1 Flash TTS + the same
+source IPA Cloud already accepted, vs Cloud Standard-C + IPA.
+
 See `dose_r/references/README.md` and `.cursor/rules/no-respelling-to-ipa.mdc`.
 """

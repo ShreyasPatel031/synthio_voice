@@ -1,0 +1,73 @@
+<!DOCTYPE html><html><head><meta charset=utf-8>
+<title>DoSE benchmark — Kokoro plain vs gold Gemini IPA</title>
+<style>body{font:16px/1.45 -apple-system,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem}
+blockquote{margin:.3rem 0 1rem;color:#333} label{display:block;margin:.4rem 0 .05rem;font-weight:600}
+audio{width:100%} h2{margin-top:2rem} .note{color:#444}</style></head><body>
+<h1>Official DoSE benchmark examples</h1>
+<p class="note">Kokoro plain on the DoSE sentence, then the CTC cut of the drug name, then the gold teacher. Gold is <code>data/gold_gemini_ipa</code> (validated IPA, Gemini 3.1 Kore). Do not edit that IPA.</p>
+
+<h2>Abilify</h2>
+<blockquote>We plan to start Abilify at ten milligrams daily to help manage the patient's schizophrenia symptoms effectively.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='abilify__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='abilify__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='abilify__gemini.mp3'></audio>
+<h2>Advair</h2>
+<blockquote>We are starting the patient on Advair twice daily because combining an inhaled corticosteroid with a LABA will better control her asthma symptoms.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='advair__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='advair__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='advair__gemini.mp3'></audio>
+<h2>Aspirin</h2>
+<blockquote>I recommend taking this coated Aspirin with plenty of water to help manage your minor aches and pains throughout the day.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='aspirin__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='aspirin__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='aspirin__gemini.mp3'></audio>
+<h2>Benadryl</h2>
+<blockquote>You can administer Benadryl to help relieve your child's sneezing and runny nose caused by upper respiratory allergies.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='benadryl__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='benadryl__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='benadryl__gemini.mp3'></audio>
+<h2>Eliquis</h2>
+<blockquote>We should start the patient on Eliquis twice daily to reduce their risk of stroke from nonvalvular atrial fibrillation.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='eliquis__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='eliquis__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='eliquis__gemini.mp3'></audio>
+<h2>tezacaftor</h2>
+<blockquote>Starting elexacaftor, tezacaftor, and ivacaftor will help facilitate CFTR protein trafficking and restore essential chloride transport.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='tezacaftor__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='tezacaftor__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='tezacaftor__gemini.mp3'></audio>
+<h2>Veppanu</h2>
+<blockquote>We can initiate oral Veppanu now that plasma testing confirmed an ESR1 mutation in her metastatic breast cancer.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='veppanu__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='veppanu__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='veppanu__gemini.mp3'></audio>
+<h2>vorasidenib</h2>
+<blockquote>Let's initiate vorasidenib therapy for this patient to target the mutant IDH1 and IDH2 enzymes in the tumor.</blockquote>
+<label>Kokoro plain — full sentence</label>
+<audio controls src='vorasidenib__kokoro_full.mp3'></audio>
+<label>Kokoro plain — CTC cut</label>
+<audio controls src='vorasidenib__kokoro_span.mp3'></audio>
+<label>Gold Gemini IPA — isolated name</label>
+<audio controls src='vorasidenib__gemini.mp3'></audio>
+</body></html>
