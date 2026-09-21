@@ -103,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
             gold_set = {p for _, p in gold_misaki_candidates(ipa, it["spoken"], symbols)}
             if best_phones.get(key, "") not in gold_set:
                 drifted.append(key)
-        keys = drifted
+        keys = sorted(drifted, key=lambda k: best_f1.get(k, 1.0))
     if args.limit:
         keys = keys[: args.limit]
 
