@@ -160,15 +160,28 @@ systems:
     voice: en-US-AvaMultilingualNeural
     pricing: {id: azure/neural, as_of: "2026-09-17", verified: false, per_million_characters_usd: 0.0}
 
-  # --- planned: self-hosted open source on a GCP GPU VM ---------------------
-  # No per-call price: cost is VM-hours amortised over the run, so it is
-  # recorded as per_second_audio_usd derived from the VM rate at run time.
+  # --- self-hosted open source (OpenAI-compatible /v1/audio/speech) ---------
+  # No per-call price: cost is Cloud Run / VM hours amortised over the run.
+  # Set options.base_url (or OSS_TTS_BASE_URL) to the live service URL.
   oss-selfhosted:
     backend: openai_compatible_http
     tier: open_source
-    status: planned
-    model: null
-    voice: null
+    status: ready
+    model: kokoro-misaki
+    voice: af_heart
     concurrency: 1
-    notes: "Self-hosted endpoint; cost derived from GPU VM hourly rate, not per call."
-    pricing: {id: selfhost/gpu-vm, as_of: "2026-09-17", verified: false, per_second_audio_usd: 0.0}
+    timeout_s: 180.0
+    notes: >-
+      Kokoro-82M + Misaki drug pins. Cloud Run CPU for now; GPU later.
+      Plain drug names are auto-injected from the service pin list; callers
+      can also send Misaki [Name](/phones/) injects.
+    pricing:
+      id: selfhost/cloudrun-cpu
+      as_of: "2026-09-21"
+      source: "Cloud Run CPU amortised; not a per-call vendor price"
+      verified: false
+      per_second_audio_usd: 0.0
+    options:
+      base_url: "https://kokoro-misaki-347838016394.us-east4.run.app"
+      speed: 1.0
+      response_format: wav

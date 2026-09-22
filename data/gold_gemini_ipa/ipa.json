@@ -1,0 +1,1422 @@
+[
+  {
+    "ingredient": "Abilify",
+    "ipa": "/əˈbɪlɪfaɪ/",
+    "spoken_text": "Abilify"
+  },
+  {
+    "ingredient": "acetaminophen",
+    "ipa": "/əˌsitəˈmɪnəfən/",
+    "spoken_text": "acetaminophen"
+  },
+  {
+    "ingredient": "acoltremon",
+    "ipa": "/əˈkoʊltrəmɒn/",
+    "spoken_text": "acoltremon"
+  },
+  {
+    "ingredient": "acoramidis",
+    "ipa": "/ˌækoʊˈræmɪdɪs/",
+    "spoken_text": "acoramidis"
+  },
+  {
+    "ingredient": "adalimumab",
+    "ipa": "/eɪdəˈlɪmjuːmæb/",
+    "spoken_text": "adalimumab"
+  },
+  {
+    "ingredient": "Adquey",
+    "ipa": "/ˈædkweɪ/",
+    "spoken_text": "Adquey"
+  },
+  {
+    "ingredient": "Advair",
+    "ipa": "/ˈædvɛr/",
+    "spoken_text": "Advair"
+  },
+  {
+    "ingredient": "Advil",
+    "ipa": "/ˈædvɪl/",
+    "spoken_text": "Advil"
+  },
+  {
+    "ingredient": "Alhemo",
+    "ipa": "/ælˈhiːmoʊ/",
+    "spoken_text": "Alhemo"
+  },
+  {
+    "ingredient": "alprazolam",
+    "ipa": "/ælˈpɹæz.əˌlæm/",
+    "spoken_text": "alprazolam"
+  },
+  {
+    "ingredient": "Alyftrek",
+    "ipa": "/əˈlɪftrɛk/",
+    "spoken_text": "Alyftrek"
+  },
+  {
+    "ingredient": "Ambelvist",
+    "ipa": "/ˌæmˈbɛlvɪst/",
+    "spoken_text": "Ambelvist"
+  },
+  {
+    "ingredient": "Ambien",
+    "ipa": "/ˈæmbiən/",
+    "spoken_text": "Ambien"
+  },
+  {
+    "ingredient": "Anktiva",
+    "ipa": "/æŋkˈtiːvə/",
+    "spoken_text": "Anktiva"
+  },
+  {
+    "ingredient": "apixaban",
+    "ipa": "/əˈpɪksəbæn/",
+    "spoken_text": "apixaban"
+  },
+  {
+    "ingredient": "apremilast",
+    "ipa": "/əˈprɛmɪlæst/",
+    "spoken_text": "apremilast"
+  },
+  {
+    "ingredient": "aripiprazole",
+    "ipa": "/ˌæɹ.ɪˈpɪp.ɹəˌzoʊl/",
+    "spoken_text": "aripiprazole"
+  },
+  {
+    "ingredient": "Aspirin",
+    "ipa": "/ˈæspərɪn/",
+    "spoken_text": "Aspirin"
+  },
+  {
+    "ingredient": "atacicept-vymj",
+    "ipa": "/əˈtækɪsɛpt/",
+    "spoken_text": "atacicept"
+  },
+  {
+    "ingredient": "atogepant",
+    "ipa": "/əˈtoʊdʒəˌpænt/",
+    "spoken_text": "atogepant"
+  },
+  {
+    "ingredient": "atorvastatin",
+    "ipa": "/əˌtɔːrvəˈstætən/",
+    "spoken_text": "atorvastatin"
+  },
+  {
+    "ingredient": "Attruby",
+    "ipa": "/əˈtruːbi/",
+    "spoken_text": "Attruby"
+  },
+  {
+    "ingredient": "Aucatzyl",
+    "ipa": "/ɔːˈkæt.zɪl/",
+    "spoken_text": "Aucatzyl"
+  },
+  {
+    "ingredient": "Avlayah",
+    "ipa": "/əˈvleɪə/",
+    "spoken_text": "Avlayah"
+  },
+  {
+    "ingredient": "Awiqli",
+    "ipa": "/əˈwɪkli/",
+    "spoken_text": "Awiqli"
+  },
+  {
+    "ingredient": "baloxavir marboxil",
+    "ipa": "/bəˈlɑːksəvɪr mɑːrˈbɑːksɪl/",
+    "spoken_text": "baloxavir marboxil"
+  },
+  {
+    "ingredient": "baxdrostat",
+    "ipa": "/bæksˈdroʊstæt/",
+    "spoken_text": "baxdrostat"
+  },
+  {
+    "ingredient": "Baxfendy",
+    "ipa": "/bæksˈfɛndi/",
+    "spoken_text": "Baxfendy"
+  },
+  {
+    "ingredient": "Benadryl",
+    "ipa": "/ˈbɛnədɹɪl/",
+    "spoken_text": "Benadryl"
+  },
+  {
+    "ingredient": "Beqalzi",
+    "ipa": "/biˈkɑːlzi/",
+    "spoken_text": "Beqalzi"
+  },
+  {
+    "ingredient": "bevacizumab-vikg",
+    "ipa": "/ˌbɛv.əˈsɪz.ʊˌmæb/",
+    "spoken_text": "bevacizumab"
+  },
+  {
+    "ingredient": "bictegravir",
+    "ipa": "/bɪkˈtɛɡrəvɪər/",
+    "spoken_text": "bictegravir"
+  },
+  {
+    "ingredient": "Biktarvy",
+    "ipa": "/bɪkˈtɑːrvi/",
+    "spoken_text": "Biktarvy"
+  },
+  {
+    "ingredient": "Bizengri",
+    "ipa": "/baɪˈzɛnɡri/",
+    "spoken_text": "Bizengri"
+  },
+  {
+    "ingredient": "Blujepa",
+    "ipa": "/bluːˈdʒɛpə/",
+    "spoken_text": "Blujepa"
+  },
+  {
+    "ingredient": "budesonide",
+    "ipa": "/bjuːˈdɛsənaɪd/",
+    "spoken_text": "budesonide"
+  },
+  {
+    "ingredient": "bulevirtide-gmod",
+    "ipa": "/bjuːˈlɛvɪrtaɪd/",
+    "spoken_text": "bulevirtide"
+  },
+  {
+    "ingredient": "Byetta",
+    "ipa": "/baɪˈɛtə/",
+    "spoken_text": "Byetta"
+  },
+  {
+    "ingredient": "Bysanti",
+    "ipa": "/ˈbaɪsænti/",
+    "spoken_text": "Bysanti"
+  },
+  {
+    "ingredient": "canakinumab",
+    "ipa": "/ˌkænəˈkɪnjʊmæb/",
+    "spoken_text": "canakinumab"
+  },
+  {
+    "ingredient": "cariprazine",
+    "ipa": "/kəˈrɪprəˌziːn/",
+    "spoken_text": "cariprazine"
+  },
+  {
+    "ingredient": "Casgevy",
+    "ipa": "/kæsˈdʒɛvi/",
+    "spoken_text": "Casgevy"
+  },
+  {
+    "ingredient": "cefepime",
+    "ipa": "/ˈsɛfɪpiːm/",
+    "spoken_text": "cefepime"
+  },
+  {
+    "ingredient": "centanafadine",
+    "ipa": "/ˌsɛn.tænˈæ.fə.diːn/",
+    "spoken_text": "centanafadine"
+  },
+  {
+    "ingredient": "cetirizine",
+    "ipa": "/səˈtɪrɪziːn/",
+    "spoken_text": "cetirizine"
+  },
+  {
+    "ingredient": "Chantix",
+    "ipa": "/ˈtʃæntɪks/",
+    "spoken_text": "Chantix"
+  },
+  {
+    "ingredient": "cipepofol",
+    "ipa": "/sɪˈpɛpəˌfɔːl/",
+    "spoken_text": "cipepofol"
+  },
+  {
+    "ingredient": "Claritin",
+    "ipa": "/ˈkleɹ.ə.tɪn/",
+    "spoken_text": "Claritin"
+  },
+  {
+    "ingredient": "clopidogrel",
+    "ipa": "/kloʊˈpɪdəɡɹɛl/",
+    "spoken_text": "clopidogrel"
+  },
+  {
+    "ingredient": "Cobenfy",
+    "ipa": "/koʊˈbɛnfi/",
+    "spoken_text": "Cobenfy"
+  },
+  {
+    "ingredient": "concizumab",
+    "ipa": "/kɑnˈsɪz.ju.mæb/",
+    "spoken_text": "concizumab"
+  },
+  {
+    "ingredient": "copper histidinate",
+    "ipa": "/ˈkɑːpər ˈhɪstɪdɪˌneɪt/",
+    "spoken_text": "copper histidinate"
+  },
+  {
+    "ingredient": "Cosentyx",
+    "ipa": "/koʊˈsɛntɪks/",
+    "spoken_text": "Cosentyx"
+  },
+  {
+    "ingredient": "Crestor",
+    "ipa": "/ˈkrɛstɔːr/",
+    "spoken_text": "Crestor"
+  },
+  {
+    "ingredient": "Cymbalta",
+    "ipa": "/sɪmˈbɑːl.tə/",
+    "spoken_text": "Cymbalta"
+  },
+  {
+    "ingredient": "Cypsedo",
+    "ipa": "/ˈsɪpsiːdoʊ/",
+    "spoken_text": "Cypsedo"
+  },
+  {
+    "ingredient": "dapagliflozin",
+    "ipa": "/ˌdæp.əɡ.ləˈfloʊ.zɪn/",
+    "spoken_text": "dapagliflozin"
+  },
+  {
+    "ingredient": "datopotamab deruxtecan",
+    "ipa": "/ˌdætəˈpoʊtəmæb/ /dəˈrʌkstɪkæn/",
+    "spoken_text": "datopotamab deruxtecan"
+  },
+  {
+    "ingredient": "Datroway",
+    "ipa": "/ˈdætɹoʊweɪ/",
+    "spoken_text": "Datroway"
+  },
+  {
+    "ingredient": "Decnupaz",
+    "ipa": "/ˈdɛknəˌpæz/",
+    "spoken_text": "Decnupaz"
+  },
+  {
+    "ingredient": "deutivacaftor",
+    "ipa": "/djuːˌtɪvəˈkæftɔːr/",
+    "spoken_text": "deutivacaftor"
+  },
+  {
+    "ingredient": "diazepam",
+    "ipa": "/daɪˈæz.ə.pæm/",
+    "spoken_text": "diazepam"
+  },
+  {
+    "ingredient": "difamilast",
+    "ipa": "/daɪˈfæmɪlæst/",
+    "spoken_text": "difamilast"
+  },
+  {
+    "ingredient": "dimethyl fumarate",
+    "ipa": "/daɪˈmɛθəl ˈfjuːməreɪt/",
+    "spoken_text": "dimethyl fumarate"
+  },
+  {
+    "ingredient": "diphenhydramine",
+    "ipa": "/ˌdaɪˌfɛnˈhaɪ.dɹəˌmiːn/",
+    "spoken_text": "diphenhydramine"
+  },
+  {
+    "ingredient": "doravirine",
+    "ipa": "/ˌdɔːrəˈvɪriːn/",
+    "spoken_text": "doravirine"
+  },
+  {
+    "ingredient": "dulaglutide",
+    "ipa": "/ˌduːləˈɡluːtaɪd/",
+    "spoken_text": "dulaglutide"
+  },
+  {
+    "ingredient": "duloxetine",
+    "ipa": "/duːˈlɑk.səˌtiːn/",
+    "spoken_text": "duloxetine"
+  },
+  {
+    "ingredient": "dupilumab",
+    "ipa": "/duːˈpɪlʊmæb/",
+    "spoken_text": "dupilumab"
+  },
+  {
+    "ingredient": "Dupixent",
+    "ipa": "/duːˈpɪksənt/",
+    "spoken_text": "Dupixent"
+  },
+  {
+    "ingredient": "durvalumab",
+    "ipa": "/dɜːrˈvæl.juˌmæb/",
+    "spoken_text": "durvalumab"
+  },
+  {
+    "ingredient": "Ebglyss",
+    "ipa": "/ˈɛbɡlɪs/",
+    "spoken_text": "Ebglyss"
+  },
+  {
+    "ingredient": "efgartigimod alfa",
+    "ipa": "/ˌɛfɡɑːrˈtɪɡɪmɒd/ /ˈælfə/",
+    "spoken_text": "efgartigimod alfa"
+  },
+  {
+    "ingredient": "elexacaftor",
+    "ipa": "/ɛl.ɛks.ə.ˈkæf.tər/",
+    "spoken_text": "elexacaftor"
+  },
+  {
+    "ingredient": "Eliquis",
+    "ipa": "/ˈɛlɪkwɪs/",
+    "spoken_text": "Eliquis"
+  },
+  {
+    "ingredient": "elranatamab-bcmm",
+    "ipa": "/ˌɛl.rəˈnæt.ə.mæb/",
+    "spoken_text": "elranatamab"
+  },
+  {
+    "ingredient": "Elrexfio",
+    "ipa": "/ɛlˈrɛksfiˌoʊ/",
+    "spoken_text": "Elrexfio"
+  },
+  {
+    "ingredient": "empagliflozin",
+    "ipa": "/ˌɛm.pəɡ.ləˈfloʊ.zɪn/",
+    "spoken_text": "empagliflozin"
+  },
+  {
+    "ingredient": "emtricitabine",
+    "ipa": "/ˌɛm.tɹəˈsaɪ.təˌbin/",
+    "spoken_text": "emtricitabine"
+  },
+  {
+    "ingredient": "Enbrel",
+    "ipa": "/ˈɛnbrəl/",
+    "spoken_text": "Enbrel"
+  },
+  {
+    "ingredient": "enlicitide decanoate",
+    "ipa": "/ɛnˈlɪsɪtaɪd/ /ˌdɛkəˈnoʊˌeɪt/",
+    "spoken_text": "enlicitide decanoate"
+  },
+  {
+    "ingredient": "Ensacove",
+    "ipa": "/ˈɛnsəkoʊv/",
+    "spoken_text": "Ensacove"
+  },
+  {
+    "ingredient": "ensartinib",
+    "ipa": "/ɛn.ˈsɑɹ.tɪ.nɪb/",
+    "spoken_text": "ensartinib"
+  },
+  {
+    "ingredient": "ensitrelvir",
+    "ipa": "/ɛnˈsɪtrɛlvɪər/",
+    "spoken_text": "ensitrelvir"
+  },
+  {
+    "ingredient": "Entresto",
+    "ipa": "/ɛnˈtrɛstoʊ/",
+    "spoken_text": "Entresto"
+  },
+  {
+    "ingredient": "esomeprazole",
+    "ipa": "/ˌɛsoʊˈmɛprəˌzoʊl/",
+    "spoken_text": "esomeprazole"
+  },
+  {
+    "ingredient": "etanercept",
+    "ipa": "/ɪˈtænərsɛpt/",
+    "spoken_text": "etanercept"
+  },
+  {
+    "ingredient": "exagamglogene autotemcel",
+    "ipa": "/ˌɛksəˈɡæmɡloʊˌdʒiːn/ /ˌɔːtoʊˈtɛmsɛl/",
+    "spoken_text": "exagamglogene autotemcel"
+  },
+  {
+    "ingredient": "exenatide",
+    "ipa": "/ɛkˈsɛn.ə.taɪd/",
+    "spoken_text": "exenatide"
+  },
+  {
+    "ingredient": "famotidine",
+    "ipa": "/fəˈmoʊ.tɪˌdin/",
+    "spoken_text": "famotidine"
+  },
+  {
+    "ingredient": "faricimab-svoa",
+    "ipa": "/fəˈrɪkɪmæb/",
+    "spoken_text": "faricimab"
+  },
+  {
+    "ingredient": "Farxiga",
+    "ipa": "/fɑːrˈsiːɡə/",
+    "spoken_text": "Farxiga"
+  },
+  {
+    "ingredient": "fezolinetant",
+    "ipa": "/ˌfɛzoʊˈlɪnətænt/",
+    "spoken_text": "fezolinetant"
+  },
+  {
+    "ingredient": "Flonase",
+    "ipa": "/ˈfloʊ.neɪs/",
+    "spoken_text": "Flonase"
+  },
+  {
+    "ingredient": "fluoxetine",
+    "ipa": "/fluːˈaksətiːn/",
+    "spoken_text": "fluoxetine"
+  },
+  {
+    "ingredient": "fluticasone propionate",
+    "ipa": "/fluːˈtɪkəˌsoʊn ˈproʊpiəˌneɪt/",
+    "spoken_text": "fluticasone propionate"
+  },
+  {
+    "ingredient": "formoterol fumarate dihydrate",
+    "ipa": "/fɔːrˈmoʊtəˌrɔːl ˈfjuːməˌreɪt ˌdaɪˈhaɪdreɪt/",
+    "spoken_text": "formoterol fumarate dihydrate"
+  },
+  {
+    "ingredient": "Foundayo",
+    "ipa": "/faʊnˈdeɪoʊ/",
+    "spoken_text": "Foundayo"
+  },
+  {
+    "ingredient": "gadoquatrane",
+    "ipa": "/ˌɡædoʊˈkwætreɪn/",
+    "spoken_text": "gadoquatrane"
+  },
+  {
+    "ingredient": "gedatolisib",
+    "ipa": "/ˌdʒɛd.æt.oʊˈlɪs.ɪb/",
+    "spoken_text": "gedatolisib"
+  },
+  {
+    "ingredient": "gepotidacin",
+    "ipa": "/ˌdʒɛpəˈtaɪdəsɪn/",
+    "spoken_text": "gepotidacin"
+  },
+  {
+    "ingredient": "Hepcludex",
+    "ipa": "/hɛpˈkluːdɛks/",
+    "spoken_text": "Hepcludex"
+  },
+  {
+    "ingredient": "Humira",
+    "ipa": "/hjuːˈmɛərə/",
+    "spoken_text": "Humira"
+  },
+  {
+    "ingredient": "ibuprofen",
+    "ipa": "/ˌaɪ.bju.ˈpɹoʊ.fən/",
+    "spoken_text": "ibuprofen"
+  },
+  {
+    "ingredient": "icotrokinra",
+    "ipa": "/ˌaɪkoʊtrəˈkɪnrə/",
+    "spoken_text": "icotrokinra"
+  },
+  {
+    "ingredient": "Icotyde",
+    "ipa": "/aɪˈkoʊtaɪd/",
+    "spoken_text": "Icotyde"
+  },
+  {
+    "ingredient": "Idvynso",
+    "ipa": "/ɪdˈvɪnsoʊ/",
+    "spoken_text": "Idvynso"
+  },
+  {
+    "ingredient": "Ilaris",
+    "ipa": "/ɪˈlɑːrəs/",
+    "spoken_text": "Ilaris"
+  },
+  {
+    "ingredient": "Imaavy",
+    "ipa": "/ɪˈmɑːvi/",
+    "spoken_text": "Imaavy"
+  },
+  {
+    "ingredient": "Imfinzi",
+    "ipa": "/ɪmˈfɪnzi/",
+    "spoken_text": "Imfinzi"
+  },
+  {
+    "ingredient": "Ingrezza",
+    "ipa": "/ɪnˈɡrɛzə/",
+    "spoken_text": "Ingrezza"
+  },
+  {
+    "ingredient": "Inpefa",
+    "ipa": "/ɪnˈpɛfə/",
+    "spoken_text": "Inpefa"
+  },
+  {
+    "ingredient": "insulin glargine",
+    "ipa": "/ˈɪnsəlɪn ˈɡlɑːrdʒiːn/",
+    "spoken_text": "insulin glargine"
+  },
+  {
+    "ingredient": "insulin icodec-abae",
+    "ipa": "/ˈɪnsəlɪn/ /ˈaɪkoʊdɛk/",
+    "spoken_text": "insulin icodec"
+  },
+  {
+    "ingredient": "islatravir",
+    "ipa": "/ɪsˈlætrəvɪər/",
+    "spoken_text": "islatravir"
+  },
+  {
+    "ingredient": "ivacaftor",
+    "ipa": "/ˌaɪvəˈkæftɔːr/",
+    "spoken_text": "ivacaftor"
+  },
+  {
+    "ingredient": "Januvia",
+    "ipa": "/dʒəˈnuːviə/",
+    "spoken_text": "Januvia"
+  },
+  {
+    "ingredient": "Jardiance",
+    "ipa": "/dʒɑːrˈdi.əns/",
+    "spoken_text": "Jardiance"
+  },
+  {
+    "ingredient": "Jideytro",
+    "ipa": "/dʒɪˈdeɪtroʊ/",
+    "spoken_text": "Jideytro"
+  },
+  {
+    "ingredient": "Journavx",
+    "ipa": "/ˈdʒɔːr.nə.vɪks/",
+    "spoken_text": "Journavx"
+  },
+  {
+    "ingredient": "Kisqali",
+    "ipa": "/kɪsˈkɑːli/",
+    "spoken_text": "Kisqali"
+  },
+  {
+    "ingredient": "Kyzatrex",
+    "ipa": "/ˈkaɪ.zə.trɛks/",
+    "spoken_text": "Kyzatrex"
+  },
+  {
+    "ingredient": "Latuda",
+    "ipa": "/ləˈtuːdə/",
+    "spoken_text": "Latuda"
+  },
+  {
+    "ingredient": "lebrikizumab-lbkz",
+    "ipa": "/ˌlɛbrɪˈkɪzjuˌmæb/",
+    "spoken_text": "lebrikizumab"
+  },
+  {
+    "ingredient": "lecanemab",
+    "ipa": "/lɛˈkænəmæb/",
+    "spoken_text": "lecanemab"
+  },
+  {
+    "ingredient": "Leqembi",
+    "ipa": "/ləˈkɛmbi/",
+    "spoken_text": "Leqembi"
+  },
+  {
+    "ingredient": "levothyroxine",
+    "ipa": "/ˌli.voʊ.θaɪˈɹɑk.sɪn/",
+    "spoken_text": "levothyroxine"
+  },
+  {
+    "ingredient": "Lifyorli",
+    "ipa": "/lɪfˈjɔːrli/",
+    "spoken_text": "Lifyorli"
+  },
+  {
+    "ingredient": "linerixibat",
+    "ipa": "/ˌlaɪnəˈrɪksɪbæt/",
+    "spoken_text": "linerixibat"
+  },
+  {
+    "ingredient": "Lipfendra",
+    "ipa": "/lɪpˈfɛndrə/",
+    "spoken_text": "Lipfendra"
+  },
+  {
+    "ingredient": "Lipitor",
+    "ipa": "/ˈlɪpɪtɔːr/",
+    "spoken_text": "Lipitor"
+  },
+  {
+    "ingredient": "lisdexamfetamine",
+    "ipa": "/lɪsˌdɛksæmˈfɛtəmiːn/",
+    "spoken_text": "lisdexamfetamine"
+  },
+  {
+    "ingredient": "Loargys",
+    "ipa": "/ˈlɔːrdʒɪs/",
+    "spoken_text": "Loargys"
+  },
+  {
+    "ingredient": "loratadine",
+    "ipa": "/ləˈræt.ə.diːn/",
+    "spoken_text": "loratadine"
+  },
+  {
+    "ingredient": "Lumvoa",
+    "ipa": "/lʌmˈvoʊə/",
+    "spoken_text": "Lumvoa"
+  },
+  {
+    "ingredient": "lurasidone",
+    "ipa": "/lʊˈræsɪˌdoʊn/",
+    "spoken_text": "lurasidone"
+  },
+  {
+    "ingredient": "Lynavoy",
+    "ipa": "/ˈlɪnəvɔɪ/",
+    "spoken_text": "Lynavoy"
+  },
+  {
+    "ingredient": "Lyrica",
+    "ipa": "/ˈliːrɪkə/",
+    "spoken_text": "Lyrica"
+  },
+  {
+    "ingredient": "Lytenava",
+    "ipa": "/laɪˈtɛnəvə/",
+    "spoken_text": "Lytenava"
+  },
+  {
+    "ingredient": "Meibo",
+    "ipa": "/ˈmaɪboʊ/",
+    "spoken_text": "Meibo"
+  },
+  {
+    "ingredient": "Metformin",
+    "ipa": "/mɛtˈfɔɹ.mɪn/",
+    "spoken_text": "Metformin"
+  },
+  {
+    "ingredient": "milsaperidone",
+    "ipa": "/ˌmɪlsəˈpɛrɪdoʊn/",
+    "spoken_text": "milsaperidone"
+  },
+  {
+    "ingredient": "Motrin",
+    "ipa": "/ˈmoʊ trɪn/",
+    "spoken_text": "Motrin"
+  },
+  {
+    "ingredient": "Mounjaro",
+    "ipa": "/maʊnˈdʒɑːroʊ/",
+    "spoken_text": "Mounjaro"
+  },
+  {
+    "ingredient": "navepegritide",
+    "ipa": "/ˌnævəˈpɛɡrɪtaɪd/",
+    "spoken_text": "navepegritide"
+  },
+  {
+    "ingredient": "Nexium",
+    "ipa": "/ˈnɛksiəm/",
+    "spoken_text": "Nexium"
+  },
+  {
+    "ingredient": "nipocalimab-aahu",
+    "ipa": "/ˌnɪpoʊˈkælɪmæb/",
+    "spoken_text": "nipocalimab"
+  },
+  {
+    "ingredient": "nogapendekin alfa inbakicept-pmln",
+    "ipa": "/noʊˌɡæpɛnˈdɛkɪn/ /ˈælfə/ /ɪnˈbækɪsɛpt/",
+    "spoken_text": "nogapendekin alfa inbakicept"
+  },
+  {
+    "ingredient": "Nurtec",
+    "ipa": "/ˈnɝ.tɛk/",
+    "spoken_text": "Nurtec"
+  },
+  {
+    "ingredient": "Nuzolvence",
+    "ipa": "/nuːˈzoʊlvɛns/",
+    "spoken_text": "Nuzolvence"
+  },
+  {
+    "ingredient": "obecabtagene autoleucel",
+    "ipa": "/ˌoʊbəˈkæbtədʒiːn/ /ˌɔːtoʊˈluːsəl/",
+    "spoken_text": "obecabtagene autoleucel"
+  },
+  {
+    "ingredient": "Obicetrapib",
+    "ipa": "/ˌoʊbɪˈsɛtrəpɪb/",
+    "spoken_text": "Obicetrapib"
+  },
+  {
+    "ingredient": "Ojemda",
+    "ipa": "/oʊˈdʒɛm.dɑː/",
+    "spoken_text": "Ojemda"
+  },
+  {
+    "ingredient": "olezarsen",
+    "ipa": "/ˌoʊləˈzɑːrsən/",
+    "spoken_text": "olezarsen"
+  },
+  {
+    "ingredient": "omalizumab",
+    "ipa": "/ˌoʊməˈlɪzumæb/",
+    "spoken_text": "omalizumab"
+  },
+  {
+    "ingredient": "omeprazole",
+    "ipa": "/oʊˈmɛp.ɹəˌzoʊl/",
+    "spoken_text": "omeprazole"
+  },
+  {
+    "ingredient": "orforglipron",
+    "ipa": "/ˌɔːrfɔːrˈɡlɪprɒn/",
+    "spoken_text": "orforglipron"
+  },
+  {
+    "ingredient": "Orzeyful",
+    "ipa": "/ɔːrˈzeɪfʊl/",
+    "spoken_text": "Orzeyful"
+  },
+  {
+    "ingredient": "osimertinib",
+    "ipa": "/ˌoʊ.sɪˈmɜːr.tɪ.nɪb/",
+    "spoken_text": "osimertinib"
+  },
+  {
+    "ingredient": "Otezla",
+    "ipa": "/oʊˈtɛzlə/",
+    "spoken_text": "Otezla"
+  },
+  {
+    "ingredient": "oveporexton",
+    "ipa": "/ˌoʊvəpəˈrɛkstən/",
+    "spoken_text": "oveporexton"
+  },
+  {
+    "ingredient": "Ozempic",
+    "ipa": "/oʊˈzɛmpɪk/",
+    "spoken_text": "Ozempic"
+  },
+  {
+    "ingredient": "Palynziq",
+    "ipa": "/ˌpælˈɪnziːk/",
+    "spoken_text": "Palynziq"
+  },
+  {
+    "ingredient": "pegvaliase-pqpz",
+    "ipa": "/pɛɡˈvæliˌeɪs/",
+    "spoken_text": "pegvaliase"
+  },
+  {
+    "ingredient": "pegzilarginase-nbln",
+    "ipa": "/pɛɡˌzɪlˈɑːrdʒɪneɪs/",
+    "spoken_text": "pegzilarginase"
+  },
+  {
+    "ingredient": "perfluorohexyloctane",
+    "ipa": "/pərˌflɔːroʊˌhɛksɪlˈɑːkteɪn/",
+    "spoken_text": "perfluorohexyloctane"
+  },
+  {
+    "ingredient": "pitolisant",
+    "ipa": "/pɪˈtɑːlɪsənt/",
+    "spoken_text": "pitolisant"
+  },
+  {
+    "ingredient": "pivekimab sunirine-pvzy",
+    "ipa": "/pɪˈvɛkɪmæb/ /ˈsuːnɪriːn/",
+    "spoken_text": "pivekimab sunirine"
+  },
+  {
+    "ingredient": "Plavix",
+    "ipa": "/ˈplævɪks/",
+    "spoken_text": "Plavix"
+  },
+  {
+    "ingredient": "Plozasiran",
+    "ipa": "/ploʊzəˈsɪræn/",
+    "spoken_text": "Plozasiran"
+  },
+  {
+    "ingredient": "prademagene zamikeracel",
+    "ipa": "/prəˌdɛməˌdʒiːn/ /ˌzæmɪˈkɛrəˌsɛl/",
+    "spoken_text": "prademagene zamikeracel"
+  },
+  {
+    "ingredient": "pregabalin",
+    "ipa": "/priˈɡæbəlɪn/",
+    "spoken_text": "pregabalin"
+  },
+  {
+    "ingredient": "Prilosec",
+    "ipa": "/ˈpraɪləˌsɛk/",
+    "spoken_text": "Prilosec"
+  },
+  {
+    "ingredient": "Prozac",
+    "ipa": "/ˈproʊzæk/",
+    "spoken_text": "Prozac"
+  },
+  {
+    "ingredient": "quetiapine",
+    "ipa": "/kwɪˈtaɪ.əˌpin/",
+    "spoken_text": "quetiapine"
+  },
+  {
+    "ingredient": "Qulipta",
+    "ipa": "/kjuːˈlɪptə/",
+    "spoken_text": "Qulipta"
+  },
+  {
+    "ingredient": "relacorilant",
+    "ipa": "/ˌrɛləˈkɔːrɪlænt/",
+    "spoken_text": "relacorilant"
+  },
+  {
+    "ingredient": "remibrutinib",
+    "ipa": "/ˌrɛmɪˈbruːtɪnɪb/",
+    "spoken_text": "remibrutinib"
+  },
+  {
+    "ingredient": "resmetirom",
+    "ipa": "/ˌrɛsməˈtɪrɒm/",
+    "spoken_text": "resmetirom"
+  },
+  {
+    "ingredient": "Retatrutide",
+    "ipa": "/ˌrɛtəˈtruːtaɪd/",
+    "spoken_text": "Retatrutide"
+  },
+  {
+    "ingredient": "Revtorpyk",
+    "ipa": "/rɛvˈtɔːrpɪk/",
+    "spoken_text": "Revtorpyk"
+  },
+  {
+    "ingredient": "Revuforj",
+    "ipa": "/ˈrɛvjuːfɔːrdʒ/",
+    "spoken_text": "Revuforj"
+  },
+  {
+    "ingredient": "revumenib",
+    "ipa": "/rɛˈvuːmənɪb/",
+    "spoken_text": "revumenib"
+  },
+  {
+    "ingredient": "Rezdiffra",
+    "ipa": "/rɛzˈdɪfrə/",
+    "spoken_text": "Rezdiffra"
+  },
+  {
+    "ingredient": "Rhapsido",
+    "ipa": "/ˈræp.sɪ.doʊ/",
+    "spoken_text": "Rhapsido"
+  },
+  {
+    "ingredient": "ribociclib",
+    "ipa": "/ˌraɪboʊˈsaɪklɪb/",
+    "spoken_text": "ribociclib"
+  },
+  {
+    "ingredient": "rilzabrutinib",
+    "ipa": "/ˌrɪlzəˈbruːtɪnɪb/",
+    "spoken_text": "rilzabrutinib"
+  },
+  {
+    "ingredient": "rimegepant",
+    "ipa": "/rɪˈmɛdʒəpænt/",
+    "spoken_text": "rimegepant"
+  },
+  {
+    "ingredient": "Rinvoq",
+    "ipa": "/ˈrɪnvoʊk/",
+    "spoken_text": "Rinvoq"
+  },
+  {
+    "ingredient": "risankizumab-rzaa",
+    "ipa": "/ˌrɪsənˈkɪzʊmæb/",
+    "spoken_text": "risankizumab"
+  },
+  {
+    "ingredient": "rivaroxaban",
+    "ipa": "/ˌɹɪv.əˈɹɑk.səˌbæn/",
+    "spoken_text": "rivaroxaban"
+  },
+  {
+    "ingredient": "rosuvastatin",
+    "ipa": "/roʊˈsuːvəstætɪn/",
+    "spoken_text": "rosuvastatin"
+  },
+  {
+    "ingredient": "Rybelsus",
+    "ipa": "/rɛˈbɛlsəs/",
+    "spoken_text": "Rybelsus"
+  },
+  {
+    "ingredient": "sacubitril",
+    "ipa": "/səˈkjuːbɪtrɪl/",
+    "spoken_text": "sacubitril"
+  },
+  {
+    "ingredient": "salmeterol",
+    "ipa": "/sælˈmɛt.əˌɹɔl/",
+    "spoken_text": "salmeterol"
+  },
+  {
+    "ingredient": "secukinumab",
+    "ipa": "/ˌsɛkjuːˈkɪnjʊmæb/",
+    "spoken_text": "secukinumab"
+  },
+  {
+    "ingredient": "semaglutide",
+    "ipa": "/ˌsɛməˈɡlutaɪd/",
+    "spoken_text": "semaglutide"
+  },
+  {
+    "ingredient": "Seroquel",
+    "ipa": "/ˈsɛrəkwɛl/",
+    "spoken_text": "Seroquel"
+  },
+  {
+    "ingredient": "sertraline",
+    "ipa": "/ˈsɜːrtrəˌliːn/",
+    "spoken_text": "sertraline"
+  },
+  {
+    "ingredient": "Simtriyo",
+    "ipa": "/ˈsɪmtriˌoʊ/",
+    "spoken_text": "Simtriyo"
+  },
+  {
+    "ingredient": "sitagliptin",
+    "ipa": "/ˌsɪt.əˈɡlɪp.tɪn/",
+    "spoken_text": "sitagliptin"
+  },
+  {
+    "ingredient": "Skyrizi",
+    "ipa": "/skaɪˈrɪzi/",
+    "spoken_text": "Skyrizi"
+  },
+  {
+    "ingredient": "sonrotoclax",
+    "ipa": "/sɑːnˈroʊtoʊklæks/",
+    "spoken_text": "sonrotoclax"
+  },
+  {
+    "ingredient": "sotagliflozin",
+    "ipa": "/ˌsoʊtəɡlɪˈfloʊzɪn/",
+    "spoken_text": "sotagliflozin"
+  },
+  {
+    "ingredient": "sotatercept-csrk",
+    "ipa": "/soʊˈtætərˌsɛpt/",
+    "spoken_text": "sotatercept"
+  },
+  {
+    "ingredient": "Spiriva",
+    "ipa": "/spɪˈriːvə/",
+    "spoken_text": "Spiriva"
+  },
+  {
+    "ingredient": "suzetrigine",
+    "ipa": "/suˈzɛtrɪdʒiːn/",
+    "spoken_text": "suzetrigine"
+  },
+  {
+    "ingredient": "Symbicort",
+    "ipa": "/ˈsɪm.bɪ.kɔːrt/",
+    "spoken_text": "Symbicort"
+  },
+  {
+    "ingredient": "Synthroid",
+    "ipa": "/ˈsɪn.θɹɔɪd/",
+    "spoken_text": "Synthroid"
+  },
+  {
+    "ingredient": "Tagrisso",
+    "ipa": "/təˈɡrɪsoʊ/",
+    "spoken_text": "Tagrisso"
+  },
+  {
+    "ingredient": "talquetamab",
+    "ipa": "/tælˈkwɛtəmæb/",
+    "spoken_text": "talquetamab"
+  },
+  {
+    "ingredient": "Talvey",
+    "ipa": "/ˈtælveɪ/",
+    "spoken_text": "Talvey"
+  },
+  {
+    "ingredient": "tebipenem pivoxil",
+    "ipa": "/tɛbɪˈpɛnɛm/ /pɪvˈɑːksɪl/",
+    "spoken_text": "tebipenem pivoxil"
+  },
+  {
+    "ingredient": "Tecfidera",
+    "ipa": "/ˌtɛk.fɪˈdɛr.ə/",
+    "spoken_text": "Tecfidera"
+  },
+  {
+    "ingredient": "tenecteplase",
+    "ipa": "/tɛˈnɛktəpleɪs/",
+    "spoken_text": "tenecteplase"
+  },
+  {
+    "ingredient": "tenofovir alafenamide",
+    "ipa": "/təˈnoʊfəvɪər ˌæləˈfɛnəmaɪd/",
+    "spoken_text": "tenofovir alafenamide"
+  },
+  {
+    "ingredient": "teplizumab-mzwv",
+    "ipa": "/tɛpˈlɪzʊmæb/",
+    "spoken_text": "teplizumab"
+  },
+  {
+    "ingredient": "testosterone undecanoate",
+    "ipa": "/tɛˈstɑ.stəˌɹoʊn/ /ənˈdɛkənoʊeɪt/",
+    "spoken_text": "testosterone undecanoate"
+  },
+  {
+    "ingredient": "tezacaftor",
+    "ipa": "/ˌtɛzəˈkæftər/",
+    "spoken_text": "tezacaftor"
+  },
+  {
+    "ingredient": "tiotropium bromide",
+    "ipa": "/ˌtaɪ.oʊˈtroʊ.pi.əm ˈbroʊ.maɪd/",
+    "spoken_text": "tiotropium bromide"
+  },
+  {
+    "ingredient": "tirzepatide",
+    "ipa": "/tɚˈzɛpəˌtaɪd/",
+    "spoken_text": "tirzepatide"
+  },
+  {
+    "ingredient": "tividenofusp alfa-eknm",
+    "ipa": "/tɪˌvɪdɛˈnoʊfʌsp/ /ˈælfə/",
+    "spoken_text": "tividenofusp alfa"
+  },
+  {
+    "ingredient": "TNKase",
+    "ipa": "/tiː.ɛnˈkeɪs/",
+    "spoken_text": "TNKase"
+  },
+  {
+    "ingredient": "tofacitinib",
+    "ipa": "/toʊfəˈsɪtɪnɪb/",
+    "spoken_text": "tofacitinib"
+  },
+  {
+    "ingredient": "Toujeo",
+    "ipa": "/tuːˈdʒeɪoʊ/",
+    "spoken_text": "Toujeo"
+  },
+  {
+    "ingredient": "tovorafenib",
+    "ipa": "/ˌtoʊvəˈræfənɪb/",
+    "spoken_text": "tovorafenib"
+  },
+  {
+    "ingredient": "Trikafta",
+    "ipa": "/traɪˈkæftə/",
+    "spoken_text": "Trikafta"
+  },
+  {
+    "ingredient": "troriluzole",
+    "ipa": "/troʊˈrɪluːˌzoʊl/",
+    "spoken_text": "troriluzole"
+  },
+  {
+    "ingredient": "trospium chloride",
+    "ipa": "/ˈtroʊs.pi.əm ˈklɔːr.aɪd/",
+    "spoken_text": "trospium chloride"
+  },
+  {
+    "ingredient": "Trulicity",
+    "ipa": "/truːˈlɪsɪti/",
+    "spoken_text": "Trulicity"
+  },
+  {
+    "ingredient": "Trutakna",
+    "ipa": "/truːˈtæknə/",
+    "spoken_text": "Trutakna"
+  },
+  {
+    "ingredient": "Tryngolza",
+    "ipa": "/trɪnˈɡoʊlzə/",
+    "spoken_text": "Tryngolza"
+  },
+  {
+    "ingredient": "Tryptyr",
+    "ipa": "/ˈtrɪptɪər/",
+    "spoken_text": "Tryptyr"
+  },
+  {
+    "ingredient": "Tylenol",
+    "ipa": "/ˈtaɪ.lə.nɒl/",
+    "spoken_text": "Tylenol"
+  },
+  {
+    "ingredient": "Tzield",
+    "ipa": "/ˈtiːziːld/",
+    "spoken_text": "Tzield"
+  },
+  {
+    "ingredient": "Ubrelvy",
+    "ipa": "/juːˈbrɛlvi/",
+    "spoken_text": "Ubrelvy"
+  },
+  {
+    "ingredient": "ubrogepant",
+    "ipa": "/juːˈbroʊdʒəpænt/",
+    "spoken_text": "ubrogepant"
+  },
+  {
+    "ingredient": "upadacitinib",
+    "ipa": "/juːˌpædəˈsaɪtɪnɪb/",
+    "spoken_text": "upadacitinib"
+  },
+  {
+    "ingredient": "Utebzi",
+    "ipa": "/juːˈtɛbzi/",
+    "spoken_text": "Utebzi"
+  },
+  {
+    "ingredient": "Vabysmo",
+    "ipa": "/vɑːˈbaɪsmoʊ/",
+    "spoken_text": "Vabysmo"
+  },
+  {
+    "ingredient": "valbenazine",
+    "ipa": "/vælˈbɛnəziːn/",
+    "spoken_text": "valbenazine"
+  },
+  {
+    "ingredient": "Valium",
+    "ipa": "/ˈvæl.i.əm/",
+    "spoken_text": "Valium"
+  },
+  {
+    "ingredient": "valsartan",
+    "ipa": "/vælˈsɑɹ.tən/",
+    "spoken_text": "valsartan"
+  },
+  {
+    "ingredient": "vanzacaftor",
+    "ipa": "/ˌvæn.zəˈkæf.tər/",
+    "spoken_text": "vanzacaftor"
+  },
+  {
+    "ingredient": "varenicline",
+    "ipa": "/vəˈrɛnɪkliːn/",
+    "spoken_text": "varenicline"
+  },
+  {
+    "ingredient": "veligrotug-vvze",
+    "ipa": "/ˌvɛlɪˈɡroʊtʊɡ/",
+    "spoken_text": "veligrotug"
+  },
+  {
+    "ingredient": "Veozah",
+    "ipa": "/viˈoʊzə/",
+    "spoken_text": "Veozah"
+  },
+  {
+    "ingredient": "vepdegestrant",
+    "ipa": "/ˌvɛpdəˈdʒɛstrənt/",
+    "spoken_text": "vepdegestrant"
+  },
+  {
+    "ingredient": "Veppanu",
+    "ipa": "/ˈvɛpənuː/",
+    "spoken_text": "Veppanu"
+  },
+  {
+    "ingredient": "Voranigo",
+    "ipa": "/vəˈrɑːniːɡoʊ/",
+    "spoken_text": "Voranigo"
+  },
+  {
+    "ingredient": "vorasidenib",
+    "ipa": "/vɔːrəˈsɪdənɪb/",
+    "spoken_text": "vorasidenib"
+  },
+  {
+    "ingredient": "Vraylar",
+    "ipa": "/ˈvreɪlɑr/",
+    "spoken_text": "Vraylar"
+  },
+  {
+    "ingredient": "Vyglxia",
+    "ipa": "/vɪɡˈlɛksiə/",
+    "spoken_text": "Vyglxia"
+  },
+  {
+    "ingredient": "Vyloy",
+    "ipa": "/vaɪˈlɔɪ/",
+    "spoken_text": "Vyloy"
+  },
+  {
+    "ingredient": "Vyvanse",
+    "ipa": "/ˈvaɪ.vænts/",
+    "spoken_text": "Vyvanse"
+  },
+  {
+    "ingredient": "Vyvgart",
+    "ipa": "/ˈvɪvɡɑːrt/",
+    "spoken_text": "Vyvgart"
+  },
+  {
+    "ingredient": "Wakix",
+    "ipa": "/ˈweɪkɪks/",
+    "spoken_text": "Wakix"
+  },
+  {
+    "ingredient": "Wayrilz",
+    "ipa": "/ˈweɪrɪlz/",
+    "spoken_text": "Wayrilz"
+  },
+  {
+    "ingredient": "Wegovy",
+    "ipa": "/wɪˈɡoʊvi/",
+    "spoken_text": "Wegovy"
+  },
+  {
+    "ingredient": "Winrevair",
+    "ipa": "/ˈwɪn.ɹɛ.vɛɹ/",
+    "spoken_text": "Winrevair"
+  },
+  {
+    "ingredient": "Xanax",
+    "ipa": "/ˈzæn.æks/",
+    "spoken_text": "Xanax"
+  },
+  {
+    "ingredient": "xanomeline",
+    "ipa": "/zæˈnoʊməliːn/",
+    "spoken_text": "xanomeline"
+  },
+  {
+    "ingredient": "Xarelto",
+    "ipa": "/zəˈrɛltoʊ/",
+    "spoken_text": "Xarelto"
+  },
+  {
+    "ingredient": "Xeljanz",
+    "ipa": "/ˈzɛldʒænz/",
+    "spoken_text": "Xeljanz"
+  },
+  {
+    "ingredient": "Xocova",
+    "ipa": "/zoʊˈkoʊvə/",
+    "spoken_text": "Xocova"
+  },
+  {
+    "ingredient": "Xofluza",
+    "ipa": "/zoʊˈfluːzə/",
+    "spoken_text": "Xofluza"
+  },
+  {
+    "ingredient": "Xolair",
+    "ipa": "/ˈzoʊ.lɛɹ/",
+    "spoken_text": "Xolair"
+  },
+  {
+    "ingredient": "Yuviwel",
+    "ipa": "/ˈjuːvɪwɛl/",
+    "spoken_text": "Yuviwel"
+  },
+  {
+    "ingredient": "Zaiidra",
+    "ipa": "/ˈzaɪdrə/",
+    "spoken_text": "Zaiidra"
+  },
+  {
+    "ingredient": "Zantac",
+    "ipa": "/ˈzæntæk/",
+    "spoken_text": "Zantac"
+  },
+  {
+    "ingredient": "Zaynich",
+    "ipa": "/ˈzeɪnɪk/",
+    "spoken_text": "Zaynich"
+  },
+  {
+    "ingredient": "zenocutuzumab",
+    "ipa": "/ˌzɛnoʊkjuːˈtuːzuːmæb/",
+    "spoken_text": "zenocutuzumab"
+  },
+  {
+    "ingredient": "Zepbound",
+    "ipa": "/ˈzɛpbaʊnd/",
+    "spoken_text": "Zepbound"
+  },
+  {
+    "ingredient": "Zevaskyn",
+    "ipa": "/ˈziːvəskɪn/",
+    "spoken_text": "Zevaskyn"
+  },
+  {
+    "ingredient": "zidebactam",
+    "ipa": "/zɪdəˈbæktæm/",
+    "spoken_text": "zidebactam"
+  },
+  {
+    "ingredient": "zidesamtinib",
+    "ipa": "/ˌzaɪ.dəˈsæm.tɪ.nɪb/",
+    "spoken_text": "zidesamtinib"
+  },
+  {
+    "ingredient": "Zipalertinib",
+    "ipa": "/ˌzɪp.əˈlɜːr.tɪ.nɪb/",
+    "spoken_text": "Zipalertinib"
+  },
+  {
+    "ingredient": "zolbetuximab",
+    "ipa": "/ˌzɒlbəˈtʌksɪmæb/",
+    "spoken_text": "zolbetuximab"
+  },
+  {
+    "ingredient": "zoliflodacin",
+    "ipa": "/ˌzoʊ.lɪ.floʊˈdeɪ.sɪn/",
+    "spoken_text": "zoliflodacin"
+  },
+  {
+    "ingredient": "Zoloft",
+    "ipa": "/ˈzoʊ.lɔːft/",
+    "spoken_text": "Zoloft"
+  },
+  {
+    "ingredient": "zolpidem",
+    "ipa": "/ˈzoʊl.pɪˌdɛm/",
+    "spoken_text": "zolpidem"
+  },
+  {
+    "ingredient": "Zorevunersen",
+    "ipa": "/zoʊˌrɛvjuːˈnɜːrsən/",
+    "spoken_text": "Zorevunersen"
+  },
+  {
+    "ingredient": "Zycubo",
+    "ipa": "/zaɪˈkjuːboʊ/",
+    "spoken_text": "Zycubo"
+  },
+  {
+    "ingredient": "Zyrtec",
+    "ipa": "/ˈzɝ.tɛk/",
+    "spoken_text": "Zyrtec"
+  }
+]

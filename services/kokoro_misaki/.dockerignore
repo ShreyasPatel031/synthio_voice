@@ -1,0 +1,6 @@
+# Build context for Kokoro Misaki Cloud Run image
+.git
+**/__pycache__
+**/*.pyc
+**/.DS_Store
+*.md
