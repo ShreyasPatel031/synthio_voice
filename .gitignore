@@ -37,3 +37,5 @@ data/collected/
 # Gemini grounded-search cache: rebuildable, one file per API call/page fetch
 dose_r/references/.cache/gemini_*.json
 secrets/
+
+!docs/audio/old-new-kokoro/*.mp3
