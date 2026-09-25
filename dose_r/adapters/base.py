@@ -177,6 +177,7 @@ class SynthesisResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass
 class SynthesisRequest:
     """One DOSE row. `item` carries the judge-relevant dataset fields so a
     manifest record is self-contained for scoring."""

@@ -219,17 +219,21 @@ def extract_drug_span_forced_align(audio_bytes: bytes, sentence: str, drug: str,
     # undershoot gaps (Advair) were only ~0.2-0.3s; capping how much of a
     # gap can be recovered bounds the silence-dilution failure mode while
     # leaving genuine undershoot recovery (well under the cap) untouched.
+    # Recover blank-gap coarticulation beyond strict 50% midpoint. Advair-style
+    # undershoot still audibly clips final consonants at 0.5; 0.75 helps without
+    # pulling in real inter-word pauses (quetiapine failure mode at 1.0).
+    _GAP_RECOVERY_FRAC = 0.75
     _MAX_GAP_RECOVERY_S = 0.15
     if first_pos > 0:
         prev_end_frame = segments[first_pos - 1][2]
-        half_gap_s = (drug_start_frame - prev_end_frame) / 2 * frame_stride
-        start_s = drug_start_frame * frame_stride - min(half_gap_s, _MAX_GAP_RECOVERY_S)
+        gap_s = (drug_start_frame - prev_end_frame) * frame_stride
+        start_s = drug_start_frame * frame_stride - min(gap_s * _GAP_RECOVERY_FRAC, _MAX_GAP_RECOVERY_S)
     else:
         start_s = max(0.0, drug_start_frame * frame_stride - pad_s)
     if last_pos < len(segments) - 1:
         next_start_frame = segments[last_pos + 1][1]
-        half_gap_s = (next_start_frame - drug_end_frame) / 2 * frame_stride
-        end_s = drug_end_frame * frame_stride + min(half_gap_s, _MAX_GAP_RECOVERY_S)
+        gap_s = (next_start_frame - drug_end_frame) * frame_stride
+        end_s = drug_end_frame * frame_stride + min(gap_s * _GAP_RECOVERY_FRAC, _MAX_GAP_RECOVERY_S)
     else:
         end_s = min(duration_s, drug_end_frame * frame_stride + pad_s)
 

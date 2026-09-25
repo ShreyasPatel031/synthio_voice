@@ -27,8 +27,15 @@ def _load_gemini() -> type[TTSAdapter]:
     return GeminiTTSAdapter
 
 
+def _load_openai_compatible() -> type[TTSAdapter]:
+    from .openai_compatible import OpenAICompatibleHTTPAdapter
+
+    return OpenAICompatibleHTTPAdapter
+
+
 register("mock", _load_mock)
 register("gemini_vertex", _load_gemini)
+register("openai_compatible_http", _load_openai_compatible)
 
 
 def backends() -> list[str]:

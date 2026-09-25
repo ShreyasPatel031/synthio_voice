@@ -166,7 +166,10 @@ def test_every_configured_system_parses():
         assert system.pricing.as_of
         assert system.retry.max_attempts >= 1
         if system.status == "ready":
-            assert system.pricing.verified or system.backend == "gemini_vertex"
+            assert system.pricing.verified or system.backend in {
+                "gemini_vertex",
+                "openai_compatible_http",  # Cloud Run amortised; not a vendor price list
+            }
 
 
 def test_planned_system_fails_loudly_rather_than_silently():

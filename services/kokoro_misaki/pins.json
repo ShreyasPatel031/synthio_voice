@@ -1,0 +1,377 @@
+{
+  "vyloy": {
+    "word": "Vyloy",
+    "misaki": "vˈI lˈY",
+    "source": "user"
+  },
+  "lynavoy": {
+    "word": "Lynavoy",
+    "misaki": "lˈɪnə vˈY",
+    "source": "user"
+  },
+  "zoliflodacin": {
+    "word": "Zoliflodacin",
+    "misaki": "zˌOlɪflOdˈAsɪn",
+    "source": "lowest75"
+  },
+  "xanomeline": {
+    "word": "xanomeline",
+    "misaki": "zʌnˈO mʌ lin",
+    "source": "user"
+  },
+  "xolair": {
+    "word": "Xolair",
+    "misaki": "zˈOlɛəɹ",
+    "source": "lowest75"
+  },
+  "veppanu": {
+    "word": "Veppanu",
+    "misaki": "vˈɛpənu",
+    "source": "lowest75"
+  },
+  "nexium": {
+    "word": "Nexium",
+    "misaki": "nɛksˈiəm",
+    "source": "user"
+  },
+  "islatravir": {
+    "word": "islatravir",
+    "misaki": "ɪslˈætɹəvɪəɹ",
+    "source": "lowest75"
+  },
+  "zidebactam": {
+    "word": "zidebactam",
+    "misaki": "zɪdəbˈæktæm",
+    "source": "lowest75"
+  },
+  "deutivacaftor": {
+    "word": "deutivacaftor",
+    "misaki": "djuː tɪvə kˈæftɔːr",
+    "source": "user"
+  },
+  "lebrikizumab-lbkz": {
+    "word": "lebrikizumab-lbkz",
+    "misaki": "lˌɛbɹɪkˈɪzjumˌæb",
+    "source": "lowest75"
+  },
+  "resmetirom": {
+    "word": "resmetirom",
+    "misaki": "ɹˌɛsmətˈɪɹɑm",
+    "source": "v0-rec"
+  },
+  "alhemo": {
+    "word": "almhemo",
+    "misaki": "æl hˈiːmO",
+    "source": "user"
+  },
+  "tryptyr": {
+    "word": "Tryptyr",
+    "misaki": "tɹˈɪptɪəɹ",
+    "source": "lowest75"
+  },
+  "voranigo": {
+    "word": "Voranigo",
+    "misaki": "vəɹˈɑniɡO",
+    "source": "v0-rec"
+  },
+  "gedatolisib": {
+    "word": "Gedatolisib",
+    "misaki": "ʤˌɛdætəlˈɪsɪb",
+    "source": "user"
+  },
+  "etanercept": {
+    "word": "Etanercept",
+    "misaki": "ɪtˈænəɹsɛpt",
+    "source": "user"
+  },
+  "centanafadine": {
+    "word": "Centanafadine",
+    "misaki": "sˌɛntænˈæfədin",
+    "source": "user"
+  },
+  "cypsedo": {
+    "word": "Cypsedo",
+    "misaki": "sɪpsˈidˌO",
+    "source": "user"
+  },
+  "foundayo": {
+    "word": "Foundayo",
+    "misaki": "fWndˈA ˈO",
+    "source": "user"
+  },
+  "cipepofol": {
+    "word": "cipepofol",
+    "misaki": "sɪpˈɛpəfˌɔl",
+    "source": "user"
+  },
+  "adalimumab": {
+    "word": "Adalimumab",
+    "misaki": "Adəlˈɪmjumæb",
+    "source": "v0-rec"
+  },
+  "adquey": {
+    "word": "Adquey",
+    "misaki": "ˈædkwA",
+    "source": "v0-rec"
+  },
+  "ambelvist": {
+    "word": "Ambelvist",
+    "misaki": "ˌæmbˈɛlvɪst",
+    "source": "v0-rec"
+  },
+  "datopotamab-deruxtecan": {
+    "word": "datopotamab deruxtecan",
+    "misaki": "dˌætəpˈOtəmæb dəɹˈʌkstɪkæn",
+    "source": "v0-rec"
+  },
+  "elranatamab-bcmm": {
+    "word": "elranatamab-bcmm",
+    "misaki": "ˌɛlɹənˈætəmæb",
+    "source": "v0-rec"
+  },
+  "ensacove": {
+    "word": "Ensacove",
+    "misaki": "ˈɛnsəkOv",
+    "source": "v0-rec"
+  },
+  "ensitrelvir": {
+    "word": "ensitrelvir",
+    "misaki": "ɛnsˈɪtɹɛlvɪəɹ",
+    "source": "v0-rec"
+  },
+  "farxiga": {
+    "word": "Farxiga",
+    "misaki": "fɑɹsˈiɡə",
+    "source": "v0-rec"
+  },
+  "flonase": {
+    "word": "Flonase",
+    "misaki": "flˈOnAs",
+    "source": "v0-rec"
+  },
+  "gepotidacin": {
+    "word": "gepotidacin",
+    "misaki": "ʤˌɛpətˈIdəsɪn",
+    "source": "v0-rec"
+  },
+  "humira": {
+    "word": "Humira",
+    "misaki": "hjumˈɛəɹə",
+    "source": "v0-rec"
+  },
+  "kyzatrex": {
+    "word": "Kyzatrex",
+    "misaki": "kˈIzətɹɛks",
+    "source": "v0-rec"
+  },
+  "otezla": {
+    "word": "Otezla",
+    "misaki": "Otˈɛzlə",
+    "source": "v0-rec"
+  },
+  "pivekimab-sunirine-pvzy": {
+    "word": "pivekimab sunirine-pvzy",
+    "misaki": "pɪvˈɛkɪmæb sˈunɪɹin",
+    "source": "v0-rec"
+  },
+  "revuforj": {
+    "word": "Revuforj",
+    "misaki": "ɹˈɛvjufɔɹʤ",
+    "source": "v0-rec"
+  },
+  "revumenib": {
+    "word": "revumenib",
+    "misaki": "ɹɛvˈumənɪb",
+    "source": "v0-rec"
+  },
+  "skyrizi": {
+    "word": "Skyrizi",
+    "misaki": "skIɹˈɪzi",
+    "source": "v0-rec"
+  },
+  "tividenofusp-alfa-eknm": {
+    "word": "tividenofusp alfa-eknm",
+    "misaki": "tɪvˌɪdɛnˈOfʌsp ˈælfə",
+    "source": "v0-rec"
+  },
+  "toujeo": {
+    "word": "Toujeo",
+    "misaki": "tuʤˈAO",
+    "source": "v0-rec"
+  },
+  "trutakna": {
+    "word": "Trutakna",
+    "misaki": "tɹutˈæknə",
+    "source": "v0-rec"
+  },
+  "upadacitinib": {
+    "word": "upadacitinib",
+    "misaki": "jupˌædəsˈItɪnɪb",
+    "source": "v0-rec"
+  },
+  "yuviwel": {
+    "word": "Yuviwel",
+    "misaki": "jˈuvɪwɛl",
+    "source": "v0-rec"
+  },
+  "nurtec": {
+    "word": "Nurtec",
+    "misaki": "nˈɜɹtɛk",
+    "source": "lowest75"
+  },
+  "casgevy": {
+    "word": "Casgevy",
+    "misaki": "kæsʤˈɛvi",
+    "source": "lowest75"
+  },
+  "jardiance": {
+    "word": "Jardiance",
+    "misaki": "ʤɑɹdˈiəns",
+    "source": "lowest75"
+  },
+  "seroquel": {
+    "word": "Seroquel",
+    "misaki": "sˈɛɹəkwɛl",
+    "source": "lowest75"
+  },
+  "icotrokinra": {
+    "word": "icotrokinra",
+    "misaki": "ˌIkOtɹəkˈɪnɹə",
+    "source": "lowest75"
+  },
+  "dulaglutide": {
+    "word": "dulaglutide",
+    "misaki": "dˌuləɡlˈutId",
+    "source": "lowest75"
+  },
+  "byetta": {
+    "word": "Byetta",
+    "misaki": "bIˈɛtə",
+    "source": "lowest75"
+  },
+  "exenatide": {
+    "word": "exenatide",
+    "misaki": "ɛksˈɛnətId",
+    "source": "lowest75"
+  },
+  "avlayah": {
+    "word": "Avlayah",
+    "misaki": "əvlˈAə",
+    "source": "lowest75"
+  },
+  "talvey": {
+    "word": "Talvey",
+    "misaki": "tˈælvA",
+    "source": "lowest75"
+  },
+  "wakix": {
+    "word": "Wakix",
+    "misaki": "wˈAkɪks",
+    "source": "lowest75"
+  },
+  "faricimab-svoa": {
+    "word": "faricimab-svoa",
+    "misaki": "fəɹˈɪkɪmæb",
+    "source": "lowest75"
+  },
+  "rinvoq": {
+    "word": "Rinvoq",
+    "misaki": "ɹˈɪnvOk",
+    "source": "lowest75"
+  },
+  "claritin": {
+    "word": "Claritin",
+    "misaki": "klˈɛɹətɪn",
+    "source": "lowest75"
+  },
+  "xofluza": {
+    "word": "Xofluza",
+    "misaki": "zOflˈuzə",
+    "source": "lowest75"
+  },
+  "eliquis": {
+    "word": "Eliquis",
+    "misaki": "ˈɛlɪkwɪs",
+    "source": "lowest75"
+  },
+  "prozac": {
+    "word": "Prozac",
+    "misaki": "pɹˈOzæk",
+    "source": "lowest75"
+  },
+  "omeprazole": {
+    "word": "omeprazole",
+    "misaki": "OmˈɛpɹəzˌOl",
+    "source": "lowest75"
+  },
+  "vabysmo": {
+    "word": "Vabysmo",
+    "misaki": "vɑbˈIsmO",
+    "source": "lowest75"
+  },
+  "tirzepatide": {
+    "word": "tirzepatide",
+    "misaki": "təɹzˈɛpətˌId",
+    "source": "lowest75"
+  },
+  "metformin": {
+    "word": "Metformin",
+    "misaki": "mɛtfˈɔɹmɪn",
+    "source": "lowest75"
+  },
+  "bictegravir": {
+    "word": "bictegravir",
+    "misaki": "bɪktˈɛɡɹəvɪəɹ",
+    "source": "lowest75"
+  },
+  "zoloft": {
+    "word": "Zoloft",
+    "misaki": "zˈOlɔft",
+    "source": "lowest75"
+  },
+  "cobenfy": {
+    "word": "Cobenfy",
+    "misaki": "kObˈɛnfi",
+    "source": "lowest75"
+  },
+  "palynziq": {
+    "word": "Palynziq",
+    "misaki": "pˌælˈɪnzik",
+    "source": "lowest75"
+  },
+  "clopidogrel": {
+    "word": "clopidogrel",
+    "misaki": "klOpˈɪdəɡɹɛl",
+    "source": "lowest75"
+  },
+  "lecanemab": {
+    "word": "lecanemab",
+    "misaki": "lɛkˈænəmæb",
+    "source": "lowest75"
+  },
+  "veozah": {
+    "word": "Veozah",
+    "misaki": "viˈOzə",
+    "source": "lowest75"
+  },
+  "esomeprazole": {
+    "word": "esomeprazole",
+    "misaki": "ˌɛsOmˈɛpɹəzˌOl",
+    "source": "lowest75"
+  },
+  "vorasidenib": {
+    "word": "vorasidenib",
+    "misaki": "vˌɔɹə sˈɪdənɪb",
+    "source": "user"
+  },
+  "icotyde": {
+    "word": "Icotyde",
+    "misaki": "ˌI kˈOtId",
+    "source": "user"
+  },
+  "idvynso": {
+    "word": "Idvynso",
+    "misaki": "ɪdvˈɪn sˌO",
+    "source": "user"
+  }
+}
