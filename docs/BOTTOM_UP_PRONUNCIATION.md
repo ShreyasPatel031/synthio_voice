@@ -11,12 +11,13 @@ Order for each low name (lowest Standard-IPA F1 first):
 Tools: `scripts/ctc_diag_bottom.py`, `scripts/ctc_asymmetric_test.py`,
 `scripts/rescore_ctc_window.py`, `scripts/misaki_trial_one.py`.
 
-## 2026-09-25 pass (bottom 3)
+## 2026-09-25 pass (former bottom 3)
 
 | name | before | after | lever |
 | --- | --- | --- | --- |
 | Idvynso | 0.547 | **0.687** | Misaki `ɪdvˈɪnsoʊ` (Merck ihd-VIHN-soh); gold IPA OK |
-| Advair | 0.578 | **0.604** | CTC end-share 0.75 (crop was 0.33s) |
-| vorasidenib | 0.580 | **0.592** | CTC end75; Misaki next |
+| Advair | 0.578 | **0.665** | CTC end75 + Misaki `ˈædvɛɹɹ` (AD-vair); gold IPA OK |
+| vorasidenib | 0.580 | **0.637** | CTC end75 + Misaki `vɔɹəsˈɪdənɪb` (VOR-a-SID-e-nib); gold IPA OK |
 
 Global CTC change: start share 0.5, end share 0.75, cap 0.15s.
+Mean after this pass: **0.752** (was 0.751).
