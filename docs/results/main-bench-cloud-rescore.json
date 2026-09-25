@@ -1,0 +1,57 @@
+{
+  "metric": "wavlm-large SpeechBERTScore F1 vs Cloud Standard IPA (en-US-Standard-C)",
+  "unit": "284 unique DOSE ingredients",
+  "scored": "2026-09-24",
+  "listen": "http://127.0.0.1:8767/",
+  "kokoro_pronounce": {
+    "n": 284,
+    "missing": 0,
+    "mean_f1": 0.751,
+    "min": 0.547,
+    "max": 0.866,
+    "under_human_human_0_747": 130,
+    "at_or_above_0_747": 154,
+    "sort": "lowest Standard IPA F1 first",
+    "lowest_15": [
+      {"drug": "Idvynso", "f1": 0.547},
+      {"drug": "Advair", "f1": 0.578},
+      {"drug": "vorasidenib", "f1": 0.58},
+      {"drug": "osimertinib", "f1": 0.606},
+      {"drug": "Lipitor", "f1": 0.609},
+      {"drug": "Tryptyr", "f1": 0.618},
+      {"drug": "Icotyde", "f1": 0.625},
+      {"drug": "Seroquel", "f1": 0.625},
+      {"drug": "trospium chloride", "f1": 0.628, "from_18": true},
+      {"drug": "Adquey", "f1": 0.629},
+      {"drug": "Zaynich", "f1": 0.633},
+      {"drug": "Veppanu", "f1": 0.638},
+      {"drug": "Zyrtec", "f1": 0.638},
+      {"drug": "Latuda", "f1": 0.639},
+      {"drug": "Wegovy", "f1": 0.642}
+    ],
+    "highest": {"drug": "Tzield", "f1": 0.866},
+    "multiword_18": {
+      "n": 18,
+      "weakest": [
+        {"drug": "trospium chloride", "f1": 0.628},
+        {"drug": "copper histidinate", "f1": 0.714}
+      ],
+      "rest_band": [0.75, 0.82],
+      "note": "Pins in data/lexicon_multiword_pins.json. Floor of the full set did not move — Idvynso still last vs Standard IPA."
+    }
+  },
+  "other_arms_cloud_main_bench": {
+    "note": "Prior Cloud main-bench; not re-run on this GPU session. Product-collapsed where noted.",
+    "qwen_wav_paired_163": 0.702,
+    "qwen_ft_paired_250": 0.68,
+    "kokoro_plain_paired_250": 0.649,
+    "qwen_plain_slug_284": 0.634
+  },
+  "ranking": [
+    "Kokoro + pronounce 0.751 n=284 complete",
+    "Qwen + Cloud wav ~0.70",
+    "Qwen FT ~0.68",
+    "Kokoro plain ~0.65",
+    "Qwen Base ~0.63"
+  ]
+}
