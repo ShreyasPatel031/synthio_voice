@@ -3,6 +3,12 @@
   "unit": "284 unique DOSE ingredients",
   "scored": "2026-09-24",
   "listen": "http://127.0.0.1:8767/",
+  "coverage": {
+    "dose_products": 274,
+    "ingredient_spans": 286,
+    "unique_ingredients": 284,
+    "note": "286 spans collapse to 284 unique (tezacaftor + fluticasone propionate shared across rows)."
+  },
   "kokoro_pronounce": {
     "n": 284,
     "missing": 0,
@@ -37,20 +43,31 @@
         {"drug": "copper histidinate", "f1": 0.714}
       ],
       "rest_band": [0.75, 0.82],
-      "note": "Pins in data/lexicon_multiword_pins.json. Floor of the full set did not move — Idvynso still last vs Standard IPA."
+      "note": "Pins in data/lexicon_multiword_pins.json."
     }
   },
+  "qwen_ft": {
+    "checkpoint": "a32-ep0 (also a64-ep0 on L4)",
+    "coverage_fix": {
+      "was": "inventory gap, not CTC gap",
+      "before_unique_ingredient_wavs": "265 (+ Advair brand; no salmeterol.wav)",
+      "after_unique_ingredient_wavs": "284 / 284",
+      "product_wavs": "still 274",
+      "export": "scripts/export_combo_ingredient_spans.py CTC-cuts 19 combo-only ingredients from combination sentence wavs",
+      "salmeterol": "cut from fluticasone-propionate-and-salmeterol.wav",
+      "official_scores": "already 286/286 before the export; listen/match by unique name now has every piece"
+    },
+    "mean_f1_note": "Prior paired product mean ~0.680 on n=250 singles; full 284 unique-name board needs remount after export — coverage hole is closed."
+  },
   "other_arms_cloud_main_bench": {
-    "note": "Prior Cloud main-bench; not re-run on this GPU session. Product-collapsed where noted.",
     "qwen_wav_paired_163": 0.702,
-    "qwen_ft_paired_250": 0.68,
     "kokoro_plain_paired_250": 0.649,
     "qwen_plain_slug_284": 0.634
   },
   "ranking": [
     "Kokoro + pronounce 0.751 n=284 complete",
     "Qwen + Cloud wav ~0.70",
-    "Qwen FT ~0.68",
+    "Qwen FT ~0.68 (unique wav inventory now 284/284)",
     "Kokoro plain ~0.65",
     "Qwen Base ~0.63"
   ]
