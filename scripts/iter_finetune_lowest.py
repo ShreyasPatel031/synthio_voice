@@ -20,7 +20,7 @@ import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACK = ROOT / "data" / "finetune_cloud_ipa"
+PACK = ROOT / "data" / "gold_gemini_ipa"
 PLAIN_SCORES = ROOT / "runs" / "finetune-qwen-cloud-ipa" / "qwen17-plain-scores.jsonl"
 MODEL_ID = "Qwen/Qwen3-TTS-12Hz-1.7B-Base"
 FT_SCRIPTS = Path.home() / "Qwen3-TTS" / "finetuning"

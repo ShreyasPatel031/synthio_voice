@@ -185,9 +185,14 @@ def _get_model():
     import torch
     from transformers import Wav2Vec2FeatureExtractor, WavLMModel
 
+    import os
+
     extractor = Wav2Vec2FeatureExtractor.from_pretrained(MODEL_ID)
     model = WavLMModel.from_pretrained(MODEL_ID)
     model.eval()
+    # Official scores stay on CPU unless the runner asks for the GPU.
+    if os.environ.get("DOSE_WAVLM_DEVICE") == "cuda" and torch.cuda.is_available():
+        model = model.to("cuda")
     return torch, extractor, model
 
 
@@ -218,9 +223,11 @@ def extract_frame_embeddings(audio_source, sample_rate: int | None = None) -> np
         audio, _ = librosa.load(str(audio_source), sr=_TARGET_SR, mono=True)
 
     inputs = extractor(audio, sampling_rate=_TARGET_SR, return_tensors="pt")
+    device = next(model.parameters()).device
+    inputs = {k: v.to(device) for k, v in inputs.items()}
     with torch.no_grad():
-        out = model(inputs.input_values)
-    return out.last_hidden_state[0].numpy()  # (T, 1024)
+        out = model(**inputs)
+    return out.last_hidden_state[0].float().cpu().numpy()  # (T, 1024)
 
 
 def _cosine_similarity_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:

@@ -60,7 +60,7 @@
 {"ingredient": "Lifyorli", "name_type": "brand", "respelling": "lif-YOR-lee", "source": "gemini-grounded-search", "compact": "lifyorlee", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Lipfendra", "name_type": "brand", "respelling": "LIP-fen-dra", "source": "dailymed", "compact": "lipfendra", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Lipitor", "name_type": "brand", "respelling": "LIP-ih-tore", "source": "dailymed", "compact": "lipihtore", "ipa": "", "ipa_cloud": ""}
-{"ingredient": "Loargys", "name_type": "brand", "respelling": "PEG-zil-ar-ji-naze", "source": "gemini-grounded-search", "compact": "pegzilarjinaze", "ipa": "", "ipa_cloud": ""}
+{"ingredient": "Loargys", "name_type": "brand", "respelling": "", "source": null, "compact": "", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Lumvoa", "name_type": "brand", "respelling": "LUM-voe-ah", "source": "gemini-grounded-search", "compact": "lumvoeah", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Lynavoy", "name_type": "brand", "respelling": "LIN-ah-voy", "source": "dailymed", "compact": "linahvoy", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Lyrica", "name_type": "brand", "respelling": "LEER-i-kah", "source": "dailymed", "compact": "leerikah", "ipa": "", "ipa_cloud": ""}
@@ -96,7 +96,7 @@
 {"ingredient": "Spiriva", "name_type": "brand", "respelling": "speh-REE-vah", "source": "dailymed", "compact": "spehreevah", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Symbicort", "name_type": "brand", "respelling": "SIM-bi-kort", "source": "dailymed", "compact": "simbikort", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Synthroid", "name_type": "brand", "respelling": "SIN-throyd", "source": "merriam-webster/medical-api", "compact": "sinthroyd", "ipa": "", "ipa_cloud": ""}
-{"ingredient": "TNKase", "name_type": "brand", "respelling": "TE-nek-te-plase", "source": "gemini-grounded-search", "compact": "tenekteplase", "ipa": "", "ipa_cloud": ""}
+{"ingredient": "TNKase", "name_type": "brand", "respelling": "", "source": "", "compact": "tenekteplase", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Tagrisso", "name_type": "brand", "respelling": "tuh-GRISS-oh", "source": "dailymed", "compact": "tuhgrissoh", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Talvey", "name_type": "brand", "respelling": "TAL-vay", "source": "dailymed", "compact": "talvay", "ipa": "", "ipa_cloud": ""}
 {"ingredient": "Tecfidera", "name_type": "brand", "respelling": "tek-fi-DE-rah", "source": "dailymed", "compact": "tekfiderah", "ipa": "", "ipa_cloud": ""}

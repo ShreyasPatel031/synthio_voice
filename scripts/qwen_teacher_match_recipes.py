@@ -30,7 +30,7 @@ import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACK = ROOT / "data" / "finetune_cloud_ipa"
+PACK = ROOT / "data" / "gold_gemini_ipa"
 MODEL_ID = "Qwen/Qwen3-TTS-12Hz-1.7B-Base"
 PUBLIC_CLONE = "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-TTS-Repo/clone.wav"
 PUBLIC_CLONE_TEXT = (

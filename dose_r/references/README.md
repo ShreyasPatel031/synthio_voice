@@ -17,6 +17,9 @@ tested name (see `runs/listen-google-ipa/`).
 
 ## What to use
 
+**Injection and finetune:** `data/gold_gemini_ipa/` only (validated IPA + Gemini 3.1 Kore wav). That folder is write-locked. Never regenerate the wavs or edit the IPA unless the user explicitly approves that change and a reason is appended to `changes.jsonl`. Do not use experiment `runs/` copies or the old Cloud finetune pack.
+
+
 | Source published | Store and feed the model |
 | --- | --- |
 | IPA (`/ˈduːpɪksɛnt/`, `{{IPA}}`, Wiktionary) | That IPA, unmodified except Cloud en-US inventory folds |

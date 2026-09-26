@@ -1,0 +1,18 @@
+---
+description: Gold Gemini IPA is write-locked. Never regenerate wavs or IPA.
+alwaysApply: true
+---
+
+# Gold Gemini IPA is locked
+
+`data/gold_gemini_ipa/` is the only pronunciation dataset. It is user-validated. Do not regenerate it.
+
+- Do not resynthesize `wavs/`.
+- Do not edit `ipa.json`, `manifest.jsonl`, or `summary.json`.
+- Do not chmod those files. They are read-only on purpose.
+- Do not rebuild listen pages or F1 scores by calling TTS. A missing page is not permission to synth.
+- "Give me the list again" means reopen what exists. It does not mean rescore or regenerate.
+
+A change is allowed only when the user explicitly asked for that specific edit and confirmed it, and you append `why` to `data/gold_gemini_ipa/changes.jsonl` before writing.
+
+See `data/gold_gemini_ipa/README.md`.

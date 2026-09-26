@@ -1,0 +1,13 @@
+---
+description: Pronunciation listen results go in an HTML page with audio.
+alwaysApply: true
+---
+
+# Listen results are HTML
+
+When showing a pronunciation, a clip, an IPA, a respelling, or a comparison, write an HTML page and open it. Do not leave the audio only as a chat description.
+
+- One page per request, under `runs/listen-<name>/index.html`.
+- Each clip is an `<audio controls>` element with the IPA or respelling in text above it.
+- Reuse audio that already exists. Do not resynthesize `data/gold_gemini_ipa/` to fill the page.
+- The chat reply names the page and the result. The page is what they listen to.
