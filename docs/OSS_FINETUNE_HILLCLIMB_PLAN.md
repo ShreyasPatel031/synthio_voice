@@ -1,5 +1,9 @@
 # Fine-tuning open-source TTS to beat RxPronounce on DOSE
 
+> **Do not G2P dictionary respelling into IPA** for a lexicon. Use
+> source-published IPA or the original respelling. See
+> `dose_r/references/README.md`.
+
 Planning doc only — no execution yet. Written so any agent (human or Claude)
 can pick this up cold and start the first iteration without re-deriving any
 of the context below. Grounded directly in this repo's existing work, not

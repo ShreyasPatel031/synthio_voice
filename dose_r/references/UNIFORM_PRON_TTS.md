@@ -1,5 +1,10 @@
 # Uniform pronunciation field vs plain TTS
 
+> **BANNED:** The IPA sidecar numbers below were Wikipedia-key G2P of
+> DailyMed/USAN (`ipa_from_canonical`). That converter is dead. Dupixent
+> `DU-pix-ent` became `ˈdʌpɪksɛnt`. Use original source strings; IPA only
+> if the source published IPA. See `README.md`.
+
 Path 2 gold, Cloud TTS `en-US-Standard-C`, n = 174 names with a human clip.
 The 40% without clips cannot use a score-gated switch, so both arms here are
 derived only from the canonical dictionary respelling.

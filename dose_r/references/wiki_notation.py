@@ -1,5 +1,10 @@
 """Wikipedia/Wiktionary pronunciation markup to ARPABET + IPA.
 
+BANNED: `respell_to_arpabet_ipa` (G2P of DailyMed/USAN/NCI/canonical ASCII
+through Wikipedia's respelling key). That turned Dupixent `DU-pix-ent` into
+`ˈdʌpɪksɛnt` ("duh") and Attruby `ah-troo-be` into `ˈɑːtruːbɛ`. Use the
+source's own string. See `dose_r/references/README.md`.
+
 Wikipedia and Wiktionary record English pronunciations in wikitext through a
 small number of templates, and this module converts the two that carry actual
 phonemic content:
@@ -31,6 +36,17 @@ from .notation import VOWEL_ARPA
 
 PRIMARY = "ˈ"
 SECONDARY = "ˌ"
+
+_BAN = (
+    "Respelling→IPA conversion is banned. DailyMed DU-pix-ent became "
+    "ˈdʌpɪksɛnt (duh); ah-troo-be became ˈɑːtruːbɛ. Use the original "
+    "source string (IPA only if the source published IPA). "
+    "See dose_r/references/README.md."
+)
+
+
+class RespellToIpaBanned(RuntimeError):
+    """Raised by the dead G2P entry points. Do not catch-and-replace."""
 
 # --- IPA (Help:IPA/English inventory) --------------------------------------
 #
@@ -433,64 +449,5 @@ def _apply_magic_e(syllable: str) -> str:
 
 
 def respell_to_arpabet_ipa(syllables: list[str]) -> tuple[str, str]:
-    """`{{respell|...}}` template arguments (already split, params dropped).
-
-    The output IPA now carries a stress mark per stressed syllable -- IPA's
-    own convention places it immediately before the syllable it marks, not
-    on the vowel the way ARPABET's stress digit is, which this converter
-    already knows syllable boundaries for (each iteration of the loop below
-    is one syllable), unlike the phoneme-at-a-time `ipa_to_arpabet_ipa`.
-    Confirmed a real, near-total gap before this fix: every respelling this
-    project pulls from USAN/NCI/DailyMed, plus Wikipedia's own
-    `{{respell}}` template, went through this function with no stress in
-    its IPA output at all.
-    """
-    cleaned = [re.sub(r"[^a-zA-Z]", "", s) for s in syllables]
-    cleaned = [s for s in cleaned if s]
-    if not cleaned:
-        raise NotationError(f"nothing usable in {syllables!r}")
-
-    arpa: list[str] = []
-    ipa: list[str] = []
-    saw_primary = False
-    first_vowel_index: int | None = None
-    first_vowel_syllable_start: int | None = None
-    stress_seen = 0
-
-    for syllable in cleaned:
-        stressed = syllable.isupper() and syllable.lower() != syllable
-        stress = 0
-        if stressed:
-            stress_seen += 1
-            stress = 1 if stress_seen == 1 else 2
-            if stress == 1:
-                saw_primary = True
-
-        syllable_start = len(ipa)
-        used_stress = False
-        for arpa_syms, ipa_sym in _respell_segments(_apply_magic_e(syllable.lower())):
-            for sym in arpa_syms:
-                if sym in VOWEL_ARPA:
-                    arpa.append(f"{sym}{stress if not used_stress else 0}")
-                    if first_vowel_index is None:
-                        first_vowel_index = len(arpa) - 1
-                        first_vowel_syllable_start = syllable_start
-                    used_stress = True
-                else:
-                    arpa.append(sym)
-            ipa.append(ipa_sym)
-
-        if stress == 1:
-            ipa.insert(syllable_start, PRIMARY)
-        elif stress == 2:
-            ipa.insert(syllable_start, SECONDARY)
-
-    if not arpa:
-        raise NotationError(f"no phonemes recovered from {syllables!r}")
-
-    if not saw_primary and first_vowel_index is not None:
-        sym = arpa[first_vowel_index]
-        arpa[first_vowel_index] = f"{sym[:-1]}1"
-        ipa.insert(first_vowel_syllable_start, PRIMARY)
-
-    return " ".join(arpa), "".join(ipa)
+    """Dead. Do not convert respelling (Wikipedia key or DailyMed) to IPA."""
+    raise RespellToIpaBanned(_BAN)

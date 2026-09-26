@@ -1,5 +1,8 @@
 # Plain TTS vs human — where the gap actually is
 
+> Closing this gap is **not** "convert the dictionary string to IPA."
+> That converter is banned. See `README.md`.
+
 Voice: Cloud TTS `en-US-Standard-C`. Metric: wavlm-large F1 vs the same
 human clip (Path 2). **n = 174** names with both a clip and a respelling.
 This run scored **Drugs.com clips only** (Merriam-Webster is preferred by

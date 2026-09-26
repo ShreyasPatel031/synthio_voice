@@ -1,0 +1,152 @@
+{
+  "names": [
+    "vorasidenib",
+    "Advair",
+    "Benadryl",
+    "Vraylar"
+  ],
+  "by_recipe": {
+    "A_base_clone_teacher_plain": {
+      "n": 4,
+      "mean_teacher_f1": 0.7929,
+      "mean_human_f1": 0.6576,
+      "per_name": {
+        "vorasidenib": {
+          "teacher_f1": 0.7234,
+          "human_f1": 0.6946
+        },
+        "Advair": {
+          "teacher_f1": 0.8683,
+          "human_f1": 0.5797
+        },
+        "Benadryl": {
+          "teacher_f1": 0.8636,
+          "human_f1": 0.7789
+        },
+        "Vraylar": {
+          "teacher_f1": 0.7164,
+          "human_f1": 0.5772
+        }
+      }
+    },
+    "B_base_clone_teacher_ipa": {
+      "n": 4,
+      "mean_teacher_f1": 0.6314,
+      "mean_human_f1": 0.5339,
+      "per_name": {
+        "vorasidenib": {
+          "teacher_f1": 0.8261,
+          "human_f1": 0.7617
+        },
+        "Advair": {
+          "teacher_f1": 0.4593,
+          "human_f1": 0.3596
+        },
+        "Benadryl": {
+          "teacher_f1": 0.6897,
+          "human_f1": 0.6336
+        },
+        "Vraylar": {
+          "teacher_f1": 0.5504,
+          "human_f1": 0.3808
+        }
+      }
+    },
+    "C_base_clone_public_plain": {
+      "n": 4,
+      "mean_teacher_f1": 0.6752,
+      "mean_human_f1": 0.5535,
+      "per_name": {
+        "vorasidenib": {
+          "teacher_f1": 0.574,
+          "human_f1": 0.5613
+        },
+        "Advair": {
+          "teacher_f1": 0.7192,
+          "human_f1": 0.4646
+        },
+        "Benadryl": {
+          "teacher_f1": 0.7087,
+          "human_f1": 0.6697
+        },
+        "Vraylar": {
+          "teacher_f1": 0.6989,
+          "human_f1": 0.5183
+        }
+      }
+    },
+    "D_sft_text_custom": {
+      "n": 4,
+      "mean_teacher_f1": 0.7479,
+      "mean_human_f1": 0.6333,
+      "per_name": {
+        "vorasidenib": {
+          "teacher_f1": 0.855,
+          "human_f1": 0.7901
+        },
+        "Advair": {
+          "teacher_f1": 0.6521,
+          "human_f1": 0.4488
+        },
+        "Benadryl": {
+          "teacher_f1": 0.8436,
+          "human_f1": 0.7819
+        },
+        "Vraylar": {
+          "teacher_f1": 0.6408,
+          "human_f1": 0.5123
+        }
+      }
+    },
+    "E_sft_ipa_custom": {
+      "n": 4,
+      "mean_teacher_f1": 0.6446,
+      "mean_human_f1": 0.5332,
+      "per_name": {
+        "vorasidenib": {
+          "teacher_f1": 0.4978,
+          "human_f1": 0.5006
+        },
+        "Advair": {
+          "teacher_f1": 0.6955,
+          "human_f1": 0.4482
+        },
+        "Benadryl": {
+          "teacher_f1": 0.5757,
+          "human_f1": 0.5404
+        },
+        "Vraylar": {
+          "teacher_f1": 0.8092,
+          "human_f1": 0.6434
+        }
+      }
+    }
+  },
+  "rank_by_teacher": [
+    {
+      "recipe": "A_base_clone_teacher_plain",
+      "mean_teacher_f1": 0.7929,
+      "mean_human_f1": 0.6576
+    },
+    {
+      "recipe": "D_sft_text_custom",
+      "mean_teacher_f1": 0.7479,
+      "mean_human_f1": 0.6333
+    },
+    {
+      "recipe": "C_base_clone_public_plain",
+      "mean_teacher_f1": 0.6752,
+      "mean_human_f1": 0.5535
+    },
+    {
+      "recipe": "E_sft_ipa_custom",
+      "mean_teacher_f1": 0.6446,
+      "mean_human_f1": 0.5332
+    },
+    {
+      "recipe": "B_base_clone_teacher_ipa",
+      "mean_teacher_f1": 0.6314,
+      "mean_human_f1": 0.5339
+    }
+  ]
+}

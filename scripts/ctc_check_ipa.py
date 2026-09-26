@@ -1,6 +1,7 @@
 """One-shot: decode human clips with wav2vec2-espeak CTC, compare to sidecar IPA.
 
-Used to find systematic dictionary→IPA converter bugs, not as a Path 2 score.
+DEAD as a converter-debug tool. Do not use CTC to invent IPA from respelling.
+See dose_r/references/README.md.
 """
 
 from __future__ import annotations

@@ -1,0 +1,81 @@
+{
+  "note": "Misaki lexicon folds for the 18 multiword DOSE names that the seed loop skipped (hyphen vs underscore gold wav). Injected into Kokoro lexicon-sent; listen board now n=284 mean 0.751 vs Standard IPA.",
+  "source": "user Misaki folds tried on 2026-09-24; scored into lexicon-rank.json",
+  "spoken_note": "insulin icodec-abae spoken/gold stops at icodec; -abae not pronounced",
+  "pins": {
+    "baloxavir-marboxil": {
+      "drug": "baloxavir marboxil",
+      "misaki": "bəlˈɑksəvɪɹ mɑɹbˈɑksɪl"
+    },
+    "tenofovir-alafenamide": {
+      "drug": "tenofovir alafenamide",
+      "misaki": "tənˈOfəvɪəɹ ˌæləfˈɛnəmId"
+    },
+    "formoterol-fumarate-dihydrate": {
+      "drug": "formoterol fumarate dihydrate",
+      "misaki": "fɔɹmˈOtəɹˌɔl fjˈuməɹˌAt dˌIhˈIdɹAt"
+    },
+    "copper-histidinate": {
+      "drug": "copper histidinate",
+      "misaki": "kˈɑpəɹ hˈɪstɪdɪnˌAt"
+    },
+    "dimethyl-fumarate": {
+      "drug": "dimethyl fumarate",
+      "misaki": "dImˈɛθəl fjˈuməɹAt"
+    },
+    "efgartigimod-alfa": {
+      "drug": "efgartigimod alfa",
+      "misaki": "ˌɛfɡɑɹtˈɪɡɪmɑd ˈælfə"
+    },
+    "enlicitide-decanoate": {
+      "drug": "enlicitide decanoate",
+      "misaki": "ɛnlˈɪsɪtId dˌɛkənˈOˌAt"
+    },
+    "exagamglogene-autotemcel": {
+      "drug": "exagamglogene autotemcel",
+      "misaki": "ˌɛksəɡˈæmɡlOʤˌin ˌɔtOtˈɛmsɛl"
+    },
+    "fluticasone-propionate": {
+      "drug": "fluticasone propionate",
+      "misaki": "flutˈɪkəsˌOn pɹˈOpiənˌAt"
+    },
+    "insulin-glargine": {
+      "drug": "insulin glargine",
+      "misaki": "ˈɪnsəlɪn ɡlˈɑɹʤin"
+    },
+    "insulin-icodec-abae": {
+      "drug": "insulin icodec-abae",
+      "misaki": "ˈɪnsəlɪn ˈIkOdɛk",
+      "spoken": "insulin icodec"
+    },
+    "nogapendekin-alfa-inbakicept-pmln": {
+      "drug": "nogapendekin alfa inbakicept-pmln",
+      "misaki": "nOɡˌæpɛndˈɛkɪn ˈælfə ɪnbˈækɪsɛpt",
+      "spoken": "nogapendekin alfa inbakicept"
+    },
+    "obecabtagene-autoleucel": {
+      "drug": "obecabtagene autoleucel",
+      "misaki": "ˌObəkˈæbtəʤin ˌɔtOlˈusəl"
+    },
+    "prademagene-zamikeracel": {
+      "drug": "prademagene zamikeracel",
+      "misaki": "pɹədˌɛməʤˌin zˌæmɪkˈɛɹəsˌɛl"
+    },
+    "tebipenem-pivoxil": {
+      "drug": "tebipenem pivoxil",
+      "misaki": "tɛbɪpˈɛnɛm pɪvˈɑksɪl"
+    },
+    "testosterone-undecanoate": {
+      "drug": "testosterone undecanoate",
+      "misaki": "tɛstˈɑstəɹˌOn əndˈɛkənOAt"
+    },
+    "tiotropium-bromide": {
+      "drug": "tiotropium bromide",
+      "misaki": "tˌIOtɹˈOpiəm bɹˈOmId"
+    },
+    "trospium-chloride": {
+      "drug": "trospium chloride",
+      "misaki": "tɹˈOspiəm klˈɔɹId"
+    }
+  }
+}

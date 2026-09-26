@@ -1,8 +1,7 @@
 """Human-clip → IPA proposals for a name+sidecar injection loop.
 
-CTC is a noisy decode, not gold. Proposals are trimmed to the sidecar's
-length so clip tails (Advair Diskus, Nurtec extra phones) are not copied.
-The eval script keeps a proposal only when Path 2 F1 rises.
+DEAD as gold. CTC is not IPA. Do not convert DailyMed/USAN respelling.
+See `dose_r/references/README.md`.
 """
 
 from __future__ import annotations

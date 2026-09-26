@@ -124,6 +124,98 @@ def test_replace_source_only_touches_named_source():
     assert by_ing["B"]["old"] is False
 
 
+def test_available_clips_prefers_nci_over_drugs_com(tmp_path):
+    from dose_r.references.reference_clips import available_clips
+
+    nci = tmp_path / "nci.mp3"
+    drugs = tmp_path / "drugs.wav"
+    nci.write_bytes(make_mp3(1.0))
+    drugs.write_bytes(make_wav(0.5))
+    man = tmp_path / "manifest.jsonl"
+    rows = [
+        {
+            "ingredient": "Voranigo",
+            "name_type": "brand",
+            "source": "drugs.com",
+            "local_path": str(drugs),
+            "format": "wav",
+            "sample_rate_hz": 16000,
+            "duration_s": 0.5,
+            "coverage": "full",
+        },
+        {
+            "ingredient": "Voranigo",
+            "name_type": "brand",
+            "source": "nci",
+            "local_path": str(nci),
+            "format": "mp3",
+            "sample_rate_hz": 48000,
+            "duration_s": 1.9,
+            "coverage": "full",
+            "respelling": "voh-rah-NEE-goh",
+        },
+    ]
+    man.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    clips = available_clips(man)
+    assert clips["Voranigo"].source == "nci"
+    assert clips["Voranigo"].path == nci
+
+
+def test_available_clips_ignores_component_coverage(tmp_path):
+    from dose_r.references.reference_clips import available_clips
+
+    nci = tmp_path / "nci.mp3"
+    nci.write_bytes(make_mp3(1.0))
+    man = tmp_path / "manifest.jsonl"
+    rows = [
+        {
+            "ingredient": "osimertinib",
+            "name_type": "generic",
+            "source": "nci",
+            "local_path": str(nci),
+            "format": "mp3",
+            "sample_rate_hz": 48000,
+            "duration_s": 1.5,
+            "coverage": "component",
+        }
+    ]
+    man.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    assert "osimertinib" not in available_clips(man)
+
+
+def test_available_clips_skips_nci_when_file_missing(tmp_path):
+    from dose_r.references.reference_clips import available_clips
+
+    drugs = tmp_path / "drugs.wav"
+    drugs.write_bytes(make_wav(0.5))
+    man = tmp_path / "manifest.jsonl"
+    rows = [
+        {
+            "ingredient": "Voranigo",
+            "name_type": "brand",
+            "source": "nci",
+            "local_path": str(tmp_path / "missing.mp3"),
+            "format": "mp3",
+            "sample_rate_hz": 48000,
+            "duration_s": 1.9,
+            "coverage": "full",
+        },
+        {
+            "ingredient": "Voranigo",
+            "name_type": "brand",
+            "source": "drugs.com",
+            "local_path": str(drugs),
+            "format": "wav",
+            "sample_rate_hz": 16000,
+            "duration_s": 0.5,
+            "coverage": "full",
+        },
+    ]
+    man.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    clips = available_clips(man)
+    assert clips["Voranigo"].source == "drugs.com"
+
+
 def test_duplicate_groups_detects_shared_hash():
     records = [
         {"ingredient": "A", "sha256": "same"},
@@ -602,9 +694,9 @@ def dataset_ingredients():
         return {i for line in f for i in json.loads(line)["ingredients"]}
 
 
-def test_manifest_has_all_four_sources(manifest_records):
+def test_manifest_has_known_sources(manifest_records):
     sources = {r["source"] for r in manifest_records}
-    assert {"merriam-webster", "drugs.com", "umich", "clincalc"} <= sources
+    assert {"merriam-webster", "drugs.com", "umich", "clincalc", "nci"} <= sources
 
 
 def test_manifest_drugs_com_rows_are_unique_ingredients(manifest_records):

@@ -1,0 +1,1716 @@
+{
+  "model": "hexgrad/Kokoro-82M",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "lang_code": "a",
+  "injection": "pipeline.g2p.lexicon.golds[word] = misaki",
+  "metric": "WavLM SpeechBERTScore F1, forced-align sentence crop vs Cloud Standard-C",
+  "n": 284,
+  "mean_f1": 0.7533,
+  "entries": [
+    {
+      "slug": "abilify",
+      "word": "Abilify",
+      "misaki": "əbˈɪlᵻfI",
+      "f1": 0.6917
+    },
+    {
+      "slug": "acetaminophen",
+      "word": "acetaminophen",
+      "misaki": "əsˌiTəmˈɪnəfən",
+      "f1": 0.7785
+    },
+    {
+      "slug": "acoltremon",
+      "word": "acoltremon",
+      "misaki": "əkˈOltɹəmɔn",
+      "f1": 0.6927
+    },
+    {
+      "slug": "acoramidis",
+      "word": "acoramidis",
+      "misaki": "ˌækOɹˈæmɪdɪs",
+      "f1": 0.7642
+    },
+    {
+      "slug": "adalimumab",
+      "word": "Adalimumab",
+      "misaki": "Adəlˈɪmjumæb",
+      "f1": 0.755
+    },
+    {
+      "slug": "adquey",
+      "word": "Adquey",
+      "misaki": "ˈædkwA",
+      "f1": 0.6291
+    },
+    {
+      "slug": "advair",
+      "word": "Advair",
+      "misaki": "ˈædvɛɹɹ",
+      "f1": 0.6646
+    },
+    {
+      "slug": "advil",
+      "word": "Advil",
+      "misaki": "ˈædvɪl",
+      "f1": 0.6926
+    },
+    {
+      "slug": "alhemo",
+      "word": "almhemo",
+      "misaki": "æl hˈiːmO",
+      "f1": 0.8072
+    },
+    {
+      "slug": "alprazolam",
+      "word": "alprazolam",
+      "misaki": "ælpɹˈæzəlˌæm",
+      "f1": 0.7225
+    },
+    {
+      "slug": "alyftrek",
+      "word": "Alyftrek",
+      "misaki": "əlˈɪftɹək",
+      "f1": 0.7609
+    },
+    {
+      "slug": "ambelvist",
+      "word": "Ambelvist",
+      "misaki": "ˌæmbˈɛlvɪst",
+      "f1": 0.823
+    },
+    {
+      "slug": "ambien",
+      "word": "Ambien",
+      "misaki": "ˈæmbɪən",
+      "f1": 0.6605
+    },
+    {
+      "slug": "anktiva",
+      "word": "Anktiva",
+      "misaki": "æŋktˈivæ",
+      "f1": 0.778
+    },
+    {
+      "slug": "apixaban",
+      "word": "apixaban",
+      "misaki": "əpˈɪksəbən",
+      "f1": 0.7234
+    },
+    {
+      "slug": "apremilast",
+      "word": "apremilast",
+      "misaki": "əpɹɛmɪlˈæst",
+      "f1": 0.7315
+    },
+    {
+      "slug": "aripiprazole",
+      "word": "aripiprazole",
+      "misaki": "ˌæɹɪpˈɪpɹəzˌOl",
+      "f1": 0.7694
+    },
+    {
+      "slug": "aspirin",
+      "word": "Aspirin",
+      "misaki": "ˈæspəɹən",
+      "f1": 0.7528
+    },
+    {
+      "slug": "atacicept-vymj",
+      "word": "atacicept-vymj",
+      "misaki": "ətˈækɪsɛpt",
+      "f1": 0.728
+    },
+    {
+      "slug": "atogepant",
+      "word": "atogepant",
+      "misaki": "ətˈOʤəpænt",
+      "f1": 0.8279
+    },
+    {
+      "slug": "atorvastatin",
+      "word": "atorvastatin",
+      "misaki": "ətˌɔɹvəstˈætən",
+      "f1": 0.774
+    },
+    {
+      "slug": "attruby",
+      "word": "Attruby",
+      "misaki": "ətɹˈubi",
+      "f1": 0.7929
+    },
+    {
+      "slug": "aucatzyl",
+      "word": "Aucatzyl",
+      "misaki": "ɔkˈætzɪl",
+      "f1": 0.7861
+    },
+    {
+      "slug": "avlayah",
+      "word": "Avlayah",
+      "misaki": "əvlˈAə",
+      "f1": 0.6518
+    },
+    {
+      "slug": "awiqli",
+      "word": "Awiqli",
+      "misaki": "əwˈɪkli",
+      "f1": 0.6729
+    },
+    {
+      "slug": "baloxavir-marboxil",
+      "word": "baloxavir marboxil",
+      "misaki": "bəlˈɑksəvɪɹ mɑɹbˈɑksɪl",
+      "f1": 0.7833
+    },
+    {
+      "slug": "baxdrostat",
+      "word": "baxdrostat",
+      "misaki": "bæksdɹˈOstæt",
+      "f1": 0.7784
+    },
+    {
+      "slug": "baxfendy",
+      "word": "Baxfendy",
+      "misaki": "bæksfˈɛndi",
+      "f1": 0.7443
+    },
+    {
+      "slug": "benadryl",
+      "word": "Benadryl",
+      "misaki": "bˈɛnədɹˌɪl",
+      "f1": 0.8451
+    },
+    {
+      "slug": "beqalzi",
+      "word": "Beqalzi",
+      "misaki": "bikˈɑlzi",
+      "f1": 0.8097
+    },
+    {
+      "slug": "bevacizumab-vikg",
+      "word": "bevacizumab-vikg",
+      "misaki": "bˌɛvəsˈɪzʊmˌæb",
+      "f1": 0.7222
+    },
+    {
+      "slug": "bictegravir",
+      "word": "bictegravir",
+      "misaki": "bɪktˈɛɡɹəvɪəɹ",
+      "f1": 0.7404
+    },
+    {
+      "slug": "biktarvy",
+      "word": "Biktarvy",
+      "misaki": "bɪktˈɑɹvi",
+      "f1": 0.6715
+    },
+    {
+      "slug": "bizengri",
+      "word": "Bizengri",
+      "misaki": "bIzˈɛnɡɹi",
+      "f1": 0.816
+    },
+    {
+      "slug": "blujepa",
+      "word": "Blujepa",
+      "misaki": "bluʤˈɛpʌ",
+      "f1": 0.7872
+    },
+    {
+      "slug": "budesonide",
+      "word": "budesonide",
+      "misaki": "bjudˈɛsənId",
+      "f1": 0.6945
+    },
+    {
+      "slug": "bulevirtide-gmod",
+      "word": "bulevirtide-gmod",
+      "misaki": "bjuːləvɜɹtˈaɪd",
+      "f1": 0.6988
+    },
+    {
+      "slug": "byetta",
+      "word": "Byetta",
+      "misaki": "bIˈɛtə",
+      "f1": 0.6608
+    },
+    {
+      "slug": "bysanti",
+      "word": "Bysanti",
+      "misaki": "bˈIsænti",
+      "f1": 0.6695
+    },
+    {
+      "slug": "canakinumab",
+      "word": "canakinumab",
+      "misaki": "kˌænəkˈɪnjʊmæb",
+      "f1": 0.8031
+    },
+    {
+      "slug": "cariprazine",
+      "word": "cariprazine",
+      "misaki": "kəɹˈɪpɹəzˌin",
+      "f1": 0.7922
+    },
+    {
+      "slug": "casgevy",
+      "word": "Casgevy",
+      "misaki": "kæsʤˈɛvi",
+      "f1": 0.6886
+    },
+    {
+      "slug": "cefepime",
+      "word": "cefepime",
+      "misaki": "sɛfɪpˈim",
+      "f1": 0.7163
+    },
+    {
+      "slug": "centanafadine",
+      "word": "Centanafadine",
+      "misaki": "sˌɛntænˈæfədin",
+      "f1": 0.7756
+    },
+    {
+      "slug": "cetirizine",
+      "word": "cetirizine",
+      "misaki": "sətiɹɪzˈin",
+      "f1": 0.6965
+    },
+    {
+      "slug": "chantix",
+      "word": "Chantix",
+      "misaki": "ʧˈæntᵻks",
+      "f1": 0.7452
+    },
+    {
+      "slug": "cipepofol",
+      "word": "cipepofol",
+      "misaki": "sɪpˈɛpəfˌɔl",
+      "f1": 0.7023
+    },
+    {
+      "slug": "claritin",
+      "word": "Claritin",
+      "misaki": "klˈɛɹətɪn",
+      "f1": 0.6542
+    },
+    {
+      "slug": "clopidogrel",
+      "word": "clopidogrel",
+      "misaki": "klOpˈɪdəɡɹɛl",
+      "f1": 0.7452
+    },
+    {
+      "slug": "cobenfy",
+      "word": "Cobenfy",
+      "misaki": "kObˈɛnfi",
+      "f1": 0.7301
+    },
+    {
+      "slug": "concizumab",
+      "word": "concizumab",
+      "misaki": "kənsˈɪzjumˌæb",
+      "f1": 0.7509
+    },
+    {
+      "slug": "copper-histidinate",
+      "word": "copper histidinate",
+      "misaki": "kˈɑpəɹ hˈɪstɪdɪnˌAt",
+      "f1": 0.7137
+    },
+    {
+      "slug": "cosentyx",
+      "word": "Cosentyx",
+      "misaki": "kOsˈɛntɪks",
+      "f1": 0.8441
+    },
+    {
+      "slug": "crestor",
+      "word": "Crestor",
+      "misaki": "kɹɛstˈOɹ",
+      "f1": 0.6817
+    },
+    {
+      "slug": "cymbalta",
+      "word": "Cymbalta",
+      "misaki": "sˈɪmbɑltə",
+      "f1": 0.8174
+    },
+    {
+      "slug": "cypsedo",
+      "word": "Cypsedo",
+      "misaki": "sɪpsˈidˌO",
+      "f1": 0.7084
+    },
+    {
+      "slug": "dapagliflozin",
+      "word": "dapagliflozin",
+      "misaki": "dˌæpəɡləflˈOzən",
+      "f1": 0.7001
+    },
+    {
+      "slug": "datopotamab-deruxtecan",
+      "word": "datopotamab deruxtecan",
+      "misaki": "dˌætəpˈOtəmæb dəɹˈʌkstɪkæn",
+      "f1": 0.783
+    },
+    {
+      "slug": "datroway",
+      "word": "Datroway",
+      "misaki": "dætɹOwˈA",
+      "f1": 0.7078
+    },
+    {
+      "slug": "decnupaz",
+      "word": "Decnupaz",
+      "misaki": "dɛknəpˌˈæz",
+      "f1": 0.762
+    },
+    {
+      "slug": "deutivacaftor",
+      "word": "deutivacaftor",
+      "misaki": "djuː tɪvə kˈæftɔːr",
+      "f1": 0.7347
+    },
+    {
+      "slug": "diazepam",
+      "word": "diazepam",
+      "misaki": "dIˈæzəpˌæm",
+      "f1": 0.8093
+    },
+    {
+      "slug": "difamilast",
+      "word": "difamilast",
+      "misaki": "dIfˈæmɪlæst",
+      "f1": 0.6674
+    },
+    {
+      "slug": "dimethyl-fumarate",
+      "word": "dimethyl fumarate",
+      "misaki": "dImˈɛθəl fjˈuməɹAt",
+      "f1": 0.7925
+    },
+    {
+      "slug": "diphenhydramine",
+      "word": "diphenhydramine",
+      "misaki": "dˌIfˌɛnhˈIdɹəmˌin",
+      "f1": 0.8358
+    },
+    {
+      "slug": "doravirine",
+      "word": "doravirine",
+      "misaki": "dˈɔɹəvˌɪɹin",
+      "f1": 0.742
+    },
+    {
+      "slug": "dulaglutide",
+      "word": "dulaglutide",
+      "misaki": "dˌuləɡlˈutId",
+      "f1": 0.6941
+    },
+    {
+      "slug": "duloxetine",
+      "word": "duloxetine",
+      "misaki": "dulˈɑksətin",
+      "f1": 0.7828
+    },
+    {
+      "slug": "dupilumab",
+      "word": "dupilumab",
+      "misaki": "dupˈɪlʊmæb",
+      "f1": 0.7896
+    },
+    {
+      "slug": "dupixent",
+      "word": "Dupixent",
+      "misaki": "dupˈɪksənt",
+      "f1": 0.7278
+    },
+    {
+      "slug": "durvalumab",
+      "word": "durvalumab",
+      "misaki": "dɜɹvəljˌumˈæb",
+      "f1": 0.7699
+    },
+    {
+      "slug": "ebglyss",
+      "word": "Ebglyss",
+      "misaki": "ˈɛbɡlᵻs",
+      "f1": 0.7586
+    },
+    {
+      "slug": "efgartigimod-alfa",
+      "word": "efgartigimod alfa",
+      "misaki": "ˌɛfɡɑɹtˈɪɡɪmɑd ˈælfə",
+      "f1": 0.8184
+    },
+    {
+      "slug": "elexacaftor",
+      "word": "elexacaftor",
+      "misaki": "ɛlɛksˈəkæftəɹ",
+      "f1": 0.7417
+    },
+    {
+      "slug": "eliquis",
+      "word": "Eliquis",
+      "misaki": "ˈɛlɪkwɪs",
+      "f1": 0.6729
+    },
+    {
+      "slug": "elranatamab-bcmm",
+      "word": "elranatamab-bcmm",
+      "misaki": "ˌɛlɹəˈnætəmæb",
+      "f1": 0.673
+    },
+    {
+      "slug": "elrexfio",
+      "word": "Elrexfio",
+      "misaki": "ɛlɹˈɛksfɪˌO",
+      "f1": 0.8128
+    },
+    {
+      "slug": "empagliflozin",
+      "word": "empagliflozin",
+      "misaki": "ɛmpəɡləflˈOzɪn",
+      "f1": 0.7855
+    },
+    {
+      "slug": "emtricitabine",
+      "word": "emtricitabine",
+      "misaki": "ˌɛmtɹəsˈItəbˌin",
+      "f1": 0.7936
+    },
+    {
+      "slug": "enbrel",
+      "word": "Enbrel",
+      "misaki": "ˈɛnbɹəl",
+      "f1": 0.8422
+    },
+    {
+      "slug": "enlicitide-decanoate",
+      "word": "enlicitide decanoate",
+      "misaki": "ɛnlˈɪsɪtId dˌɛkənˈOˌAt",
+      "f1": 0.8023
+    },
+    {
+      "slug": "ensacove",
+      "word": "Ensacove",
+      "misaki": "ˈɛnsəkOv",
+      "f1": 0.7684
+    },
+    {
+      "slug": "ensartinib",
+      "word": "ensartinib",
+      "misaki": "ɛnsɑɹtˈɪnˌɪb",
+      "f1": 0.7039
+    },
+    {
+      "slug": "ensitrelvir",
+      "word": "ensitrelvir",
+      "misaki": "ɛnsˈɪtɹɛlvɪəɹ",
+      "f1": 0.759
+    },
+    {
+      "slug": "entresto",
+      "word": "Entresto",
+      "misaki": "ɛntɹɛstˈO",
+      "f1": 0.755
+    },
+    {
+      "slug": "esomeprazole",
+      "word": "esomeprazole",
+      "misaki": "ˌɛsOmˈɛpɹəzˌOl",
+      "f1": 0.7902
+    },
+    {
+      "slug": "etanercept",
+      "word": "Etanercept",
+      "misaki": "ɪtˈænəɹsɛpt",
+      "f1": 0.6991
+    },
+    {
+      "slug": "exagamglogene-autotemcel",
+      "word": "exagamglogene autotemcel",
+      "misaki": "ˌɛksəɡˈæmɡlOʤˌin ˌɔtOtˈɛmsɛl",
+      "f1": 0.8028
+    },
+    {
+      "slug": "exenatide",
+      "word": "exenatide",
+      "misaki": "ˈɛksɛnətId",
+      "f1": 0.7453
+    },
+    {
+      "slug": "famotidine",
+      "word": "famotidine",
+      "misaki": "fəmOtɪdˌˈin",
+      "f1": 0.7517
+    },
+    {
+      "slug": "faricimab-svoa",
+      "word": "faricimab-svoa",
+      "misaki": "fəɹˈɪkɪmæb",
+      "f1": 0.8156
+    },
+    {
+      "slug": "farxiga",
+      "word": "Farxiga",
+      "misaki": "fɑɹsˈiɡə",
+      "f1": 0.6669
+    },
+    {
+      "slug": "fezolinetant",
+      "word": "fezolinetant",
+      "misaki": "fˌɛzOlˈɪnətænt",
+      "f1": 0.7954
+    },
+    {
+      "slug": "flonase",
+      "word": "Flonase",
+      "misaki": "flˈOnAs",
+      "f1": 0.7692
+    },
+    {
+      "slug": "fluoxetine",
+      "word": "fluoxetine",
+      "misaki": "fluˈɑksətˌin",
+      "f1": 0.8206
+    },
+    {
+      "slug": "fluticasone-propionate",
+      "word": "fluticasone propionate",
+      "misaki": "flutˈɪkəsˌOn pɹˈOpiənˌAt",
+      "f1": 0.8091
+    },
+    {
+      "slug": "formoterol-fumarate-dihydrate",
+      "word": "formoterol fumarate dihydrate",
+      "misaki": "fɔɹmˈOtəɹˌɔl fjˈuməɹˌAt dˌIhˈIdɹAt",
+      "f1": 0.7664
+    },
+    {
+      "slug": "foundayo",
+      "word": "Foundayo",
+      "misaki": "ˈfWndAO",
+      "f1": 0.7845
+    },
+    {
+      "slug": "gadoquatrane",
+      "word": "gadoquatrane",
+      "misaki": "ɡˌædOkwˈætɹAn",
+      "f1": 0.7577
+    },
+    {
+      "slug": "gedatolisib",
+      "word": "Gedatolisib",
+      "misaki": "ʤˌɛdætəlˈɪsɪb",
+      "f1": 0.7549
+    },
+    {
+      "slug": "gepotidacin",
+      "word": "gepotidacin",
+      "misaki": "ʤˌɛpətˈIdəsɪn",
+      "f1": 0.7314
+    },
+    {
+      "slug": "hepcludex",
+      "word": "Hepcludex",
+      "misaki": "hɛpklˈudɛks",
+      "f1": 0.8196
+    },
+    {
+      "slug": "humira",
+      "word": "Humira",
+      "misaki": "hjumˈɛəɹə",
+      "f1": 0.8415
+    },
+    {
+      "slug": "ibuprofen",
+      "word": "ibuprofen",
+      "misaki": "ˌIbjupɹˈOfən",
+      "f1": 0.8449
+    },
+    {
+      "slug": "icotrokinra",
+      "word": "icotrokinra",
+      "misaki": "ˌIkOtɹəkˈɪnɹə",
+      "f1": 0.81
+    },
+    {
+      "slug": "icotyde",
+      "word": "Icotyde",
+      "misaki": "ˌIkˈOtId",
+      "f1": 0.6999
+    },
+    {
+      "slug": "idvynso",
+      "word": "Idvynso",
+      "misaki": "ɪdvˈɪnsoʊ",
+      "f1": 0.6865
+    },
+    {
+      "slug": "ilaris",
+      "word": "Ilaris",
+      "misaki": "ɪlˈɑɹɪs",
+      "f1": 0.7471
+    },
+    {
+      "slug": "imaavy",
+      "word": "Imaavy",
+      "misaki": "ˈɪmɑvi",
+      "f1": 0.7504
+    },
+    {
+      "slug": "imfinzi",
+      "word": "Imfinzi",
+      "misaki": "ɪmfˈɪnzi",
+      "f1": 0.8332
+    },
+    {
+      "slug": "ingrezza",
+      "word": "Ingrezza",
+      "misaki": "ɪŋɡɹˈɛzə",
+      "f1": 0.7081
+    },
+    {
+      "slug": "inpefa",
+      "word": "Inpefa",
+      "misaki": "ɪnpˈɛfə",
+      "f1": 0.8089
+    },
+    {
+      "slug": "insulin-glargine",
+      "word": "insulin glargine",
+      "misaki": "ˈɪnsəlɪn ɡlˈɑɹʤin",
+      "f1": 0.7489
+    },
+    {
+      "slug": "insulin-icodec-abae",
+      "word": "insulin icodec-abae",
+      "misaki": "ˈɪnsəlɪn ˈIkOdɛk",
+      "f1": 0.774
+    },
+    {
+      "slug": "islatravir",
+      "word": "islatravir",
+      "misaki": "ɪslˈætɹəvɪəɹ",
+      "f1": 0.7244
+    },
+    {
+      "slug": "ivacaftor",
+      "word": "ivacaftor",
+      "misaki": "ˌIvəkˈæftəɹ",
+      "f1": 0.7445
+    },
+    {
+      "slug": "januvia",
+      "word": "Januvia",
+      "misaki": "ʤənˈuviO",
+      "f1": 0.7014
+    },
+    {
+      "slug": "jardiance",
+      "word": "Jardiance",
+      "misaki": "ʤɑɹdˈiəns",
+      "f1": 0.672
+    },
+    {
+      "slug": "jideytro",
+      "word": "Jideytro",
+      "misaki": "ʤɪdˈAtɹO",
+      "f1": 0.7084
+    },
+    {
+      "slug": "journavx",
+      "word": "Journavx",
+      "misaki": "ʤɔɹnəvˈɪks",
+      "f1": 0.707
+    },
+    {
+      "slug": "kisqali",
+      "word": "Kisqali",
+      "misaki": "kɪskˈɑli",
+      "f1": 0.7531
+    },
+    {
+      "slug": "kyzatrex",
+      "word": "Kyzatrex",
+      "misaki": "kˈIzətɹɛks",
+      "f1": 0.7535
+    },
+    {
+      "slug": "latuda",
+      "word": "Latuda",
+      "misaki": "lətˈudə",
+      "f1": 0.6391
+    },
+    {
+      "slug": "lebrikizumab-lbkz",
+      "word": "lebrikizumab-lbkz",
+      "misaki": "lˌɛbɹɪkˈɪzjumˌæb",
+      "f1": 0.7151
+    },
+    {
+      "slug": "lecanemab",
+      "word": "lecanemab",
+      "misaki": "lɛkˈænəmæb",
+      "f1": 0.7088
+    },
+    {
+      "slug": "leqembi",
+      "word": "Leqembi",
+      "misaki": "lʌkˈɛmbi",
+      "f1": 0.7935
+    },
+    {
+      "slug": "levothyroxine",
+      "word": "levothyroxine",
+      "misaki": "lˌivOθIɹˈɑksɪn",
+      "f1": 0.814
+    },
+    {
+      "slug": "lifyorli",
+      "word": "Lifyorli",
+      "misaki": "lɪfiˈɔɹli",
+      "f1": 0.6741
+    },
+    {
+      "slug": "linerixibat",
+      "word": "linerixibat",
+      "misaki": "lˌInəɹˈɪksɪbæt",
+      "f1": 0.8103
+    },
+    {
+      "slug": "lipfendra",
+      "word": "Lipfendra",
+      "misaki": "lɪpfˈɛndɹə",
+      "f1": 0.7305
+    },
+    {
+      "slug": "lipitor",
+      "word": "Lipitor",
+      "misaki": "ˈlɪpɪtɔɹɹ",
+      "f1": 0.6607
+    },
+    {
+      "slug": "lisdexamfetamine",
+      "word": "lisdexamfetamine",
+      "misaki": "lɪsdɛksˈæmfɛtəmin",
+      "f1": 0.7411
+    },
+    {
+      "slug": "loargys",
+      "word": "Loargys",
+      "misaki": "lˈɔɹʤɪs",
+      "f1": 0.655
+    },
+    {
+      "slug": "loratadine",
+      "word": "loratadine",
+      "misaki": "ləɹˈæTədin",
+      "f1": 0.6678
+    },
+    {
+      "slug": "lumvoa",
+      "word": "Lumvoa",
+      "misaki": "lʌmvˈOʌ",
+      "f1": 0.8614
+    },
+    {
+      "slug": "lurasidone",
+      "word": "lurasidone",
+      "misaki": "lʊɹˈæsɪdˌOn",
+      "f1": 0.8308
+    },
+    {
+      "slug": "lynavoy",
+      "word": "Lynavoy",
+      "misaki": "lˈɪnə vˈY",
+      "f1": 0.7451
+    },
+    {
+      "slug": "lyrica",
+      "word": "Lyrica",
+      "misaki": "lˈɪɹɪkə",
+      "f1": 0.7327
+    },
+    {
+      "slug": "lytenava",
+      "word": "Lytenava",
+      "misaki": "lItˈɛnəvə",
+      "f1": 0.813
+    },
+    {
+      "slug": "meibo",
+      "word": "Meibo",
+      "misaki": "mˈIbO",
+      "f1": 0.7339
+    },
+    {
+      "slug": "metformin",
+      "word": "Metformin",
+      "misaki": "mɛtfˈɔɹmɪn",
+      "f1": 0.7097
+    },
+    {
+      "slug": "milsaperidone",
+      "word": "milsaperidone",
+      "misaki": "mɪlsəpɛɹɪdˈOn",
+      "f1": 0.7987
+    },
+    {
+      "slug": "motrin",
+      "word": "Motrin",
+      "misaki": "mˈOtɹən",
+      "f1": 0.769
+    },
+    {
+      "slug": "mounjaro",
+      "word": "Mounjaro",
+      "misaki": "mWnʤˈɑɹO",
+      "f1": 0.7112
+    },
+    {
+      "slug": "navepegritide",
+      "word": "Navepegritide",
+      "misaki": "nˌævəpɛɡɹɪtˈId",
+      "f1": 0.7579
+    },
+    {
+      "slug": "nexium",
+      "word": "Nexium",
+      "misaki": "nɛksˈiəm",
+      "f1": 0.6898
+    },
+    {
+      "slug": "nipocalimab-aahu",
+      "word": "nipocalimab-aahu",
+      "misaki": "nˌɪpOkˈælɪmæb",
+      "f1": 0.7535
+    },
+    {
+      "slug": "nogapendekin-alfa-inbakicept-pmln",
+      "word": "nogapendekin alfa inbakicept-pmln",
+      "misaki": "nOɡˌæpɛndˈɛkɪn ˈælfə ɪnbˈækɪsɛpt",
+      "f1": 0.7563
+    },
+    {
+      "slug": "nurtec",
+      "word": "Nurtec",
+      "misaki": "nˈɜɹtɛk",
+      "f1": 0.6651
+    },
+    {
+      "slug": "nuzolvence",
+      "word": "Nuzolvence",
+      "misaki": "nuzˈOlvɛns",
+      "f1": 0.8097
+    },
+    {
+      "slug": "obecabtagene-autoleucel",
+      "word": "obecabtagene autoleucel",
+      "misaki": "ˌObəkˈæbtəʤin ˌɔtOlˈusəl",
+      "f1": 0.7961
+    },
+    {
+      "slug": "obicetrapib",
+      "word": "obicetrapib",
+      "misaki": "ˌObɪsˈɛtɹəpɪb",
+      "f1": 0.8224
+    },
+    {
+      "slug": "ojemda",
+      "word": "Ojemda",
+      "misaki": "Oʤˈɛmdɑ",
+      "f1": 0.7823
+    },
+    {
+      "slug": "olezarsen",
+      "word": "olezarsen",
+      "misaki": "ˌOləzˈɑɹsən",
+      "f1": 0.8623
+    },
+    {
+      "slug": "omalizumab",
+      "word": "omalizumab",
+      "misaki": "ˌOməlˈɪzumæb",
+      "f1": 0.8333
+    },
+    {
+      "slug": "omeprazole",
+      "word": "omeprazole",
+      "misaki": "OmˈɛpɹəzˌOl",
+      "f1": 0.7455
+    },
+    {
+      "slug": "orforglipron",
+      "word": "orforglipron",
+      "misaki": "ˌɔɹfɔɹɡlˈɪpɹɑn",
+      "f1": 0.791
+    },
+    {
+      "slug": "orzeyful",
+      "word": "Orzeyful",
+      "misaki": "ɔɹzˈAfʊl",
+      "f1": 0.8226
+    },
+    {
+      "slug": "osimertinib",
+      "word": "osimertinib",
+      "misaki": "ˌOsɪˈmɜɹ tɪnɪb",
+      "f1": 0.6283
+    },
+    {
+      "slug": "otezla",
+      "word": "Otezla",
+      "misaki": "Otˈɛzlə",
+      "f1": 0.8159
+    },
+    {
+      "slug": "oveporexton",
+      "word": "oveporexton",
+      "misaki": "ˌOvəpəɹˈɛkstən",
+      "f1": 0.8395
+    },
+    {
+      "slug": "ozempic",
+      "word": "Ozempic",
+      "misaki": "Ozˈɛmpɪk",
+      "f1": 0.8447
+    },
+    {
+      "slug": "palynziq",
+      "word": "Palynziq",
+      "misaki": "pˌælˈɪnzik",
+      "f1": 0.817
+    },
+    {
+      "slug": "pegvaliase-pqpz",
+      "word": "pegvaliase-pqpz",
+      "misaki": "pɛɡvˈæliˌAs",
+      "f1": 0.7766
+    },
+    {
+      "slug": "pegzilarginase-nbln",
+      "word": "pegzilarginase-nbln",
+      "misaki": "pɛɡzˌɪlˈɑɹʤɪnAs",
+      "f1": 0.724
+    },
+    {
+      "slug": "perfluorohexyloctane",
+      "word": "perfluorohexyloctane",
+      "misaki": "pəɹflˌɔɹOhˌɛksɪlˈɑktAn",
+      "f1": 0.7415
+    },
+    {
+      "slug": "pitolisant",
+      "word": "pitolisant",
+      "misaki": "pɪtˈɑlɪsənt",
+      "f1": 0.7408
+    },
+    {
+      "slug": "pivekimab-sunirine-pvzy",
+      "word": "pivekimab sunirine-pvzy",
+      "misaki": "pɪvˈɛkɪmæb sˈunɪɹin",
+      "f1": 0.7481
+    },
+    {
+      "slug": "plavix",
+      "word": "Plavix",
+      "misaki": "plˈævɪks",
+      "f1": 0.7405
+    },
+    {
+      "slug": "plozasiran",
+      "word": "Plozasiran",
+      "misaki": "plOzəsˈɪɹæn",
+      "f1": 0.8342
+    },
+    {
+      "slug": "prademagene-zamikeracel",
+      "word": "prademagene zamikeracel",
+      "misaki": "pɹədˌɛməʤˌin zˌæmɪkˈɛɹəsˌɛl",
+      "f1": 0.7861
+    },
+    {
+      "slug": "pregabalin",
+      "word": "pregabalin",
+      "misaki": "pɹiɡˈæbəlɪn",
+      "f1": 0.6908
+    },
+    {
+      "slug": "prilosec",
+      "word": "Prilosec",
+      "misaki": "pɹIlOsˈək",
+      "f1": 0.7073
+    },
+    {
+      "slug": "prozac",
+      "word": "Prozac",
+      "misaki": "pɹˈOzæk",
+      "f1": 0.762
+    },
+    {
+      "slug": "quetiapine",
+      "word": "quetiapine",
+      "misaki": "kwɪtˈIəpˌin",
+      "f1": 0.7461
+    },
+    {
+      "slug": "qulipta",
+      "word": "Qulipta",
+      "misaki": "kjulˈɪptə",
+      "f1": 0.726
+    },
+    {
+      "slug": "relacorilant",
+      "word": "relacorilant",
+      "misaki": "ɹˌɛləkˈɔɹɪlænt",
+      "f1": 0.743
+    },
+    {
+      "slug": "remibrutinib",
+      "word": "remibrutinib",
+      "misaki": "ɹˌˈɛmɪbɹutɪnɪb",
+      "f1": 0.7526
+    },
+    {
+      "slug": "resmetirom",
+      "word": "resmetirom",
+      "misaki": "ɹˌɛsmətˈɪɹɑm",
+      "f1": 0.7688
+    },
+    {
+      "slug": "retatrutide",
+      "word": "Retatrutide",
+      "misaki": "ɹˌɛtətɹˈutId",
+      "f1": 0.8609
+    },
+    {
+      "slug": "revtorpyk",
+      "word": "Revtorpyk",
+      "misaki": "ˌɹɛvtˈɔɹpɪk",
+      "f1": 0.7933
+    },
+    {
+      "slug": "revuforj",
+      "word": "Revuforj",
+      "misaki": "ɹˈɛvjufɔɹʤ",
+      "f1": 0.8025
+    },
+    {
+      "slug": "revumenib",
+      "word": "revumenib",
+      "misaki": "ɹɛvˈumənɪb",
+      "f1": 0.7417
+    },
+    {
+      "slug": "rezdiffra",
+      "word": "Rezdiffra",
+      "misaki": "ɹɛzdˈɪfɹə",
+      "f1": 0.8552
+    },
+    {
+      "slug": "rhapsido",
+      "word": "Rhapsido",
+      "misaki": "ɹæpsɪdˈO",
+      "f1": 0.7264
+    },
+    {
+      "slug": "ribociclib",
+      "word": "ribociclib",
+      "misaki": "ɹˌIbOsˈIklɪb",
+      "f1": 0.842
+    },
+    {
+      "slug": "rilzabrutinib",
+      "word": "rilzabrutinib",
+      "misaki": "ɹˈɪlzəbɹˌutɪnɪb",
+      "f1": 0.7332
+    },
+    {
+      "slug": "rimegepant",
+      "word": "rimegepant",
+      "misaki": "ɹɪmˈɛʤəpænt",
+      "f1": 0.797
+    },
+    {
+      "slug": "rinvoq",
+      "word": "Rinvoq",
+      "misaki": "ɹˈɪnvOk",
+      "f1": 0.7824
+    },
+    {
+      "slug": "risankizumab-rzaa",
+      "word": "risankizumab-rzaa",
+      "misaki": "ɹˌɪsənkˈɪzʊmæb",
+      "f1": 0.7482
+    },
+    {
+      "slug": "rivaroxaban",
+      "word": "rivaroxaban",
+      "misaki": "ɹˌɪvəɹˈɑksəbˌæn",
+      "f1": 0.812
+    },
+    {
+      "slug": "rosuvastatin",
+      "word": "rosuvastatin",
+      "misaki": "ɹOsˈuvəstætɪn",
+      "f1": 0.6844
+    },
+    {
+      "slug": "rybelsus",
+      "word": "Rybelsus",
+      "misaki": "ɹˈɛbɛlsəs",
+      "f1": 0.8063
+    },
+    {
+      "slug": "sacubitril",
+      "word": "sacubitril",
+      "misaki": "səkjˈʊbɪtɹɪl",
+      "f1": 0.6881
+    },
+    {
+      "slug": "salmeterol",
+      "word": "salmeterol",
+      "misaki": "sælmɛtəɹˈɔl",
+      "f1": 0.7329
+    },
+    {
+      "slug": "secukinumab",
+      "word": "secukinumab",
+      "misaki": "sɛkjukɪnumˈæb",
+      "f1": 0.7428
+    },
+    {
+      "slug": "semaglutide",
+      "word": "semaglutide",
+      "misaki": "sˌɛməɡlˈutId",
+      "f1": 0.8596
+    },
+    {
+      "slug": "seroquel",
+      "word": "Seroquel",
+      "misaki": "sˈɛɹ ə kwɛl",
+      "f1": 0.622
+    },
+    {
+      "slug": "sertraline",
+      "word": "sertraline",
+      "misaki": "sɜɹɹtɹəlˈin",
+      "f1": 0.7301
+    },
+    {
+      "slug": "simtriyo",
+      "word": "Simtriyo",
+      "misaki": "sˈɪmtɹɪjˌO",
+      "f1": 0.7437
+    },
+    {
+      "slug": "sitagliptin",
+      "word": "sitagliptin",
+      "misaki": "sˈɪTəɡlˌɪptɪn",
+      "f1": 0.7809
+    },
+    {
+      "slug": "skyrizi",
+      "word": "Skyrizi",
+      "misaki": "skIɹˈɪzi",
+      "f1": 0.833
+    },
+    {
+      "slug": "sonrotoclax",
+      "word": "sonrotoclax",
+      "misaki": "sɑnɹˈOtOklæks",
+      "f1": 0.8064
+    },
+    {
+      "slug": "sotagliflozin",
+      "word": "sotagliflozin",
+      "misaki": "sˌOtəɡlɪflˈOzɪn",
+      "f1": 0.7593
+    },
+    {
+      "slug": "sotatercept-csrk",
+      "word": "sotatercept-csrk",
+      "misaki": "sOtˈætəɹsˌɛpt",
+      "f1": 0.8022
+    },
+    {
+      "slug": "spiriva",
+      "word": "Spiriva",
+      "misaki": "spəɹˈivʌ",
+      "f1": 0.7149
+    },
+    {
+      "slug": "suzetrigine",
+      "word": "suzetrigine",
+      "misaki": "sʊzˈɛtɹɪʤin",
+      "f1": 0.7728
+    },
+    {
+      "slug": "symbicort",
+      "word": "Symbicort",
+      "misaki": "sˈɪmbəkɔɹt",
+      "f1": 0.7283
+    },
+    {
+      "slug": "synthroid",
+      "word": "Synthroid",
+      "misaki": "sˈɪnθɹɔɪd",
+      "f1": 0.7378
+    },
+    {
+      "slug": "tagrisso",
+      "word": "Tagrisso",
+      "misaki": "təɡɹˈɪsO",
+      "f1": 0.8096
+    },
+    {
+      "slug": "talquetamab",
+      "word": "talquetamab",
+      "misaki": "tælkwɛtəmˈæb",
+      "f1": 0.7817
+    },
+    {
+      "slug": "talvey",
+      "word": "Talvey",
+      "misaki": "ˈtæl vA",
+      "f1": 0.6975
+    },
+    {
+      "slug": "tebipenem-pivoxil",
+      "word": "tebipenem pivoxil",
+      "misaki": "tɛbɪpˈɛnɛm pɪvˈɑksɪl",
+      "f1": 0.8062
+    },
+    {
+      "slug": "tecfidera",
+      "word": "Tecfidera",
+      "misaki": "tɛkfɪdˈɛɹə",
+      "f1": 0.814
+    },
+    {
+      "slug": "tenecteplase",
+      "word": "tenecteplase",
+      "misaki": "tɛnˈɛktəplAs",
+      "f1": 0.8456
+    },
+    {
+      "slug": "tenofovir-alafenamide",
+      "word": "tenofovir alafenamide",
+      "misaki": "tənˈOfəvɪəɹ ˌæləfˈɛnəmId",
+      "f1": 0.8165
+    },
+    {
+      "slug": "teplizumab-mzwv",
+      "word": "teplizumab-mzwv",
+      "misaki": "tɛplizumˈæb",
+      "f1": 0.6791
+    },
+    {
+      "slug": "testosterone-undecanoate",
+      "word": "testosterone undecanoate",
+      "misaki": "tɛstˈɑstəɹˌOn əndˈɛkənOAt",
+      "f1": 0.8046
+    },
+    {
+      "slug": "tezacaftor",
+      "word": "tezacaftor",
+      "misaki": "tˌɛzəkˈæftəɹ",
+      "f1": 0.8012
+    },
+    {
+      "slug": "tiotropium-bromide",
+      "word": "tiotropium bromide",
+      "misaki": "tˌIOtɹˈOpiəm bɹˈOmId",
+      "f1": 0.8042
+    },
+    {
+      "slug": "tirzepatide",
+      "word": "tirzepatide",
+      "misaki": "təɹzˈɛpətˌId",
+      "f1": 0.7589
+    },
+    {
+      "slug": "tividenofusp-alfa-eknm",
+      "word": "tividenofusp alfa-eknm",
+      "misaki": "tɪvˌɪdɛnˈOfʌsp ˈælfə",
+      "f1": 0.7971
+    },
+    {
+      "slug": "tnkase",
+      "word": "TNKase",
+      "misaki": "tˌiˈɛn kˈAs",
+      "f1": 0.8178
+    },
+    {
+      "slug": "tofacitinib",
+      "word": "tofacitinib",
+      "misaki": "tˈOfəsɪtɪnɪb",
+      "f1": 0.7952
+    },
+    {
+      "slug": "toujeo",
+      "word": "Toujeo",
+      "misaki": "tuʤˈAO",
+      "f1": 0.7993
+    },
+    {
+      "slug": "tovorafenib",
+      "word": "tovorafenib",
+      "misaki": "tOvəɹˈæfənɪb",
+      "f1": 0.7174
+    },
+    {
+      "slug": "trikafta",
+      "word": "Trikafta",
+      "misaki": "tɹˈIkæftə",
+      "f1": 0.8332
+    },
+    {
+      "slug": "troriluzole",
+      "word": "troriluzole",
+      "misaki": "tɹOɹˈɪluzˌOl",
+      "f1": 0.7212
+    },
+    {
+      "slug": "trospium-chloride",
+      "word": "trospium chloride",
+      "misaki": "tɹˈOspiəm klˈɔɹId",
+      "f1": 0.6395
+    },
+    {
+      "slug": "trulicity",
+      "word": "Trulicity",
+      "misaki": "tɹulˈɪsᵻTi",
+      "f1": 0.7792
+    },
+    {
+      "slug": "trutakna",
+      "word": "Trutakna",
+      "misaki": "tɹutˈæknə",
+      "f1": 0.7114
+    },
+    {
+      "slug": "tryngolza",
+      "word": "Tryngolza",
+      "misaki": "tɹɪnɡˈOlzə",
+      "f1": 0.683
+    },
+    {
+      "slug": "tryptyr",
+      "word": "Tryptyr",
+      "misaki": "tɹˈɪptɪəɹ",
+      "f1": 0.6291
+    },
+    {
+      "slug": "tylenol",
+      "word": "Tylenol",
+      "misaki": "tˈIlᵊnɔl",
+      "f1": 0.7526
+    },
+    {
+      "slug": "tzield",
+      "word": "Tzield",
+      "misaki": "tˈizˈild",
+      "f1": 0.8662
+    },
+    {
+      "slug": "ubrelvy",
+      "word": "Ubrelvy",
+      "misaki": "ˌjubɹˈɛlvi",
+      "f1": 0.8618
+    },
+    {
+      "slug": "ubrogepant",
+      "word": "ubrogepant",
+      "misaki": "jubɹOʤəpˈænt",
+      "f1": 0.8005
+    },
+    {
+      "slug": "upadacitinib",
+      "word": "upadacitinib",
+      "misaki": "jupˌædəsˈItɪnɪb",
+      "f1": 0.762
+    },
+    {
+      "slug": "utebzi",
+      "word": "Utebzi",
+      "misaki": "jutˈɛbzi",
+      "f1": 0.7836
+    },
+    {
+      "slug": "vabysmo",
+      "word": "Vabysmo",
+      "misaki": "vɑbˈIsmO",
+      "f1": 0.6713
+    },
+    {
+      "slug": "valbenazine",
+      "word": "valbenazine",
+      "misaki": "vælbɛnəzˈin",
+      "f1": 0.8205
+    },
+    {
+      "slug": "valium",
+      "word": "Valium",
+      "misaki": "vˈæljəm",
+      "f1": 0.7864
+    },
+    {
+      "slug": "valsartan",
+      "word": "valsartan",
+      "misaki": "vælsˈɑɹtən",
+      "f1": 0.7489
+    },
+    {
+      "slug": "vanzacaftor",
+      "word": "vanzacaftor",
+      "misaki": "vˌænzəkˈæftəɹ",
+      "f1": 0.809
+    },
+    {
+      "slug": "varenicline",
+      "word": "varenicline",
+      "misaki": "vəɹˈɛnɪklin",
+      "f1": 0.7987
+    },
+    {
+      "slug": "veligrotug-vvze",
+      "word": "veligrotug-vvze",
+      "misaki": "vɛlɪɡɹOtˈʊɡ",
+      "f1": 0.7138
+    },
+    {
+      "slug": "veozah",
+      "word": "Veozah",
+      "misaki": "viˈOzə",
+      "f1": 0.7587
+    },
+    {
+      "slug": "vepdegestrant",
+      "word": "vepdegestrant",
+      "misaki": "vˌɛpdəʤˈɛstɹənt",
+      "f1": 0.8631
+    },
+    {
+      "slug": "veppanu",
+      "word": "Veppanu",
+      "misaki": "vˈɛpənu",
+      "f1": 0.6379
+    },
+    {
+      "slug": "voranigo",
+      "word": "Voranigo",
+      "misaki": "vəɹˈɑniɡO",
+      "f1": 0.8168
+    },
+    {
+      "slug": "vorasidenib",
+      "word": "vorasidenib",
+      "misaki": "vɔɹəsˈɪdənɪb",
+      "f1": 0.6374
+    },
+    {
+      "slug": "vraylar",
+      "word": "Vraylar",
+      "misaki": "vɹˈAlɑɹ",
+      "f1": 0.6744
+    },
+    {
+      "slug": "vyglxia",
+      "word": "Vyglxia",
+      "misaki": "vˈɪɡlɛksiə",
+      "f1": 0.8157
+    },
+    {
+      "slug": "vyloy",
+      "word": "Vyloy",
+      "misaki": "vˈI lˈY",
+      "f1": 0.7195
+    },
+    {
+      "slug": "vyvanse",
+      "word": "Vyvanse",
+      "misaki": "vˈIvænts",
+      "f1": 0.7049
+    },
+    {
+      "slug": "vyvgart",
+      "word": "Vyvgart",
+      "misaki": "vˈɪvɡɑɹt",
+      "f1": 0.6595
+    },
+    {
+      "slug": "wakix",
+      "word": "Wakix",
+      "misaki": "wˈAkɪks",
+      "f1": 0.6849
+    },
+    {
+      "slug": "wayrilz",
+      "word": "Wayrilz",
+      "misaki": "wˈAɹəlz",
+      "f1": 0.7011
+    },
+    {
+      "slug": "wegovy",
+      "word": "Wegovy",
+      "misaki": "ˈwi ɡO vi",
+      "f1": 0.6548
+    },
+    {
+      "slug": "winrevair",
+      "word": "Winrevair",
+      "misaki": "wˈɪnɹɪvˌɛɹ",
+      "f1": 0.7238
+    },
+    {
+      "slug": "xanax",
+      "word": "Xanax",
+      "misaki": "zˈænæks",
+      "f1": 0.7783
+    },
+    {
+      "slug": "xanomeline",
+      "word": "xanomeline",
+      "misaki": "zʌnˈO mʌ lin",
+      "f1": 0.7586
+    },
+    {
+      "slug": "xarelto",
+      "word": "Xarelto",
+      "misaki": "zəɹˈɛltO",
+      "f1": 0.7393
+    },
+    {
+      "slug": "xeljanz",
+      "word": "Xeljanz",
+      "misaki": "zɛlʤˈænz",
+      "f1": 0.7318
+    },
+    {
+      "slug": "xocova",
+      "word": "Xocova",
+      "misaki": "zOkˈOvə",
+      "f1": 0.7878
+    },
+    {
+      "slug": "xofluza",
+      "word": "Xofluza",
+      "misaki": "zOflˈuzə",
+      "f1": 0.6745
+    },
+    {
+      "slug": "xolair",
+      "word": "Xolair",
+      "misaki": "zˈOlɛəɹ",
+      "f1": 0.6625
+    },
+    {
+      "slug": "yuviwel",
+      "word": "Yuviwel",
+      "misaki": "jˈuvɪwɛl",
+      "f1": 0.7547
+    },
+    {
+      "slug": "zaiidra",
+      "word": "Zaiidra",
+      "misaki": "zˈIdɹə",
+      "f1": 0.8033
+    },
+    {
+      "slug": "zantac",
+      "word": "Zantac",
+      "misaki": "zæntˈæk",
+      "f1": 0.7651
+    },
+    {
+      "slug": "zaynich",
+      "word": "Zaynich",
+      "misaki": "zˈAnɪk",
+      "f1": 0.6331
+    },
+    {
+      "slug": "zenocutuzumab",
+      "word": "zenocutuzumab",
+      "misaki": "zˌɛnOkjutˈuzumæb",
+      "f1": 0.8163
+    },
+    {
+      "slug": "zepbound",
+      "word": "Zepbound",
+      "misaki": "ˌzɛpbˈWnd",
+      "f1": 0.7132
+    },
+    {
+      "slug": "zevaskyn",
+      "word": "Zevaskyn",
+      "misaki": "zivəskˈɪn",
+      "f1": 0.7458
+    },
+    {
+      "slug": "zidebactam",
+      "word": "zidebactam",
+      "misaki": "zɪdəbˈæktæm",
+      "f1": 0.7704
+    },
+    {
+      "slug": "zidesamtinib",
+      "word": "zidesamtinib",
+      "misaki": "zˌIdəsˈæmtɪnɪb",
+      "f1": 0.7181
+    },
+    {
+      "slug": "zipalertinib",
+      "word": "Zipalertinib",
+      "misaki": "zˌɪpəlˈɜɹɹtɪnɪb",
+      "f1": 0.7031
+    },
+    {
+      "slug": "zolbetuximab",
+      "word": "zolbetuximab",
+      "misaki": "zɑlbˈɪtʌksɪmæb",
+      "f1": 0.7351
+    },
+    {
+      "slug": "zoliflodacin",
+      "word": "Zoliflodacin",
+      "misaki": "zˌOlɪflOdˈAsɪn",
+      "f1": 0.7271
+    },
+    {
+      "slug": "zoloft",
+      "word": "Zoloft",
+      "misaki": "zˈOlɔft",
+      "f1": 0.7613
+    },
+    {
+      "slug": "zolpidem",
+      "word": "zolpidem",
+      "misaki": "zOlpɪdˈɛm",
+      "f1": 0.7107
+    },
+    {
+      "slug": "zorevunersen",
+      "word": "Zorevunersen",
+      "misaki": "zOɹˌɛvjunˈɜɹɹsən",
+      "f1": 0.818
+    },
+    {
+      "slug": "zycubo",
+      "word": "Zycubo",
+      "misaki": "zIkjˈubO",
+      "f1": 0.7392
+    },
+    {
+      "slug": "zyrtec",
+      "word": "Zyrtec",
+      "misaki": "zˈɜɹtɛk",
+      "f1": 0.638
+    }
+  ]
+}

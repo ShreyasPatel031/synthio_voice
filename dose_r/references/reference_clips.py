@@ -1,14 +1,13 @@
 """Selecting and transcribing the human reference-pronunciation clips.
 
 Workstream 1's manifest (`data/reference_audio/manifest.jsonl`) lists clips from
-three sources -- Drugs.com, Merriam-Webster, UMich. Only the Drugs.com WAVs are
-committed to git on their branch (MW/UMich are gitignored there as re-fetchable
-from each record's public `source_url`). This repo fetches Merriam-Webster's 82
-clips directly from that URL (small, public, per-word audio files from their
-dictionary API) into `data/reference_audio/mw/`, matching the manifest's
-`local_path` convention so `available_clips()` needs no special-casing. UMich's
-clips are not fetched (no direct per-clip URL recorded, only a Wayback Machine
-page) and remain a known coverage gap.
+Drugs.com, Merriam-Webster, UMich, ClinCalc, and NCI. Only the Drugs.com WAVs
+are committed to git (other sources are gitignored as re-fetchable from each
+record's public `source_url`). NCI MP3s come from `nci-media.cancer.gov` via
+`scripts/fetch_nci_reference_audio.py`. Merriam-Webster's 82 clips are fetched
+into `data/reference_audio/mw/`. UMich's clips are not fetched (no direct
+per-clip URL recorded, only a Wayback Machine page) and remain a known
+coverage gap.
 
 This module only ever reads a clip whose `local_path` resolves on disk, so any
 still-missing record is silently skipped rather than treated as an error --
@@ -27,17 +26,27 @@ from . import audio_manifest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Preference order when more than one source has a usable clip for the same
-# ingredient. Merriam-Webster is preferred first: it is an actual pronouncing
-# dictionary, not just an audio file -- its manifest record carries a written
-# respelling (e.g. aspirin: "as-p(schwa-)rin", the parenthetical marking the
-# schwa as an explicitly optional, dictionary-documented variant) that lets a
-# disagreement between sources be checked against a real authority instead of
-# guessed at. Concretely: Drugs.com's and Merriam-Webster's Aspirin clips
-# sound different (elided vs. unelided middle syllable) -- checking MW's own
-# transcription confirmed both are the SAME dictionary entry's accepted
-# variants, not a real conflict. Drugs.com remains the fallback for the
-# ~33% of ingredients (95/284 per AUDIO_COVERAGE.md) that only it covers.
-_SOURCE_PRIORITY = ("merriam-webster", "drugs.com", "umich")
+# ingredient. NCI Dictionary of Cancer Terms is gold when present: it is an
+# official NIH recording of the name (often the full multi-word generic),
+# not a consumer-site clip that sometimes says only the stem. Merriam-Webster
+# is next -- an actual pronouncing dictionary with a written respelling --
+# then Drugs.com, then UMich. Secondary human recordings (Wiktionary,
+# Commons, Forvo, …) are last: they fill names with no gold clip, and must
+# not override NCI/MW/Drugs.com when those exist.
+_SOURCE_PRIORITY = (
+    "nci",
+    "merriam-webster",
+    "drugs.com",
+    "umich",
+    "clinicalinfo",
+    "wiktionary",
+    "wikipedia",
+    "commons",
+    "medlineplus",
+    "forvo",
+    "youtube",
+    "web",
+)
 
 
 @dataclass(frozen=True)
@@ -90,11 +99,11 @@ def available_clips_all(
 ) -> dict[str, list[ReferenceClip]]:
     """ALL usable clips per ingredient, not just the single best one.
 
-    `available_clips()` picks one clip per ingredient (Merriam-Webster
-    preferred) for Path 2's own scoring, which is the right contract for a
-    single, stable reference per item -- but it silently discards the OTHER
-    clip for the 79 ingredients that have both a Drugs.com AND a
-    Merriam-Webster recording. That is fine for scoring a fixed candidate
+    `available_clips()` picks one clip per ingredient (NCI gold when present,
+    then Merriam-Webster, then Drugs.com) for Path 2's own scoring, which is
+    the right contract for a single, stable reference per item -- but it
+    silently discards the OTHER clip for ingredients that have more than one
+    recording. That is fine for scoring a fixed candidate
     consistently over time, but wrong for evaluating a NEW candidate model
     against "how a human says this" in general: two real humans can say the
     same drug correctly in genuinely different ways (see aspirin's

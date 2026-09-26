@@ -1,9 +1,21 @@
+import pytest
+
 from dose_r.references.tts_pronunciation import (
     compact_ascii,
     custom_pronunciation,
+    custom_pronunciations_for_parts,
     ipa_from_canonical,
+    is_fda_letter_suffix,
+    is_source_ipa,
+    letter_code_ipa,
+    name_parts,
+    page_is_for_word,
+    spoken_parts,
+    spoken_text,
+    respelling_alias,
     to_cloud_en_us_ipa,
 )
+from dose_r.references.wiki_notation import RespellToIpaBanned, respell_to_arpabet_ipa
 
 
 def test_compact_is_one_token_per_word():
@@ -16,27 +28,120 @@ def test_compact_is_one_token_per_word():
     )
 
 
-def test_ipa_uses_ye_as_aɪ_and_keeps_stress():
-    assert ipa_from_canonical("wee-GOH-vee") == "wiːˈɡoʊviː"
-    assert ipa_from_canonical("VRAY-lar") == "ˈvreɪlɑːr"
-    assert ipa_from_canonical("ZEL-jans") == "ˈzɛldʒæns"
-    # USAN sye = /aɪ/, not Wikipedia y=/j/.
-    ipa = ipa_from_canonical("toe-fa-SYE-ti-nib")
-    assert "saɪ" in ipa
-    assert "jɛ" not in ipa
-    assert "ˈ" in ipa
+def test_respelling_to_ipa_conversion_is_banned():
+    with pytest.raises(RespellToIpaBanned):
+        ipa_from_canonical("DU-pix-ent")
+    with pytest.raises(RespellToIpaBanned):
+        ipa_from_canonical("AH-troo-be")
+    with pytest.raises(RespellToIpaBanned):
+        respell_to_arpabet_ipa(["DU", "pix", "ent"])
 
 
-def test_ipa_heals_broken_vi_r_split():
-    # Canonical still has the bad USAN split; IPA concatenation is tenofovir.
-    ipa = ipa_from_canonical("ten-OF-oh-vi-r al-a-FEN-a-mide")
-    assert "vɪr" in ipa
-    assert " " in ipa
+def test_cloud_en_us_does_not_rewrite_ipa():
+    assert to_cloud_en_us_ipa("ˈlɪərɪkɑː") == "ˈlɪərɪkɑː"
+    assert to_cloud_en_us_ipa("kwɪˈtaɪ.əˌpin") == "kwɪˈtaɪ.əˌpin"
+    assert to_cloud_en_us_ipa("kwɪˈtaɪəˌpin") == "kwɪˈtaɪəˌpin"
 
 
-def test_cloud_en_us_folds_near_diphthong():
-    assert to_cloud_en_us_ipa("ˈlɪərɪkɑː") == "ˈlɪrɪkɑː"
-    assert "ɪə" not in to_cloud_en_us_ipa(ipa_from_canonical("LEER-i-kah"))
+def test_is_source_ipa_accepts_published_strings():
+    assert is_source_ipa("kwɪˈtaɪ.əˌpin")
+    assert is_source_ipa("/ˈwɪn.rɛ.vɛər/")
+    assert is_source_ipa("spɪˈriːvə")
+    assert is_source_ipa("oʊˈzɛmpɪk")
+    assert is_source_ipa("koʊˈbɛnfi")
+    assert is_source_ipa("ˈkleɹ.ə.tɪn")
+    assert is_source_ipa("ˌæɹ.ɪˈpɪp.ɹəˌzoʊl")
+
+
+def test_is_source_ipa_rejects_respelling_and_howtopronounce_junk():
+    assert not is_source_ipa("co-BEN-fee")
+    assert not is_source_ipa("DU-pix-ent")
+    assert not is_source_ipa("ˈklar-ə-ˌtin")
+    assert not is_source_ipa("spˈɪ.ɹ.ɪvə")
+    assert not is_source_ipa("sˈæ.lm.ɪ.ɾɚɹɑːl")
+    assert not is_source_ipa("skˈaɪɹɪzi")
+    assert not is_source_ipa("kwˈɛʃɪ..æp.aɪn")
+    assert not is_source_ipa("lˈʊ.ɹɹɐs.ɪd.oʊn")
+    assert not is_source_ipa("ˈoʊ.zmpɪk")
+    assert not is_source_ipa("aɪ")
+    assert not is_source_ipa("aˈʝ̞eɾ")
+    assert not is_source_ipa("ˈkaʝ̞e̞")
+
+
+def test_page_is_for_word_rejects_wiktionary_mixups():
+    assert not page_is_for_word("Utebzi", "https://en.wiktionary.org/wiki/utzi")
+    assert not page_is_for_word("Casgevy", "https://en.wiktionary.org/wiki/cashew")
+    assert not page_is_for_word("Tzield", "https://en.wiktionary.org/wiki/-tizide")
+    assert page_is_for_word("bevacizumab", "https://en.wiktionary.org/wiki/bevacizumab")
+    assert page_is_for_word(
+        "datopotamab",
+        "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/datopotamab-deruxtecan",
+    )
+    assert page_is_for_word("Utebzi", "https://www.webmd.com")
+    assert page_is_for_word("teplizumab", "https://www.drugs.com/teplizumab.html")
+    assert not page_is_for_word(
+        "oveporexton", "https://en.wiktionary.org/wiki/propafenone"
+    )
+
+
+def test_name_parts_splits_spaces_and_fda_suffix():
+    assert name_parts("teplizumab-mzwv") == ["teplizumab", "mzwv"]
+    assert name_parts("atacicept-vymj") == ["atacicept", "vymj"]
+    assert name_parts("insulin icodec-abae") == ["insulin", "icodec", "abae"]
+    assert name_parts("pivekimab sunirine-pvzy") == ["pivekimab", "sunirine", "pvzy"]
+    assert name_parts("baloxavir marboxil") == ["baloxavir", "marboxil"]
+    assert name_parts("zoliflodacin") == ["zoliflodacin"]
+    assert name_parts("formoterol fumarate dihydrate") == [
+        "formoterol",
+        "fumarate",
+        "dihydrate",
+    ]
+    assert is_fda_letter_suffix("mzwv", "teplizumab-mzwv")
+    assert not is_fda_letter_suffix("teplizumab", "teplizumab-mzwv")
+    assert not is_fda_letter_suffix("marboxil", "baloxavir marboxil")
+    assert spoken_parts("teplizumab-mzwv") == ["teplizumab"]
+    assert spoken_parts("insulin icodec-abae") == ["insulin", "icodec"]
+    assert spoken_parts("nogapendekin alfa inbakicept-pmln") == [
+        "nogapendekin",
+        "alfa",
+        "inbakicept",
+    ]
+    assert spoken_parts("trospium chloride") == ["trospium", "chloride"]
+    assert spoken_text("bevacizumab-vikg") == "bevacizumab"
+    assert spoken_text("nogapendekin alfa inbakicept-pmln") == (
+        "nogapendekin alfa inbakicept"
+    )
+    assert spoken_text("trospium chloride") == "trospium chloride"
+
+
+def test_respelling_alias_is_english_syllables_not_ipa():
+    assert respelling_alias("a-TA-ki-sept", "atacicept-vymj") == "a ta ki sept"
+    assert respelling_alias("tep-LIZ-oo-mab", "teplizumab-mzwv") == "tep liz oo mab"
+    assert respelling_alias("zoe-li-floe-DAY-sin", "zoliflodacin") == (
+        "zoe li floe day sin"
+    )
+    assert respelling_alias("pi-VEK-i-mab SOO-ni-reen", "pivekimab sunirine-pvzy") == (
+        "pi vek i mab soo ni reen"
+    )
+    assert respelling_alias("ef-gar-TIG-i-mod", "efgartigimod alfa") == (
+        "ef gar tig i mod alfa"
+    )
+    assert respelling_alias("floo-TIK-uh-sohn", "fluticasone propionate") == (
+        "floo tik uh sohn propionate"
+    )
+    # Must not invent IPA from the respelling.
+    with pytest.raises(RespellToIpaBanned):
+        ipa_from_canonical("zoe-li-floe-DAY-sin")
+
+
+def test_letter_code_ipa_is_english_alphabet_not_drug_g2p():
+    assert letter_code_ipa("mzwv") == "ɛmziːdʌbəljuviː"
+    assert letter_code_ipa("vikg") == "viːaɪkeɪdʒiː"
+    block = custom_pronunciations_for_parts(
+        [("teplizumab", "tɛpˈlɪzʊmæb"), ("mzwv", letter_code_ipa("mzwv"))]
+    )
+    phrases = [p["phrase"] for p in block["pronunciations"]]
+    assert phrases == ["teplizumab", "mzwv"]
 
 
 def test_custom_pronunciation_keeps_the_real_spelling_as_the_phrase():
@@ -47,7 +152,17 @@ def test_custom_pronunciation_keeps_the_real_spelling_as_the_phrase():
     assert rec["pronunciation"] == "ˈzɛldʒæns"
 
 
-def test_pronunciations_jsonl_covers_every_canonical_respelling():
+def test_ipa_to_xsampa_matches_cloud_apple_example():
+    from dose_r.references.tts_pronunciation import ipa_to_xsampa
+
+    # Cloud docs: apple → "{ p@l"  (space optional in our compact form).
+    assert ipa_to_xsampa("ˈæpəl") == '"{p@l'
+    assert ipa_to_xsampa("əˈtruːbi") == '@"tru:bi'
+    xs = custom_pronunciation("Attruby", '@"tru:bi', "PHONETIC_ENCODING_X_SAMPA")
+    assert xs["pronunciations"][0]["phoneticEncoding"] == "PHONETIC_ENCODING_X_SAMPA"
+
+
+def test_pronunciations_jsonl_keeps_respelling_and_no_converted_ipa():
     from pathlib import Path
     import json
 
@@ -63,61 +178,10 @@ def test_pronunciations_jsonl_covers_every_canonical_respelling():
     assert set(resp) == set(pron)
     for name, rec in resp.items():
         p = pron[name]
+        assert p.get("ipa", "") == ""
+        assert p.get("ipa_cloud", "") == ""
         if rec.get("respelling"):
-            assert p["ipa"]
-            assert p["ipa_cloud"]
+            assert p["respelling"] == rec["respelling"]
             assert p["compact"]
-            assert "ɪə" not in p["ipa_cloud"]
         else:
-            assert p["ipa"] == ""
-
-
-def test_sye_lye_zye_sidecar_is_aɪ_not_jɛ():
-    """Stored references.jsonl first-IPA still has the ye-bug. The sidecar must not."""
-    from pathlib import Path
-    import json
-
-    root = Path(__file__).resolve().parents[1]
-    flagged = {
-        "tofacitinib",
-        "omalizumab",
-        "upadacitinib",
-        "Zycubo",
-        "Zaiidra",
-        "Vabysmo",
-        "ribociclib",
-        "Lytenava",
-    }
-    for line in (root / "dose_r/references/pronunciations.jsonl").read_text().splitlines():
-        rec = json.loads(line)
-        if rec["ingredient"] not in flagged:
-            continue
-        assert rec["ipa"], rec
-        assert "jɛ" not in rec["ipa"], rec
-        assert "aɪ" in rec["ipa"], rec
-
-
-def test_ctc_iteration_sidecar_fixes():
-    """wav2vec2-espeak on the human clip caught letter-by-letter junk."""
-    from pathlib import Path
-    import json
-
-    root = Path(__file__).resolve().parents[1]
-    want = {
-        "Nuzolvence": "nʌˈzɒlvɛns",
-        "Revuforj": "ˈrɛvjuːfɔːrdʒ",
-        "Ubrelvy": "ˈjuːbrɛlviː",
-        "Yuviwel": "ˈjuːvɪwɛll",
-        "famotidine": "fʌˈmoʊtʌdiːn",
-    }
-    got = {}
-    for line in (root / "dose_r/references/pronunciations.jsonl").read_text().splitlines():
-        rec = json.loads(line)
-        if rec["ingredient"] in want:
-            got[rec["ingredient"]] = rec["ipa"]
-    assert got == want
-    assert not want["Nuzolvence"].endswith("vɛnsɛ")
-    assert "jɒʌ" not in want["Revuforj"]
-    assert "djɛn" not in want["famotidine"]
-    assert "daɪn" not in want["famotidine"]
-    assert want["famotidine"].endswith("diːn")
+            assert p["compact"] == ""

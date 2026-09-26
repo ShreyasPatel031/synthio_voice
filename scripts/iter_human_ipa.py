@@ -1,7 +1,7 @@
 """4–5 pass human → IPA → name+sidecar injection on the Path 2 gaps.
 
-Keeps a proposal only when wavlm F1 vs the human clip rises. CTC is a
-proposal generator, not gold: tails are trimmed to the sidecar length.
+DEAD as a way to invent IPA. Do not G2P respelling or paste CTC as gold.
+Source-published IPA only. See dose_r/references/README.md.
 """
 
 from __future__ import annotations

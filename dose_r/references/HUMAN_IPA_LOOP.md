@@ -1,5 +1,8 @@
 # Human → IPA → name+sidecar loop (5 rounds)
 
+> **BANNED as a way to invent IPA.** Do not convert respelling to IPA and
+> do not paste CTC as gold. Use the original source string. See `README.md`.
+
 Path 2 gold. Spoken text stays the real name. IPA is only a sidecar.
 CTC (`wav2vec2-lv-60-espeak`) proposes phones; a proposal is **kept
 only if wavlm F1 vs the human clip rises by >0.005**. Clip tails are

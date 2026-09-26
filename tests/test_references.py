@@ -7,6 +7,7 @@ from dose_r.judge.phonemes import parse
 from dose_r.judge.references import ReferenceSet
 from dose_r.references.notation import convert, split_variants, to_arpabet_ipa
 from dose_r.references.wiki_notation import (
+    RespellToIpaBanned,
     ipa_to_arpabet_ipa,
     ipac_en_args_to_arpabet_ipa,
     respell_to_arpabet_ipa,
@@ -131,25 +132,16 @@ def test_mw_trailing_variant_expands_to_a_full_form():
 
 # --- Wikipedia / Wiktionary notation ---------------------------------------
 #
-# The three known-good cases from the project brief: a Wikipedia {{respell}}
-# for a word with a mid-word stressed syllable (Metformin), a {{respell}} with
-# a four-syllable coined INN (suzetrigine), and a Wiktionary {{IPA|en|...}}
-# already in IPA (cefepime), which needs the IPA-to-ARPABET path rather than
-# the respelling-key path.
+# Source-published IPA (`{{IPA}}`, `{{IPAc-en}}`) is still parsed.
+# G2P of respelling (`respell_to_arpabet_ipa`) is banned — see
+# dose_r/references/README.md.
 
 
-def test_respell_metformin():
-    # IPA carries the same stress as ARPABET's digit, placed IPA's own way
-    # -- before the stressed syllable, not on its vowel.
-    arpa, ipa = respell_to_arpabet_ipa(["met", "FOR", "min"])
-    assert arpa == "M EH0 T F AO1 R M IH0 N"
-    assert ipa == "mɛtˈfɔːrmɪn"
-
-
-def test_respell_suzetrigine():
-    arpa, ipa = respell_to_arpabet_ipa(["soo", "ZE", "tri", "jeen"])
-    assert arpa == "S UW0 Z EH1 T R IH0 JH IY0 N"
-    assert ipa == "suːˈzɛtrɪdʒiːn"
+def test_respelling_to_ipa_g2p_is_banned():
+    with pytest.raises(RespellToIpaBanned):
+        respell_to_arpabet_ipa(["met", "FOR", "min"])
+    with pytest.raises(RespellToIpaBanned):
+        respell_to_arpabet_ipa(["DU", "pix", "ent"])
 
 
 def test_ipa_cefepime():
@@ -158,159 +150,17 @@ def test_ipa_cefepime():
     assert ipa == "ˈsɛfəpiːm"
 
 
-def test_ipac_en_metformin_agrees_with_respell_and_mw():
-    # Wikipedia's IPAc-en transcription of the same word, pre-split into one
-    # template argument per phoneme/stress-mark, as it actually appears in
-    # the "Metformin" article's wikitext.
+def test_ipac_en_metformin_agrees_with_mw_segments():
+    # Wikipedia's IPAc-en transcription — this is published IPA, not G2P.
     arpa, _ = ipac_en_args_to_arpabet_ipa(
         ["m", "ɛ", "t", "ˈ", "f", "ɔːr", "m", "ᵻ", "n"]
     )
-    # Same segmental content and stress as the respelling and as Merriam-
-    # Webster's "met-'fOr-m at n" (MEH0-T-F-AO1-R-M-*-N); only the reduced
-    # final vowel differs, which is exactly what the /ɪ~ə/ marker ᵻ encodes.
     assert arpa == "M EH0 T F AO1 R M AH0 N"
 
 
 def test_ipa_to_arpabet_defaults_to_first_vowel_when_unmarked():
     arpa, _ = ipa_to_arpabet_ipa("/sɛfəpiːm/")
     assert arpa.split()[1] == "EH1"
-
-
-# --- Respelling-converter letter bugs ---------------------------------------
-#
-# `respell_to_arpabet_ipa` is the shared syllable-to-phoneme converter behind
-# Wikipedia's {{respell}} template AND every USAN/NCI/DailyMed respelling
-# this project parses (via `build._respelling_text_to_variant`) -- a bug here
-# is silent in the worst way: the record still carries a real, verified
-# citation, so nothing flags a wrong phoneme string as suspect. Each case
-# below is a real citation from `references.jsonl` that was confirmed wrong
-# before the fix, not a synthetic example.
-
-
-def test_respell_x_is_ks():
-    # Xanax's own NCI Dictionary of Cancer Terms respelling, "ZAN-ax" --
-    # confirmed silently dropping the "x" entirely before this test existed
-    # ("x" had no entry at all in RESPELL_CONSONANTS, so it fell through to
-    # "stray punctuation" and vanished without a trace): AE1 N AE0 for
-    # "an-ax", not AE1 N AE0 K S.
-    arpa, ipa = respell_to_arpabet_ipa(["ZAN", "ax"])
-    assert arpa == "Z AE1 N AE0 K S"
-    assert ipa == "ˈzænæks"
-
-
-def test_respell_hard_and_soft_c():
-    # "c" had no entry at all either, for the same reason "x" didn't --
-    # Casgevy's own DailyMed respelling "cass-JEH-vee" lost its initial hard
-    # /k/ entirely. Soft c (etanercept's NCI respelling "ee-TA-ner-cept",
-    # /s/ before "e") and hard c at a syllable boundary before a consonant
-    # both need the same fix, not just the hard-c case.
-    arpa, _ = respell_to_arpabet_ipa(["cass", "JEH", "vee"])
-    assert arpa == "K AE0 S JH EH1 V IY0"
-
-    arpa, _ = respell_to_arpabet_ipa(["ee", "TA", "ner", "cept"])
-    assert arpa == "IY0 T AE1 N EH0 R S EH0 P T"
-
-
-def test_respell_c_at_end_of_syllable_is_hard_not_soft():
-    # A syllable-final "c" ("zac") must stay hard: `nxt` (the letter after
-    # "c") defaults to "" at the end of a syllable, and "" is a substring of
-    # every string in Python -- a naive `nxt in "eiy"` check would treat
-    # that empty string as if it matched "e"/"i"/"y" and wrongly call it
-    # soft. Prozac's own DailyMed respelling "PRO-zac" pinned this down as a
-    # real regression caught while writing this fix, not a hypothetical.
-    arpa, _ = respell_to_arpabet_ipa(["PRO", "zac"])
-    assert arpa == "P R AA1 Z AE0 K"
-
-
-def test_respell_silent_final_e():
-    # The "magic e" spelling convention (a syllable-final "e" after a single
-    # consonant makes the preceding vowel long and is itself silent) had no
-    # handling at all -- every bare trailing "e" fell through to the plain
-    # "e" -> EH table entry. omeprazole's own USAN respelling ends in "zole"
-    # (rhymes with "hole"): confirmed silently producing an extra EH0
-    # syllable that isn't there (Z AA1 L EH0) before this fix.
-    arpa, _ = respell_to_arpabet_ipa(["oh", "MEH", "pruh", "zole"])
-    assert arpa.endswith("Z OW0 L")
-    assert "EH0 L" not in arpa
-
-    # The zero-consonant case (vowel directly against the silent "e") is the
-    # same convention, not a separate one -- ibuprofen's own USAN
-    # respelling "eye bue proe' fen" needs both "bue" -> /bjuː/ and "proe"
-    # -> /proʊ/, neither of which has a consonant between the vowel and the
-    # "e".
-    arpa, _ = respell_to_arpabet_ipa(["eye", "bue", "proe", "fen"])
-    assert arpa == "AY1 B Y UW0 P R OW0 F EH0 N"
-
-
-def test_respell_usan_ye_is_eye_not_yeh():
-    # USAN/DailyMed "sye"/"lye"/"zye" are AMA's spelling of /saɪ laɪ zaɪ/
-    # (tofacitinib "sye", omalizumab "lye", Zycubo "zye"). Wikipedia medial
-    # "y" is /j/, so these used to emit /sjɛ ljɛ zjɛ/.
-    _, ipa = respell_to_arpabet_ipa(["sye"])
-    assert "saɪ" in ipa
-    assert "jɛ" not in ipa
-    _, ipa = respell_to_arpabet_ipa(["lye"])
-    assert "laɪ" in ipa
-    _, ipa = respell_to_arpabet_ipa(["zye", "kyoo", "boe"])
-    assert ipa.startswith("zaɪ") or "zaɪ" in ipa
-    # "yes" must not be eaten by the ye-digraph.
-    _, ipa = respell_to_arpabet_ipa(["yes"])
-    assert "j" in ipa
-    # MW ī → "ye" + coda (`dīn` homogenized to `dyen`). CTC on the
-    # famotidine clip is /diːn/, not /djɛn/; /aɪn/ is the ī reading.
-    _, ipa = respell_to_arpabet_ipa(["dyen"])
-    assert "daɪn" in ipa
-    assert "jɛ" not in ipa
-
-
-def test_respell_you_nce_forge_match_human_ctc():
-    # Human-clip CTC (wav2vec2-lv-60-espeak) vs the old letter-by-letter IPA.
-    _, ipa = respell_to_arpabet_ipa(["nu", "ZOL", "vence"])
-    assert ipa.endswith("vɛns")
-    assert not ipa.endswith("vɛnsɛ")
-    _, ipa = respell_to_arpabet_ipa(["REV", "you", "forge"])
-    assert "juː" in ipa
-    assert ipa.endswith("dʒ")
-    assert "ɡɛ" not in ipa
-
-
-def test_respell_magic_e_requires_exactly_one_consonant():
-    # Two consonants between the vowel and the "e" is NOT the magic-e
-    # pattern (a made-up "holpe" is not "hole") -- deliberately left
-    # unconverted (falls through to the ordinary per-letter handling, which
-    # may still not be perfect, but must not guess at a vowel-lengthening
-    # this conservative either way).
-    from dose_r.references.wiki_notation import _apply_magic_e
-
-    assert _apply_magic_e("zole") == "zohl"
-    assert _apply_magic_e("olde") == "olde"
-
-
-# --- IPA stress marks -------------------------------------------------------
-#
-# ARPABET's stress digit was always correct; IPA's own stress mark was
-# silently never emitted at all, in any of the three converters that
-# produce it -- confirmed as a near-total gap across the whole reference
-# set (403 of 411 stored IPA strings had no `ˈ`/`ˌ` anywhere) before this
-# fix. Not a cosmetic gap: an SSML `<phoneme alphabet="ipa">` tag has no
-# other way to know which syllable of a drug name to stress.
-
-
-def test_respell_ipa_stress_matches_arpabet():
-    # metformin: primary stress on "FOR", the second syllable.
-    arpa, ipa = respell_to_arpabet_ipa(["met", "FOR", "min"])
-    assert arpa.split()[4] == "AO1"
-    assert ipa == "mɛtˈfɔːrmɪn"
-
-
-def test_respell_ipa_stress_fallback_when_nothing_marked():
-    # No syllable is uppercase at all -- ARPABET already defaults to
-    # primary stress on the first vowel; IPA must place its own mark at
-    # the same syllable, not stay silent just because nothing in the
-    # input was explicitly marked.
-    arpa, ipa = respell_to_arpabet_ipa(["eye", "bue", "proe", "fen"])
-    assert arpa.split()[0] == "AY1"
-    assert ipa.startswith("ˈ")
 
 
 def test_mw_ipa_carries_stress():
@@ -346,12 +196,12 @@ def test_join_separates_words_in_ipa_not_just_arpabet():
     assert ipa == "kɑːp hɪs"
 
 
-def test_respelling_span_separates_words_in_ipa_not_just_arpabet():
+def test_respelling_span_g2p_is_banned():
     from dose_r.references.build import _respelling_span_to_variant
+    from dose_r.references.wiki_notation import RespellToIpaBanned
 
-    arpa, ipa = _respelling_span_to_variant("bik-TEG-ra-vir SO-di-um")
-    assert " " in arpa
-    assert " " in ipa
+    with pytest.raises(RespellToIpaBanned):
+        _respelling_span_to_variant("bik-TEG-ra-vir SO-di-um")
 
 
 # --- Partial whole-name-source detection ------------------------------------
@@ -461,43 +311,22 @@ def test_collapse_pronunciation_whitespace_marks_the_real_boundary():
     )
 
 
-def test_respelling_text_to_variant_uses_the_word_boundary_marker():
+def test_respelling_text_to_variant_g2p_is_banned():
     from dose_r.references.build import _respelling_text_to_variant
+    from dose_r.references.wiki_notation import RespellToIpaBanned
 
-    arpa, ipa = _respelling_text_to_variant("kop' er  his' ti di nate")
-    assert " " in arpa
-    assert " " in ipa
-    assert ipa.count("ˈ") == 2  # each word gets its own primary stress
-
-
-def test_respelling_text_to_variant_handles_a_plain_unmarked_trailing_word():
-    from dose_r.references.build import _respelling_text_to_variant
-
-    # "chloride" carries no stress mark of its own (an ordinary salt name
-    # USAN doesn't bother respelling, the same behavior already confirmed
-    # for "sodium"/"tartrate"/"alfa" elsewhere) -- must still convert
-    # instead of failing outright just because it's a single unmarked
-    # token on its own.
-    arpa, ipa = _respelling_text_to_variant("trose' pee um  chloride")
-    assert "chloride" not in arpa  # sanity: this is phonemes, not raw text
-    assert " " in arpa
-    assert " " in ipa
+    with pytest.raises(RespellToIpaBanned):
+        _respelling_text_to_variant("kop' er  his' ti di nate")
+    with pytest.raises(RespellToIpaBanned):
+        _respelling_text_to_variant("trose' pee um  chloride")
 
 
-def test_respelling_word_recovers_space_separated_caps_stress():
+def test_respelling_word_g2p_is_banned():
     from dose_r.references.build import _respelling_word_to_variant
+    from dose_r.references.wiki_notation import RespellToIpaBanned
 
-    # DailyMed's own ALL-CAPS-for-stress convention with plain spaces, no
-    # hyphens and no prime marks at all ("AD vair" for Advair, "jar DEE
-    # ans" for Jardiance) previously matched neither branch of the old
-    # single-word converter: no hyphen to split on, and
-    # `stress_tokens_to_respelling` only recognizes the prime-mark
-    # convention, not ALL-CAPS -- silently dropping a real citation.
-    # Confirmed as a real gap on 12 real DailyMed citations, not a
-    # hypothetical, closed as a side effect of adding the plain-word
-    # fallback for "chloride"-style unmarked trailing words above.
-    arpa, _ = _respelling_word_to_variant("jar DEE ans")
-    assert arpa.split()[4] == "IY1"
+    with pytest.raises(RespellToIpaBanned):
+        _respelling_word_to_variant("jar DEE ans")
 
 
 
