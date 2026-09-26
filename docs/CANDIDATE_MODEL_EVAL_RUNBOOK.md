@@ -1,5 +1,10 @@
 # Evaluating a new candidate TTS model against human recordings
 
+The Kokoro Cloud Run endpoint and the model-comparison dashboard use a
+different score: WavLM F1 of the sentence crop against locked Cloud
+Standard-C gold. That handoff is `docs/TEAM_HANDOFF.md`. This file is the
+earlier human-clip protocol.
+
 > Pronunciation hints: original source only. Never convert DailyMed/USAN
 > respelling to IPA. See `dose_r/references/README.md`.
 
