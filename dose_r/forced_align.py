@@ -219,17 +219,28 @@ def extract_drug_span_forced_align(audio_bytes: bytes, sentence: str, drug: str,
     # undershoot gaps (Advair) were only ~0.2-0.3s; capping how much of a
     # gap can be recovered bounds the silence-dilution failure mode while
     # leaving genuine undershoot recovery (well under the cap) untouched.
+    # Gap recovery: start stays at the midpoint (0.5) so we do not pull the
+    # preceding function word (confirmed bleed: "to" into Idvynso when start
+    # share was raised to 0.75). End takes 0.75 of the blank gap — short names
+    # like Advair lose their coda under a pure midpoint (bottom-up sweep:
+    # Advair +0.026, vorasidenib +0.012, Tzield/Ubrelvy unchanged at cap 0.15).
     _MAX_GAP_RECOVERY_S = 0.15
+    _START_GAP_SHARE = 0.5
+    _END_GAP_SHARE = 0.75
     if first_pos > 0:
         prev_end_frame = segments[first_pos - 1][2]
-        half_gap_s = (drug_start_frame - prev_end_frame) / 2 * frame_stride
-        start_s = drug_start_frame * frame_stride - min(half_gap_s, _MAX_GAP_RECOVERY_S)
+        gap_s = (drug_start_frame - prev_end_frame) * frame_stride
+        start_s = drug_start_frame * frame_stride - min(
+            gap_s * _START_GAP_SHARE, _MAX_GAP_RECOVERY_S
+        )
     else:
         start_s = max(0.0, drug_start_frame * frame_stride - pad_s)
     if last_pos < len(segments) - 1:
         next_start_frame = segments[last_pos + 1][1]
-        half_gap_s = (next_start_frame - drug_end_frame) / 2 * frame_stride
-        end_s = drug_end_frame * frame_stride + min(half_gap_s, _MAX_GAP_RECOVERY_S)
+        gap_s = (next_start_frame - drug_end_frame) * frame_stride
+        end_s = drug_end_frame * frame_stride + min(
+            gap_s * _END_GAP_SHARE, _MAX_GAP_RECOVERY_S
+        )
     else:
         end_s = min(duration_s, drug_end_frame * frame_stride + pad_s)
 
